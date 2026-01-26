@@ -55,8 +55,6 @@ set(GAME_SOURCE_FILES
                         i_swap.h
     i_midipipe.c        i_midipipe.h
     i_musicpack.c
-    i_oplmusic.c
-    i_pcsound.c
     i_sdlmusic.c
     i_sdlsound.c
     i_sound.c           i_sound.h
@@ -121,7 +119,7 @@ set(DEHACKED_SOURCE_FILES
 set(SOURCE_FILES ${COMMON_SOURCE_FILES} ${GAME_SOURCE_FILES})
 set(SOURCE_FILES_WITH_DEH ${SOURCE_FILES} ${DEHACKED_SOURCE_FILES})
 
-set(EXTRA_LIBS SDL2::SDL2main SDL2::SDL2 SDL2::mixer SDL2::net textscreen pcsound opl)
+set(EXTRA_LIBS SDL2::SDL2main SDL2::SDL2 SDL2::mixer SDL2::net textscreen)
 if(SAMPLERATE_FOUND)
     list(APPEND EXTRA_LIBS samplerate::samplerate)
 endif()
