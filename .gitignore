@@ -20,6 +20,7 @@ _deps
 ## ignore build artifacts:
 config.h
 libdoom.a
+*.o
 
 # ignore local Doom resource files:
 *.WAD
