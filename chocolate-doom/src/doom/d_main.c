@@ -1174,7 +1174,7 @@ static void LoadIwadDeh(void)
         // Old versions of Freedoom (before 2014-09) did not have technically
         // valid DEHACKED lumps, so ignore errors and just continue if this
         // is an old IWAD.
-        DEH_LoadLumpByName("DEHACKED", false, true);
+        DEH_LoadLumpByName("DEHACKED", true, true);
     }
 
     // If this is the HACX IWAD, we need to load the DEHACKED lump.

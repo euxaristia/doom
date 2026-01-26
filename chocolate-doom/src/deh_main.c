@@ -35,6 +35,7 @@ extern deh_section_t *deh_section_types[];
 extern const char *deh_signatures[];
 
 static boolean deh_initialized = false;
+static boolean deh_file_loaded = false;
 
 // If true, we can parse [STRINGS] sections in BEX format.
 
@@ -46,7 +47,7 @@ boolean deh_allow_long_strings = false;
 
 // If true, we can do cheat replacements longer than the originals.
 
-boolean deh_allow_long_cheats = false;
+boolean deh_allow_long_cheats = true;
 
 // If false, dehacked cheat replacements are ignored.
 
@@ -382,9 +383,13 @@ int DEH_LoadFile(const char *filename)
     // Before parsing a new file, reset special override flags to false.
     // Magic comments should only apply to the file in which they were
     // defined, and shouldn't carry over to subsequent files as well.
-    deh_allow_long_strings = false;
-    deh_allow_long_cheats = false;
-    deh_allow_extended_strings = false;
+    // However, preserve the defaults for the first file (IWAD).
+    if (deh_file_loaded)
+    {
+        deh_allow_long_strings = false;
+        deh_allow_long_cheats = false;
+        deh_allow_extended_strings = false;
+    }
 
     printf(" loading %s\n", filename);
 
@@ -405,6 +410,7 @@ int DEH_LoadFile(const char *filename)
         I_Error("Error parsing dehacked file");
     }
 
+    deh_file_loaded = true;
     return 1;
 }
 
