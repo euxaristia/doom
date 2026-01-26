@@ -2603,6 +2603,9 @@ fn p_player_in_special_sector(player &Player_t) {
 				g_exit_level()
 			}
 		}
+		1, 2, 3, 8, 10, 12, 13, 14, 17 {
+			// Non-player sector effects (lights/doors) handled elsewhere.
+		}
 		else {
 			C.printf(c'P_PlayerInSpecialSector: unknown special %i\n', sector.special)
 		}
