@@ -53,7 +53,7 @@ module main
 // Dehacked string replacements
 //
 // Used to do dehacked text substitutions throughout the program
-[c:'DEH_String']
+@[c:'DEH_String']
 fn deh_string(s &i8) &i8
 
 // Static macro versions of the functions above
@@ -255,10 +255,10 @@ fn deh_string(s &i8) &i8
 // Strife.
 // Allocates buffer screens, call before R_Init.
 // Draw a block from the specified source screen to the screen.
-[c:'V_CopyRect']
+@[c:'V_CopyRect']
 fn v_copy_rect(srcx int, srcy int, source &Pixel_t, width int, height int, destx int, desty int) 
 
-[c:'V_DrawPatch']
+@[c:'V_DrawPatch']
 fn v_draw_patch(x int, y int, patch &Patch_t) 
 
 // villsa [STRIFE]
@@ -356,7 +356,7 @@ fn v_draw_patch(x int, y int, patch &Patch_t)
 // Called by M_Responder when quit is selected.
 // Clean exit, displays sell blurb.
 @[c2v_variadic]
-[c:'I_Error']
+@[c:'I_Error']
 fn i_error(error &i8) 
 
 // Schedule a function to be called when the program exits.
@@ -413,10 +413,10 @@ fn i_error(error &i8)
 //
 // WADFILE I/O related stuff.
 //
-[c:'W_CheckNumForName']
+@[c:'W_CheckNumForName']
 fn w_check_num_for_name(name &i8) Lumpindex_t
 
-[c:'W_CacheLumpName']
+@[c:'W_CacheLumpName']
 fn w_cache_lump_name(name &i8, tag int) voidptr
 
 //
@@ -988,35 +988,35 @@ struct St_binicon_t {
 // More precisely, initialize STMINUS,
 //  everything else is done somewhere else.
 //
-[c:'STlib_init']
+@[c:'STlib_init']
 fn st_lib_init() 
 
 // Number widget routines
-[c:'STlib_initNum']
+@[c:'STlib_initNum']
 fn st_lib_init_num(n &St_number_t, x int, y int, pl &&Patch_t, num &int, on &bool, width int) 
 
-[c:'STlib_updateNum']
+@[c:'STlib_updateNum']
 fn st_lib_update_num(n &St_number_t, refresh bool) 
 
 // Percent widget routines
-[c:'STlib_initPercent']
+@[c:'STlib_initPercent']
 fn st_lib_init_percent(p &St_percent_t, x int, y int, pl &&Patch_t, num &int, on &bool, percent &Patch_t) 
 
-[c:'STlib_updatePercent']
+@[c:'STlib_updatePercent']
 fn st_lib_update_percent(per &St_percent_t, refresh int) 
 
 // Multiple Icon widget routines
-[c:'STlib_initMultIcon']
+@[c:'STlib_initMultIcon']
 fn st_lib_init_mult_icon(mi &St_multicon_t, x int, y int, il &&Patch_t, inum &int, on &bool) 
 
-[c:'STlib_updateMultIcon']
+@[c:'STlib_updateMultIcon']
 fn st_lib_update_mult_icon(mi &St_multicon_t, refresh bool) 
 
 // Binary Icon widget routines
-[c:'STlib_initBinIcon']
+@[c:'STlib_initBinIcon']
 fn st_lib_init_bin_icon(b &St_binicon_t, x int, y int, i &Patch_t, val &bool, on &bool) 
 
-[c:'STlib_updateBinIcon']
+@[c:'STlib_updateBinIcon']
 fn st_lib_update_bin_icon(bi &St_binicon_t, refresh bool) 
 
 //
@@ -1405,7 +1405,7 @@ fn st_lib_update_bin_icon(bi &St_binicon_t, refresh bool)
 // Hack display negative frags.
 //  Loads and store the stminus lump.
 //
-[c:'STlib_init']
+@[c:'STlib_init']
 fn st_lib_init()  {
 	if w_check_num_for_name(deh_string(c'STTMINUS')) >= 0 {
 	sttminus = &Patch_t(w_cache_lump_name(deh_string(c'STTMINUS'), 1))
@@ -1416,7 +1416,7 @@ fn st_lib_init()  {
 }
 
 // ?
-[c:'STlib_initNum']
+@[c:'STlib_initNum']
 fn st_lib_init_num(n &St_number_t, x int, y int, pl &&Patch_t, num &int, on &bool, width int)  {
 	n.x = x
 	n.y = y
@@ -1432,7 +1432,7 @@ fn st_lib_init_num(n &St_number_t, x int, y int, pl &&Patch_t, num &int, on &boo
 //  based on differences from the old number.
 // Note: worth the trouble?
 //
-[c:'STlib_drawNum']
+@[c:'STlib_drawNum']
 fn st_lib_draw_num(n &St_number_t, refresh bool)  {
 	numdigits := n.width
 	num := *n.num
@@ -1479,7 +1479,7 @@ fn st_lib_draw_num(n &St_number_t, refresh bool)  {
 }
 
 //
-[c:'STlib_updateNum']
+@[c:'STlib_updateNum']
 fn st_lib_update_num(n &St_number_t, refresh bool)  {
 	if *n.on {
 	st_lib_draw_num(n, refresh)
@@ -1487,13 +1487,13 @@ fn st_lib_update_num(n &St_number_t, refresh bool)  {
 }
 
 //
-[c:'STlib_initPercent']
+@[c:'STlib_initPercent']
 fn st_lib_init_percent(p &St_percent_t, x int, y int, pl &&Patch_t, num &int, on &bool, percent &Patch_t)  {
 	st_lib_init_num(&p.n, x, y, pl, num, on, 3)
 	p.p = percent
 }
 
-[c:'STlib_updatePercent']
+@[c:'STlib_updatePercent']
 fn st_lib_update_percent(per &St_percent_t, refresh int)  {
 	if refresh && *per.n.on {
 	v_draw_patch(per.n.x, per.n.y, per.p)
@@ -1501,7 +1501,7 @@ fn st_lib_update_percent(per &St_percent_t, refresh int)  {
 	st_lib_update_num(&per.n, refresh)
 }
 
-[c:'STlib_initMultIcon']
+@[c:'STlib_initMultIcon']
 fn st_lib_init_mult_icon(i &St_multicon_t, x int, y int, il &&Patch_t, inum &int, on &bool)  {
 	i.x = x
 	i.y = y
@@ -1511,7 +1511,7 @@ fn st_lib_init_mult_icon(i &St_multicon_t, x int, y int, il &&Patch_t, inum &int
 	i.p = il
 }
 
-[c:'STlib_updateMultIcon']
+@[c:'STlib_updateMultIcon']
 fn st_lib_update_mult_icon(mi &St_multicon_t, refresh bool)  {
 	w := 0
 	h := 0
@@ -1533,7 +1533,7 @@ fn st_lib_update_mult_icon(mi &St_multicon_t, refresh bool)  {
 	}
 }
 
-[c:'STlib_initBinIcon']
+@[c:'STlib_initBinIcon']
 fn st_lib_init_bin_icon(b &St_binicon_t, x int, y int, i &Patch_t, val &bool, on &bool)  {
 	b.x = x
 	b.y = y
@@ -1543,7 +1543,7 @@ fn st_lib_init_bin_icon(b &St_binicon_t, x int, y int, i &Patch_t, val &bool, on
 	b.p = i
 }
 
-[c:'STlib_updateBinIcon']
+@[c:'STlib_updateBinIcon']
 fn st_lib_update_bin_icon(bi &St_binicon_t, refresh bool)  {
 	x := 0
 	y := 0

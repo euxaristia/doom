@@ -22181,10 +22181,13 @@ c'are you sure you want to\nquit this great game?', c'you want to quit?\nthen, t
 )
 
 
-const (
-deh_signatures   = [c'Patch File for DeHackEd v2.3', c'Patch File for DeHackEd v3.0', (voidptr(0))]!
+@[weak] __global ( deh_signatures [3]&i8 )
 
-)
+fn deh_init_signatures() {
+    deh_signatures[0] = c'Patch File for DeHackEd v2.3'
+    deh_signatures[1] = c'Patch File for DeHackEd v3.0'
+    deh_signatures[2] = voidptr(0)
+}
 
 
 @[weak] __global ( deh_section_ammo  = Deh_section_t {
@@ -22248,10 +22251,27 @@ c'[STRINGS]', (voidptr(0)), deh_bexs_tr_start, deh_bexs_tr_parse_line, (voidptr(
 )
 
 
-const (
-deh_section_types   = [&deh_section_ammo, &deh_section_cheat, &deh_section_frame, &deh_section_misc, &deh_section_pointer, &deh_section_sound, &deh_section_text, &deh_section_thing, &deh_section_weapon, &deh_section_bexstr, (voidptr(0))]!
+@[weak] __global ( deh_section_types [11]&Deh_section_t )
 
-)
+fn deh_init_section_types() {
+    deh_section_types[0] = &deh_section_ammo
+    deh_section_types[1] = &deh_section_cheat
+    deh_section_types[2] = &deh_section_frame
+    deh_section_types[3] = &deh_section_misc
+    deh_section_types[4] = &deh_section_pointer
+    deh_section_types[5] = &deh_section_sound
+    deh_section_types[6] = &deh_section_text
+    deh_section_types[7] = &deh_section_thing
+    deh_section_types[8] = &deh_section_weapon
+    deh_section_types[9] = &deh_section_bexstr
+    deh_section_types[10] = voidptr(0)
+}
+
+@[c: 'V_DEH_Init']
+fn V_DEH_Init() {
+    deh_init_signatures()
+    deh_init_section_types()
+}
 
 
 @[weak] __global ( deh_initial_health  = int (100)

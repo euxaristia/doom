@@ -17,6 +17,10 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 
+## ignore build artifacts:
+config.h
+libdoom.a
+
 # ignore local Doom resource files:
 *.WAD
 *.wad

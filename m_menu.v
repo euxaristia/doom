@@ -55,14 +55,14 @@ module main
 //
 // Called by D_DoomLoop,
 // returns current time in tics.
-[c:'I_GetTime']
+@[c:'I_GetTime']
 fn i_get_time() int
 
 // returns current time in ms
 // Pause for a specified number of ms
 // Initialize timer
 // Wait for vertical retrace or pause a bit.
-[c:'I_WaitVBL']
+@[c:'I_WaitVBL']
 fn i_wait_vbl(count int) 
 
 //
@@ -184,7 +184,7 @@ fn i_wait_vbl(count int)
 //
 // BASE LEVEL
 //
-[c:'D_StartTitle']
+@[c:'D_StartTitle']
 fn d_start_title() 
 
 //
@@ -207,11 +207,11 @@ fn d_start_title()
 // Dehacked string replacements
 //
 // Used to do dehacked text substitutions throughout the program
-[c:'DEH_String']
+@[c:'DEH_String']
 fn deh_string(s &i8) &i8
 
 @[c2v_variadic]
-[c:'DEH_snprintf']
+@[c:'DEH_snprintf']
 fn deh_snprintf(buffer &i8, len usize, fmt &i8) 
 
 // Static macro versions of the functions above
@@ -273,12 +273,12 @@ fn deh_snprintf(buffer &i8, len usize, fmt &i8)
 // I_StartTextInput begins text input, activating the on-screen keyboard
 // (if one is used). The caller indicates that any entered text will be
 // displayed in the rectangle given by the provided set of coordinates.
-[c:'I_StartTextInput']
+@[c:'I_StartTextInput']
 fn i_start_text_input(x1 int, y1 int, x2 int, y2 int) 
 
 // I_StopTextInput finishes text input, deactivating the on-screen keyboard
 // (if one is used).
-[c:'I_StopTextInput']
+@[c:'I_StopTextInput']
 fn i_stop_text_input() 
 
 //
@@ -362,7 +362,7 @@ fn i_stop_text_input()
 // for normal input.
 // Called by M_Responder when quit is selected.
 // Clean exit, displays sell blurb.
-[c:'I_Quit']
+@[c:'I_Quit']
 fn i_quit() 
 
 // Schedule a function to be called when the program exits.
@@ -395,7 +395,7 @@ fn i_quit()
 // determines the hardware configuration
 // and sets up the video mode
 // Takes full 8 bit values.
-[c:'I_SetPalette']
+@[c:'I_SetPalette']
 fn i_set_palette(palette &u8) 
 
 // Called before processing any tics in a frame (just after displaying a frame).
@@ -421,17 +421,17 @@ fn i_set_palette(palette &u8)
 // DESCRIPTION:
 //      Miscellaneous.
 //    
-[c:'M_ForceUppercase']
+@[c:'M_ForceUppercase']
 fn m_force_uppercase(text &i8) 
 
-[c:'M_StringDuplicate']
+@[c:'M_StringDuplicate']
 fn m_string_duplicate(orig &i8) &i8
 
-[c:'M_StringCopy']
+@[c:'M_StringCopy']
 fn m_string_copy(dest &i8, src &i8, dest_size usize) bool
 
 @[c2v_variadic]
-[c:'M_snprintf']
+@[c:'M_snprintf']
 fn m_snprintf(buf &i8, buf_len usize, s &i8) int
 
 //
@@ -463,7 +463,7 @@ fn m_snprintf(buf &i8, buf_len usize, s &i8) int
 // Allocates buffer screens, call before R_Init.
 // Draw a block from the specified source screen to the screen.
 // villsa [STRIFE]
-[c:'V_DrawPatchDirect']
+@[c:'V_DrawPatchDirect']
 fn v_draw_patch_direct(x int, y int, patch &Patch_t) 
 
 // Draw a linear block of pixels into the view buffer.
@@ -525,16 +525,16 @@ fn v_draw_patch_direct(x int, y int, patch &Patch_t)
 //
 // WADFILE I/O related stuff.
 //
-[c:'W_CheckNumForName']
+@[c:'W_CheckNumForName']
 fn w_check_num_for_name(name &i8) Lumpindex_t
 
-[c:'W_CacheLumpName']
+@[c:'W_CacheLumpName']
 fn w_cache_lump_name(name &i8, tag int) voidptr
 
-[c:'W_WadNameForLump']
+@[c:'W_WadNameForLump']
 fn w_wad_name_for_lump(lump &Lumpinfo_t) &i8
 
-[c:'W_IsIWADLump']
+@[c:'W_IsIWADLump']
 fn w_is_iwadl_ump(lump &Lumpinfo_t) bool
 
 //
@@ -1227,7 +1227,7 @@ const ( // empty enum
 // Called by G_Drawer.
 // Called by startup code.
 // Called by M_Responder.
-[c:'R_SetViewSize']
+@[c:'R_SetViewSize']
 fn r_set_view_size(blocks int, detail int) 
 
 //
@@ -1394,21 +1394,21 @@ fn r_set_view_size(blocks int, detail int)
 // Can be called by the startup code or M_Responder.
 // A normal game starts at map 1,
 // but a warp test can start elsewhere
-[c:'G_DeferedInitNew']
+@[c:'G_DeferedInitNew']
 fn g_defered_init_new(skill Skill_t, episode int, map_ int) 
 
 // Can be called by the startup code or M_Responder,
 // calls P_SetupLevel or W_EnterWorld.
-[c:'G_LoadGame']
+@[c:'G_LoadGame']
 fn g_load_game(name &i8) 
 
 // Called by M_Responder.
-[c:'G_SaveGame']
+@[c:'G_SaveGame']
 fn g_save_game(slot int, description &i8) 
 
 // Only called by startup code.
 // Read current data from inputs and build a player movement command.
-[c:'G_ScreenShot']
+@[c:'G_ScreenShot']
 fn g_screen_shot() 
 
 //
@@ -1433,7 +1433,7 @@ fn g_screen_shot()
 //
 // Returns the position of the given parameter
 // in the arg list (0 if not found).
-[c:'M_CheckParm']
+@[c:'M_CheckParm']
 fn m_check_parm(check &i8) int
 
 // Same as M_CheckParm, but checks that num_args arguments are available
@@ -1478,7 +1478,7 @@ fn m_check_parm(check &i8) int
 // maximum size of a savegame description
 // temporary filename to use while saving.
 // filename to use for a savegame slot
-[c:'P_SaveGameFile']
+@[c:'P_SaveGameFile']
 fn p_save_game_file(slot int) &i8
 
 // Savegame file header read/write functions
@@ -1590,7 +1590,7 @@ fn p_save_game_file(slot int) &i8
 // Start sound for thing at <origin>
 //  using <sound_id> from sounds.h
 //
-[c:'S_StartSound']
+@[c:'S_StartSound']
 fn s_start_sound(origin voidptr, sound_id int) 
 
 // Stop sound for thing at <origin>
@@ -1603,10 +1603,10 @@ fn s_start_sound(origin voidptr, sound_id int)
 //
 // Updates music & sounds
 //
-[c:'S_SetMusicVolume']
+@[c:'S_SetMusicVolume']
 fn s_set_music_volume(volume int) 
 
-[c:'S_SetSfxVolume']
+@[c:'S_SetSfxVolume']
 fn s_set_sfx_volume(volume int) 
 
 //
@@ -1805,27 +1805,27 @@ fn s_set_sfx_volume(volume int)
 // Even when the menu is not displayed,
 // this can resize the view and change game parameters.
 // Does all the real work of the menu interaction.
-[c:'M_Responder']
+@[c:'M_Responder']
 fn m_responder(ev &Event_t) bool
 
 // Called by main loop,
 // only used for menu (skull cursor) animation.
-[c:'M_Ticker']
+@[c:'M_Ticker']
 fn m_ticker() 
 
 // Called by main loop,
 // draws the menus directly into the screen buffer.
-[c:'M_Drawer']
+@[c:'M_Drawer']
 fn m_drawer() 
 
 // Called by D_DoomMain,
 // loads the config file.
-[c:'M_Init']
+@[c:'M_Init']
 fn m_init() 
 
 // Called by intro code to force menu up upon a keypress,
 // does nothing if menu is already up.
-[c:'M_StartControlPanel']
+@[c:'M_StartControlPanel']
 fn m_start_control_panel() 
 
 // skipped extern global detailLevel
@@ -1904,124 +1904,124 @@ struct Menu_t {
 //
 // PROTOTYPES
 //
-[c:'M_NewGame']
+@[c:'M_NewGame']
 fn m_new_game(choice int) 
 
-[c:'M_Episode']
+@[c:'M_Episode']
 fn m_episode(choice int) 
 
-[c:'M_ChooseSkill']
+@[c:'M_ChooseSkill']
 fn m_choose_skill(choice int) 
 
-[c:'M_LoadGame']
+@[c:'M_LoadGame']
 fn m_load_game(choice int) 
 
-[c:'M_SaveGame']
+@[c:'M_SaveGame']
 fn m_save_game(choice int) 
 
-[c:'M_Options']
+@[c:'M_Options']
 fn m_options(choice int) 
 
-[c:'M_EndGame']
+@[c:'M_EndGame']
 fn m_end_game(choice int) 
 
-[c:'M_ReadThis']
+@[c:'M_ReadThis']
 fn m_read_this(choice int) 
 
-[c:'M_ReadThis2']
+@[c:'M_ReadThis2']
 fn m_read_this2(choice int) 
 
-[c:'M_QuitDOOM']
+@[c:'M_QuitDOOM']
 fn m_quit_doom(choice int) 
 
-[c:'M_ChangeMessages']
+@[c:'M_ChangeMessages']
 fn m_change_messages(choice int) 
 
-[c:'M_ChangeSensitivity']
+@[c:'M_ChangeSensitivity']
 fn m_change_sensitivity(choice int) 
 
-[c:'M_SfxVol']
+@[c:'M_SfxVol']
 fn m_sfx_vol(choice int) 
 
-[c:'M_MusicVol']
+@[c:'M_MusicVol']
 fn m_music_vol(choice int) 
 
-[c:'M_ChangeDetail']
+@[c:'M_ChangeDetail']
 fn m_change_detail(choice int) 
 
-[c:'M_SizeDisplay']
+@[c:'M_SizeDisplay']
 fn m_size_display(choice int) 
 
-[c:'M_Sound']
+@[c:'M_Sound']
 fn m_sound(choice int) 
 
-[c:'M_FinishReadThis']
+@[c:'M_FinishReadThis']
 fn m_finish_read_this(choice int) 
 
-[c:'M_LoadSelect']
+@[c:'M_LoadSelect']
 fn m_load_select(choice int) 
 
-[c:'M_SaveSelect']
+@[c:'M_SaveSelect']
 fn m_save_select(choice int) 
 
-[c:'M_ReadSaveStrings']
+@[c:'M_ReadSaveStrings']
 fn m_read_save_strings() 
 
-[c:'M_QuickSave']
+@[c:'M_QuickSave']
 fn m_quick_save() 
 
-[c:'M_QuickLoad']
+@[c:'M_QuickLoad']
 fn m_quick_load() 
 
-[c:'M_DrawMainMenu']
+@[c:'M_DrawMainMenu']
 fn m_draw_main_menu() 
 
-[c:'M_DrawReadThis1']
+@[c:'M_DrawReadThis1']
 fn m_draw_read_this1() 
 
-[c:'M_DrawReadThis2']
+@[c:'M_DrawReadThis2']
 fn m_draw_read_this2() 
 
-[c:'M_DrawNewGame']
+@[c:'M_DrawNewGame']
 fn m_draw_new_game() 
 
-[c:'M_DrawEpisode']
+@[c:'M_DrawEpisode']
 fn m_draw_episode() 
 
-[c:'M_DrawOptions']
+@[c:'M_DrawOptions']
 fn m_draw_options() 
 
-[c:'M_DrawSound']
+@[c:'M_DrawSound']
 fn m_draw_sound() 
 
-[c:'M_DrawLoad']
+@[c:'M_DrawLoad']
 fn m_draw_load() 
 
-[c:'M_DrawSave']
+@[c:'M_DrawSave']
 fn m_draw_save() 
 
-[c:'M_DrawSaveLoadBorder']
+@[c:'M_DrawSaveLoadBorder']
 fn m_draw_save_load_border(x int, y int) 
 
-[c:'M_SetupNextMenu']
+@[c:'M_SetupNextMenu']
 fn m_setup_next_menu(menudef &Menu_t) 
 
-[c:'M_DrawThermo']
+@[c:'M_DrawThermo']
 fn m_draw_thermo(x int, y int, therm_width int, therm_dot int) 
 
-[c:'M_WriteText']
+@[c:'M_WriteText']
 fn m_write_text(x int, y int, string_ &i8) 
 
-[c:'M_StringWidth']
+@[c:'M_StringWidth']
 fn m_string_width(string_ &i8) int
 
-[c:'M_StringHeight']
+@[c:'M_StringHeight']
 fn m_string_height(string_ &i8) int
 
-[c:'M_StartMessage']
+@[c:'M_StartMessage']
 fn m_start_message(string_ &i8, routine voidptr, input bool) 
 
-[c:'M_ClearMenus']
+@[c:'M_ClearMenus']
 fn m_clear_menus() 
 
 //
@@ -2126,7 +2126,7 @@ const ( // empty enum
 // M_ReadSaveStrings
 //  read the strings from the savegame files
 //
-[c:'M_ReadSaveStrings']
+@[c:'M_ReadSaveStrings']
 fn m_read_save_strings()  {
 	handle := &C.FILE(0)
 	i := 0
@@ -2150,7 +2150,7 @@ fn m_read_save_strings()  {
 //
 // M_LoadGame & Cie.
 //
-[c:'M_DrawLoad']
+@[c:'M_DrawLoad']
 fn m_draw_load()  {
 	i := 0
 	v_draw_patch_direct(72, 28, w_cache_lump_name(deh_string(c'M_LOADG'), 8))
@@ -2163,7 +2163,7 @@ fn m_draw_load()  {
 //
 // Draw border for the savegame description
 //
-[c:'M_DrawSaveLoadBorder']
+@[c:'M_DrawSaveLoadBorder']
 fn m_draw_save_load_border(x int, y int)  {
 	i := 0
 	v_draw_patch_direct(x - 8, y + 7, w_cache_lump_name(deh_string(c'M_LSLEFT'), 8))
@@ -2177,7 +2177,7 @@ fn m_draw_save_load_border(x int, y int)  {
 //
 // User wants to load this game
 //
-[c:'M_LoadSelect']
+@[c:'M_LoadSelect']
 fn m_load_select(choice int)  {
 	name := [256]i8{}
 	m_string_copy(name, p_save_game_file(choice), sizeof(name))
@@ -2188,7 +2188,7 @@ fn m_load_select(choice int)  {
 //
 // Selected from DOOM menu
 //
-[c:'M_LoadGame']
+@[c:'M_LoadGame']
 fn m_load_game(choice int)  {
 	if netgame {
 		m_start_message(deh_string(c"you can't do load while in a net game!\n\npress a key."), (voidptr(0)), false)
@@ -2201,7 +2201,7 @@ fn m_load_game(choice int)  {
 //
 //  M_SaveGame & Cie.
 //
-[c:'M_DrawSave']
+@[c:'M_DrawSave']
 fn m_draw_save()  {
 	i := 0
 	v_draw_patch_direct(72, 28, w_cache_lump_name(deh_string(c'M_SAVEG'), 8))
@@ -2218,7 +2218,7 @@ fn m_draw_save()  {
 //
 // M_Responder calls this when user is finished
 //
-[c:'M_DoSave']
+@[c:'M_DoSave']
 fn m_do_save(slot int)  {
 	g_save_game(slot, savegamestrings [slot] )
 	m_clear_menus()
@@ -2232,7 +2232,7 @@ fn m_do_save(slot int)  {
 // Generate a default save slot name when the user saves to
 // an empty slot via the joypad.
 //
-[c:'SetDefaultSaveName']
+@[c:'SetDefaultSaveName']
 fn set_default_save_name(slot int)  {
 // map from IWAD or PWAD?
 	if w_is_iwadl_ump(maplumpinfo) && C.strcmp(savegamedir, c'') {
@@ -2254,7 +2254,7 @@ fn set_default_save_name(slot int)  {
 //
 // User wants to save. Start string input for M_Responder
 //
-[c:'M_SaveSelect']
+@[c:'M_SaveSelect']
 fn m_save_select(choice int)  {
 	x := 0
 	y := 0
@@ -2279,7 +2279,7 @@ fn m_save_select(choice int)  {
 //
 // Selected from DOOM menu
 //
-[c:'M_SaveGame']
+@[c:'M_SaveGame']
 fn m_save_game(choice int)  {
 	if !usergame {
 		m_start_message(deh_string(c"you can't save if you aren't playing!\n\npress a key."), (voidptr(0)), false)
@@ -2295,7 +2295,7 @@ fn m_save_game(choice int)  {
 //
 //      M_QuickSave
 //
-[c:'M_QuickSaveResponse']
+@[c:'M_QuickSaveResponse']
 fn m_quick_save_response(key int)  {
 	if key == key_menu_confirm {
 		m_do_save(quickSaveSlot)
@@ -2303,7 +2303,7 @@ fn m_quick_save_response(key int)  {
 	}
 }
 
-[c:'M_QuickSave']
+@[c:'M_QuickSave']
 fn m_quick_save()  {
 	if !usergame {
 		s_start_sound((voidptr(0)), Sfxenum_t.sfx_oof)
@@ -2327,7 +2327,7 @@ fn m_quick_save()  {
 //
 // M_QuickLoad
 //
-[c:'M_QuickLoadResponse']
+@[c:'M_QuickLoadResponse']
 fn m_quick_load_response(key int)  {
 	if key == key_menu_confirm {
 		m_load_select(quickSaveSlot)
@@ -2335,7 +2335,7 @@ fn m_quick_load_response(key int)  {
 	}
 }
 
-[c:'M_QuickLoad']
+@[c:'M_QuickLoad']
 fn m_quick_load()  {
 	if netgame {
 		m_start_message(deh_string(c"you can't quickload during a netgame!\n\npress a key."), (voidptr(0)), false)
@@ -2353,7 +2353,7 @@ fn m_quick_load()  {
 // Read This Menus
 // Had a "quick hack to fix romero bug"
 //
-[c:'M_DrawReadThis1']
+@[c:'M_DrawReadThis1']
 fn m_draw_read_this1()  {
 	inhelpscreens = true
 	v_draw_patch_direct(0, 0, w_cache_lump_name(deh_string(c'HELP2'), 8))
@@ -2362,7 +2362,7 @@ fn m_draw_read_this1()  {
 //
 // Read This Menus - optional second page.
 //
-[c:'M_DrawReadThis2']
+@[c:'M_DrawReadThis2']
 fn m_draw_read_this2()  {
 	inhelpscreens = true
 // We only ever draw the second page if this is 
@@ -2370,7 +2370,7 @@ fn m_draw_read_this2()  {
 	v_draw_patch_direct(0, 0, w_cache_lump_name(deh_string(c'HELP1'), 8))
 }
 
-[c:'M_DrawReadThisCommercial']
+@[c:'M_DrawReadThisCommercial']
 fn m_draw_read_this_commercial()  {
 	inhelpscreens = true
 	v_draw_patch_direct(0, 0, w_cache_lump_name(deh_string(c'HELP'), 8))
@@ -2379,19 +2379,19 @@ fn m_draw_read_this_commercial()  {
 //
 // Change Sfx & Music volumes
 //
-[c:'M_DrawSound']
+@[c:'M_DrawSound']
 fn m_draw_sound()  {
 	v_draw_patch_direct(60, 38, w_cache_lump_name(deh_string(c'M_SVOL'), 8))
 	m_draw_thermo(SoundDef.x, SoundDef.y + 16 * (sfx_vol + 1), 16, sfxVolume)
 	m_draw_thermo(SoundDef.x, SoundDef.y + 16 * (music_vol + 1), 16, musicVolume)
 }
 
-[c:'M_Sound']
+@[c:'M_Sound']
 fn m_sound(choice int)  {
 	m_setup_next_menu(&SoundDef)
 }
 
-[c:'M_SfxVol']
+@[c:'M_SfxVol']
 fn m_sfx_vol(choice int)  {
 	match choice {
 	 0 { // case comp body kind=IfStmt is_enum=false
@@ -2411,7 +2411,7 @@ fn m_sfx_vol(choice int)  {
 	s_set_sfx_volume(sfxVolume * 8)
 }
 
-[c:'M_MusicVol']
+@[c:'M_MusicVol']
 fn m_music_vol(choice int)  {
 	match choice {
 	 0 { // case comp body kind=IfStmt is_enum=false
@@ -2434,7 +2434,7 @@ fn m_music_vol(choice int)  {
 //
 // M_DrawMainMenu
 //
-[c:'M_DrawMainMenu']
+@[c:'M_DrawMainMenu']
 fn m_draw_main_menu()  {
 	v_draw_patch_direct(94, 2, w_cache_lump_name(deh_string(c'M_DOOM'), 8))
 }
@@ -2442,13 +2442,13 @@ fn m_draw_main_menu()  {
 //
 // M_NewGame
 //
-[c:'M_DrawNewGame']
+@[c:'M_DrawNewGame']
 fn m_draw_new_game()  {
 	v_draw_patch_direct(96, 14, w_cache_lump_name(deh_string(c'M_NEWG'), 8))
 	v_draw_patch_direct(54, 38, w_cache_lump_name(deh_string(c'M_SKILL'), 8))
 }
 
-[c:'M_NewGame']
+@[c:'M_NewGame']
 fn m_new_game(choice int)  {
 	if netgame && !demoplayback {
 		m_start_message(deh_string(c"you can't start a new game\nwhile in a network game.\n\npress a key."), (voidptr(0)), false)
@@ -2466,12 +2466,12 @@ fn m_new_game(choice int)  {
 //
 //      M_Episode
 //
-[c:'M_DrawEpisode']
+@[c:'M_DrawEpisode']
 fn m_draw_episode()  {
 	v_draw_patch_direct(54, 38, w_cache_lump_name(deh_string(c'M_EPISOD'), 8))
 }
 
-[c:'M_VerifyNightmare']
+@[c:'M_VerifyNightmare']
 fn m_verify_nightmare(key int)  {
 	if key != key_menu_confirm {
 	return 
@@ -2480,7 +2480,7 @@ fn m_verify_nightmare(key int)  {
 	m_clear_menus()
 }
 
-[c:'M_ChooseSkill']
+@[c:'M_ChooseSkill']
 fn m_choose_skill(choice int)  {
 	if choice == nightmare {
 		m_start_message(deh_string(c"are you sure? this skill level\nisn't even remotely fair.\n\npress y or n."), m_verify_nightmare, true)
@@ -2490,7 +2490,7 @@ fn m_choose_skill(choice int)  {
 	m_clear_menus()
 }
 
-[c:'M_Episode']
+@[c:'M_Episode']
 fn m_episode(choice int)  {
 	if (gamemode == GameMode_t.shareware) && choice {
 		m_start_message(deh_string(c'this is the shareware version of doom.\n\nyou need to order the entire trilogy.\n\npress a key.'), (voidptr(0)), false)
@@ -2504,7 +2504,7 @@ fn m_episode(choice int)  {
 //
 // M_Options
 //
-[c:'M_DrawOptions']
+@[c:'M_DrawOptions']
 fn m_draw_options()  {
 	v_draw_patch_direct(108, 15, w_cache_lump_name(deh_string(c'M_OPTTTL'), 8))
 	v_draw_patch_direct(OptionsDef.x + 175, OptionsDef.y + 16 * detail, w_cache_lump_name(deh_string(detailNames [detailLevel] ), 8))
@@ -2513,7 +2513,7 @@ fn m_draw_options()  {
 	m_draw_thermo(OptionsDef.x, OptionsDef.y + 16 * (scrnsize + 1), 9, screenSize)
 }
 
-[c:'M_Options']
+@[c:'M_Options']
 fn m_options(choice int)  {
 	m_setup_next_menu(&OptionsDef)
 }
@@ -2521,7 +2521,7 @@ fn m_options(choice int)  {
 //
 //      Toggle messages on/off
 //
-[c:'M_ChangeMessages']
+@[c:'M_ChangeMessages']
 fn m_change_messages(choice int)  {
 // warning: unused parameter `int choice'
 	choice = 0
@@ -2538,7 +2538,7 @@ fn m_change_messages(choice int)  {
 //
 // M_EndGame
 //
-[c:'M_EndGameResponse']
+@[c:'M_EndGameResponse']
 fn m_end_game_response(key int)  {
 	if key != key_menu_confirm {
 	return 
@@ -2548,7 +2548,7 @@ fn m_end_game_response(key int)  {
 	d_start_title()
 }
 
-[c:'M_EndGame']
+@[c:'M_EndGame']
 fn m_end_game(choice int)  {
 	choice = 0
 	if !usergame {
@@ -2565,19 +2565,19 @@ fn m_end_game(choice int)  {
 //
 // M_ReadThis
 //
-[c:'M_ReadThis']
+@[c:'M_ReadThis']
 fn m_read_this(choice int)  {
 	choice = 0
 	m_setup_next_menu(&ReadDef1)
 }
 
-[c:'M_ReadThis2']
+@[c:'M_ReadThis2']
 fn m_read_this2(choice int)  {
 	choice = 0
 	m_setup_next_menu(&ReadDef2)
 }
 
-[c:'M_FinishReadThis']
+@[c:'M_FinishReadThis']
 fn m_finish_read_this(choice int)  {
 	choice = 0
 	m_setup_next_menu(&MainDef)
@@ -2586,7 +2586,7 @@ fn m_finish_read_this(choice int)  {
 //
 // M_QuitDOOM
 //
-[c:'M_QuitResponse']
+@[c:'M_QuitResponse']
 fn m_quit_response(key int)  {
 	if key != key_menu_confirm {
 	return 
@@ -2603,7 +2603,7 @@ fn m_quit_response(key int)  {
 	i_quit()
 }
 
-[c:'M_SelectEndMessage']
+@[c:'M_SelectEndMessage']
 fn m_select_end_message() &i8 {
 //
 //	 *XTODO
@@ -2625,13 +2625,13 @@ fn m_select_end_message() &i8 {
 	return doom1_endmsg [gametic % 8] 
 }
 
-[c:'M_QuitDOOM']
+@[c:'M_QuitDOOM']
 fn m_quit_doom(choice int)  {
 	deh_snprintf(endstring, sizeof(endstring), c'%s\n\n(press y to quit to dos.)', deh_string(m_select_end_message()))
 	m_start_message(endstring, m_quit_response, true)
 }
 
-[c:'M_ChangeSensitivity']
+@[c:'M_ChangeSensitivity']
 fn m_change_sensitivity(choice int)  {
 	match choice {
 	 0 { // case comp body kind=IfStmt is_enum=false
@@ -2650,7 +2650,7 @@ fn m_change_sensitivity(choice int)  {
 	}
 }
 
-[c:'M_ChangeDetail']
+@[c:'M_ChangeDetail']
 fn m_change_detail(choice int)  {
 	choice = 0
 	detailLevel = 1 - detailLevel
@@ -2663,7 +2663,7 @@ fn m_change_detail(choice int)  {
 }
 }
 
-[c:'M_SizeDisplay']
+@[c:'M_SizeDisplay']
 fn m_size_display(choice int)  {
 	match choice {
 	 0 { // case comp body kind=IfStmt is_enum=false
@@ -2688,7 +2688,7 @@ fn m_size_display(choice int)  {
 //
 //      Menu Functions
 //
-[c:'M_DrawThermo']
+@[c:'M_DrawThermo']
 fn m_draw_thermo(x int, y int, therm_width int, therm_dot int)  {
 	xx := 0
 	i := 0
@@ -2703,7 +2703,7 @@ fn m_draw_thermo(x int, y int, therm_width int, therm_dot int)  {
 	v_draw_patch_direct((x + 8) + therm_dot * 8, y, w_cache_lump_name(deh_string(c'M_THERMO'), 8))
 }
 
-[c:'M_StartMessage']
+@[c:'M_StartMessage']
 fn m_start_message(string_ &i8, routine voidptr, input bool)  {
 	messageLastMenuActive = menuactive
 	messageToPrint = 1
@@ -2717,7 +2717,7 @@ fn m_start_message(string_ &i8, routine voidptr, input bool)  {
 //
 // Find string width from hu_font chars
 //
-[c:'M_StringWidth']
+@[c:'M_StringWidth']
 fn m_string_width(string_ &i8) int {
 	i := usize(0)
 	w := 0
@@ -2737,7 +2737,7 @@ fn m_string_width(string_ &i8) int {
 //
 //      Find string height from hu_font chars
 //
-[c:'M_StringHeight']
+@[c:'M_StringHeight']
 fn m_string_height(string_ &i8) int {
 	i := usize(0)
 	h := 0
@@ -2754,7 +2754,7 @@ fn m_string_height(string_ &i8) int {
 //
 //      Write a string using the hu_font
 //
-[c:'M_WriteText']
+@[c:'M_WriteText']
 fn m_write_text(x int, y int, string_ &i8)  {
 	w := 0
 	ch := &i8(0)
@@ -2794,7 +2794,7 @@ fn m_write_text(x int, y int, string_ &i8)  {
 
 // These keys evaluate to a "null" key in Vanilla Doom that allows weird
 // jumping in the menus. Preserve this behavior for accuracy.
-[c:'IsNullKey']
+@[c:'IsNullKey']
 fn is_null_key(key int) bool {
 	return key == 255 || key == (128 + 58) || key == (128 + 70) || key == (128 + 69)
 }
@@ -2805,7 +2805,7 @@ fn is_null_key(key int) bool {
 //
 // M_Responder
 //
-[c:'M_Responder']
+@[c:'M_Responder']
 fn m_responder(ev &Event_t) bool {
 	ch := 0
 	key := 0
@@ -3234,7 +3234,7 @@ fn m_responder(ev &Event_t) bool {
 //
 // M_StartControlPanel
 //
-[c:'M_StartControlPanel']
+@[c:'M_StartControlPanel']
 fn m_start_control_panel()  {
 // intro might call this repeatedly
 	if menuactive {
@@ -3249,10 +3249,10 @@ fn m_start_control_panel()  {
 }
 
 // Display OPL debug messages - hack for GENMIDI development.
-[c:'I_OPL_DevMessages']
+@[c:'I_OPL_DevMessages']
 fn i_opl_dev_messages(arg0 &i8, arg1 usize) 
 
-[c:'M_DrawOPLDev']
+@[c:'M_DrawOPLDev']
 fn m_draw_opld_ev()  {
 	debug := [1024]i8{}
 	curr := &i8(0)
@@ -3282,7 +3282,7 @@ fn m_draw_opld_ev()  {
 // Called after the view has been rendered,
 // but before it has been blitted.
 //
-[c:'M_Drawer']
+@[c:'M_Drawer']
 fn m_drawer()  {
 	x := i16(0)
 	y := i16(0)
@@ -3348,7 +3348,7 @@ fn m_drawer()  {
 //
 // M_ClearMenus
 //
-[c:'M_ClearMenus']
+@[c:'M_ClearMenus']
 fn m_clear_menus()  {
 	menuactive = 0
 // if (!netgame && usergame && paused)
@@ -3360,7 +3360,7 @@ fn m_clear_menus()  {
 //
 // M_SetupNextMenu
 //
-[c:'M_SetupNextMenu']
+@[c:'M_SetupNextMenu']
 fn m_setup_next_menu(menudef &Menu_t)  {
 	currentMenu = menudef
 	itemOn = currentMenu.lastOn
@@ -3369,7 +3369,7 @@ fn m_setup_next_menu(menudef &Menu_t)  {
 //
 // M_Ticker
 //
-[c:'M_Ticker']
+@[c:'M_Ticker']
 fn m_ticker()  {
 	if skullAnimCounter --$ <= 0 {
 		whichSkull ^= 1
@@ -3380,7 +3380,7 @@ fn m_ticker()  {
 //
 // M_Init
 //
-[c:'M_Init']
+@[c:'M_Init']
 fn m_init()  {
 	currentMenu = &MainDef
 	menuactive = 0
