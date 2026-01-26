@@ -21,6 +21,8 @@ _deps
 config.h
 libdoom.a
 *.o
+chocolate-doom/src/doom/doom_v/
+chocolate-doom/src/doom/doomv
 
 # ignore local Doom resource files:
 *.WAD
