@@ -93,7 +93,7 @@ CMDLINE.doom.wikitext : $(top_srcdir)/src $(top_srcdir)/src/doom
                   -w $(top_srcdir)/src/ $(top_srcdir)/src/doom/ > $@
 
 INSTALL.doom: INSTALL.template
-	$(srcdir)/simplecpp -DDOOM $(WIN32) \
+	$(srcdir)/simplecpp.py -DDOOM $(WIN32) \
             -DLONG_GAME_NAME="@PACKAGE_SHORTNAME@ Doom" \
             -DLONG_EXE_NAME="@PROGRAM_PREFIX@doom" \
             -DPRECOMPILED < $(srcdir)/INSTALL.template > $@
@@ -124,7 +124,7 @@ CMDLINE.heretic.md : CMDLINE.template.md $(top_srcdir)/src $(top_srcdir)/src/her
                   $(top_srcdir)/src/ $(top_srcdir)/src/heretic/ > $@
 
 INSTALL.heretic: INSTALL.template
-	$(srcdir)/simplecpp -DHERETIC $(WIN32) \
+	$(srcdir)/simplecpp.py -DHERETIC $(WIN32) \
             -DLONG_GAME_NAME="@PACKAGE_SHORTNAME@ Heretic" \
             -DLONG_EXE_NAME="@PROGRAM_PREFIX@heretic" \
             -DPRECOMPILED < $(srcdir)/INSTALL.template > $@
@@ -156,7 +156,7 @@ CMDLINE.hexen.md : CMDLINE.template.md $(top_srcdir)/src $(top_srcdir)/src/hexen
                   $(top_srcdir)/src/ $(top_srcdir)/src/hexen/ > $@
 
 INSTALL.hexen: INSTALL.template
-	$(srcdir)/simplecpp -DHEXEN $(WIN32) \
+	$(srcdir)/simplecpp.py -DHEXEN $(WIN32) \
             -DLONG_GAME_NAME="@PACKAGE_SHORTNAME@ Hexen" \
             -DLONG_EXE_NAME="@PROGRAM_PREFIX@hexen" \
             -DPRECOMPILED < $(srcdir)/INSTALL.template > $@
@@ -198,14 +198,14 @@ CMDLINE.strife.md : CMDLINE.template.md $(top_srcdir)/src $(top_srcdir)/src/stri
                   $(top_srcdir)/src/ $(top_srcdir)/src/strife/ > $@
 
 INSTALL.strife: INSTALL.template
-	$(srcdir)/simplecpp -DSTRIFE $(WIN32) \
+	$(srcdir)/simplecpp.py -DSTRIFE $(WIN32) \
             -DLONG_EXE_NAME="@PROGRAM_PREFIX@strife" \
             -DLONG_GAME_NAME="@PACKAGE_SHORTNAME@ Strife" \
             -DPRECOMPILED < $(srcdir)/INSTALL.template > $@
 
 
 INSTALL: INSTALL.template
-	$(srcdir)//simplecpp -DDOOM -DHERETIC -DHEXEN -DSTRIFE \
+	$(srcdir)//simplecpp.py -DDOOM -DHERETIC -DHEXEN -DSTRIFE \
             -DLONG_GAME_NAME="@PACKAGE_SHORTNAME@ Doom" \
             -DLONG_EXE_NAME="@PROGRAM_PREFIX@doom" \
             -DPRECOMPILED < $(srcdir)/INSTALL.template > $@
@@ -217,5 +217,5 @@ EXTRA_DIST = $(man_MANS) $(MANPAGE_GEN_FILES)        \
              CMDLINE.template                        \
              CMDLINE.template.md                     \
              INSTALL.template                        \
-             simplecpp
+             simplecpp.py
 

@@ -71,7 +71,7 @@ $(STAGING_DIR): launcher $(TOPLEVEL_DOCS)
 	./cp-with-libs $(TOPLEVEL)/src/$(PROGRAM_PREFIX)setup "$(APP_BIN_DIR)"
 	$(STRIP) "$(APP_BIN_DIR)/$(PROGRAM_PREFIX)setup"
 
-	$(TOPLEVEL)/man/simplecpp -DPRECOMPILED -D__MACOSX__  \
+	$(TOPLEVEL)/man/simplecpp.py -DPRECOMPILED -D__MACOSX__  \
 	                -DDOOM -DHERETIC -DHEXEN -DSTRIFE     \
 	             < $(TOPLEVEL)/man/INSTALL.template       \
 	             > "$(APP_DOC_DIR)/INSTALL"
