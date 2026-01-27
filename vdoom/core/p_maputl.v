@@ -1,7 +1,10 @@
 module core
 
 pub fn p_approx_distance(dx Fixed, dy Fixed) Fixed {
-	_ = dx
-	_ = dy
-	return 0
+	mut adx := abs(dx)
+	mut ady := abs(dy)
+	if adx < ady {
+		return adx + ady - (adx >> 1)
+	}
+	return adx + ady - (ady >> 1)
 }
