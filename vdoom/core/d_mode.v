@@ -176,3 +176,12 @@ pub fn d_valid_game_mode_c(mission GameMission, mode GameMode) bool {
 pub fn d_valid_game_version_c(mission GameMission, version GameVersion) bool {
 	return d_valid_game_version(mission, version)
 }
+
+pub fn d_episode_map_limits(mission GameMission, mode GameMode) (int, int) {
+	for entry in valid_modes {
+		if entry.mission == mission && entry.mode == mode {
+			return entry.episode, entry.map
+		}
+	}
+	return 1, 1
+}

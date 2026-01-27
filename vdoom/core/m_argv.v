@@ -45,3 +45,11 @@ pub fn m_get_executable_name() string {
 	}
 	return os.base(myargv[0])
 }
+
+pub fn m_arg(idx int) string {
+	ensure_args()
+	if idx < 0 || idx >= myargv.len {
+		return ''
+	}
+	return myargv[idx]
+}

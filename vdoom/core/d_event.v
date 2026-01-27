@@ -78,3 +78,10 @@ pub fn d_post_quit_event() {
 	ev := Event{typ: .quit}
 	d_post_event(&ev)
 }
+
+pub fn d_event_pending() int {
+	if eventhead >= eventtail {
+		return eventhead - eventtail
+	}
+	return maxevents - (eventtail - eventhead)
+}

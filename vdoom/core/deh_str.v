@@ -31,3 +31,7 @@ pub fn deh_replace_string(from string, to string) bool {
 	deh_add_string(from, to)
 	return true
 }
+
+pub fn deh_string_count() int {
+	return deh_string_replacements
+}

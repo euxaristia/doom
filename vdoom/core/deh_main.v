@@ -31,5 +31,12 @@ pub fn deh_load(path string) bool {
 	deh_init_system()
 	ok := deh_load_file(path)
 	deh_file_loaded = deh_file_loaded || ok
+	if ok {
+		set_modified_game(true)
+	}
 	return ok
+}
+
+pub fn deh_set_apply_cheats(apply bool) {
+	deh_apply_cheats = apply
 }

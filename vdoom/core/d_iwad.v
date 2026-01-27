@@ -93,3 +93,10 @@ pub fn d_iwad_init(path string) {
 pub fn d_detected_iwad() (bool, string) {
 	return iwad_detected, selected_iwad.name
 }
+
+pub fn d_iwad_description() string {
+	if !iwad_detected {
+		return ''
+	}
+	return selected_iwad.description
+}

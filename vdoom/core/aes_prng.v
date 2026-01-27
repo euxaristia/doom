@@ -25,3 +25,10 @@ pub fn aes_prng_random_u32() u32 {
 pub fn aes_prng_random_byte() u8 {
 	return u8(prng_next_u64() & 0xff)
 }
+
+pub fn aes_prng_random_range(max u32) u32 {
+	if max == 0 {
+		return 0
+	}
+	return aes_prng_random_u32() % max
+}

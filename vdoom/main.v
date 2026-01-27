@@ -242,6 +242,10 @@ fn pick_default_wad() string {
 	if env_path.len > 0 && os.is_file(env_path) {
 		return env_path
 	}
+	found := core.d_find_iwad()
+	if found.len > 0 {
+		return found
+	}
 	candidates := [
 		os.join_path(os.getwd(), 'wads', 'doom1.wad'),
 		os.join_path(os.getwd(), 'wads', 'freedoom1.wad'),

@@ -134,6 +134,10 @@ pub fn set_intermission_secret(didsecret bool) {
 	}
 }
 
+pub fn set_time_limit(minutes int) {
+	timelimit = minutes
+}
+
 fn doomstat_init() {
 	if players.len == 0 {
 		players = []Player{len: maxplayers}

@@ -36,6 +36,13 @@ pub fn deh_set_input_buffer(data string) {
 	deh_input_pos = 0
 }
 
+pub fn deh_input_remaining() int {
+	if deh_input_pos >= deh_input_buffer.len {
+		return 0
+	}
+	return deh_input_buffer.len - deh_input_pos
+}
+
 pub fn deh_get_char() u8 {
 	if deh_input_pos >= deh_input_buffer.len {
 		return u8(0)
