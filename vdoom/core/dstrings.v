@@ -24,3 +24,16 @@ pub const doom2_endmsg = [
 	"just leave. when you come\nback, i'll be waiting with a bat.",
 	"you're lucky i don't smack\nyou for thinking about leaving.",
 ]
+
+pub fn d_quit_message(idx int, commercial bool) string {
+	mut i := idx
+	if i < 0 {
+		i = 0
+	}
+	table := if commercial { doom2_endmsg } else { doom1_endmsg }
+	if table.len == 0 {
+		return ''
+	}
+	i = i % table.len
+	return deh_string(table[i])
+}

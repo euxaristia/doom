@@ -89,6 +89,12 @@ __global rndindex = 0
 __global prndindex = 0
 __global netcmds = []TicCmd{}
 
+pub fn set_game_identity(mission GameMission, mode GameMode, description string) {
+	gamemission = mission
+	gamemode = mode
+	gamedescription = description
+}
+
 fn doomstat_init() {
 	if players.len == 0 {
 		players = []Player{len: maxplayers}
@@ -107,5 +113,8 @@ fn doomstat_init() {
 	}
 	if playerstartsingame.len == 0 {
 		playerstartsingame = []bool{len: maxplayers}
+	}
+	if gamedescription.len == 0 {
+		gamedescription = d_game_mission_string(gamemission)
 	}
 }

@@ -28,7 +28,7 @@ pub fn boot() {
 	doomstat_init()
 	d_items_init()
 	d_main_init()
-	deh_init()
+	deh_init_system()
 	m_init()
 	st_init()
 	d_net_init()
