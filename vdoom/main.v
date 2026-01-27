@@ -17,6 +17,7 @@ fn main() {
 	mut list_hash := false
 	mut zone_mb := 0
 	mut patch_name := ''
+	mut show_window := false
 
 	for i := 0; i < args.len; i++ {
 		arg := args[i]
@@ -92,6 +93,9 @@ fn main() {
 				patch_name = args[i + 1]
 				i++
 			}
+			'--window' {
+				show_window = true
+			}
 			'-n', '--max' {
 				if i + 1 >= args.len {
 					eprintln('error: missing value for $arg')
@@ -143,6 +147,7 @@ fn main() {
 	core.boot()
 	core.d_iwad_init(wad_path)
 	core.i_set_window_title(core.d_iwad_title())
+	core.i_set_window_enabled(show_window)
 	zone := core.i_zone_base()
 	println('zone size: ${zone.size} bytes')
 
@@ -257,6 +262,9 @@ fn main() {
 		l := wad.lumps[i]
 		println('$i ${l.name} pos=${l.file_pos} size=${l.size}')
 	}
+
+	// Open a simple window displaying the last rendered RGB frame.
+	core.show_window_if_enabled()
 }
 
 fn pick_default_wad() string {
@@ -293,6 +301,7 @@ fn print_usage() {
 	println('  --extract <name>     extract lump by name (max 8 chars)')
 	println('  --out <path>         output path for extraction')
 	println('  --patch <name>       decode and render a patch lump (eg TITLEPIC)')
+	println('  --window             open a simple live window (blocks until closed)')
 	println('  --hash               build hash table (default)')
 	println('  --no-hash            skip hash table build')
 	println('  --hash-stats         print hash table stats')

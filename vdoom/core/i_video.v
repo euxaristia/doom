@@ -29,6 +29,8 @@ __global palette_rgb = []u8{}
 __global frame_dump_count = 0
 __global dump_frames = true
 __global palette_loaded = false
+__global last_rgb = []u8{}
+__global window_enabled = false
 
 pub fn i_init_graphics() {
 	if i_video_buffer.len == 0 {
@@ -83,14 +85,9 @@ pub fn i_update_no_blit() {
 }
 
 pub fn i_finish_update() {
-	if !dump_frames || i_video_buffer.len == 0 || palette_rgb.len < 256 * 3 {
+	if i_video_buffer.len == 0 || palette_rgb.len < 256 * 3 {
 		return
 	}
-	// Dump a few frames to PPM so rendering is visible without SDL.
-	if frame_dump_count >= 5 {
-		return
-	}
-	frame_dump_count++
 	mut rgb := []u8{len: screenwidth * screenheight * 3}
 	for i in 0 .. i_video_buffer.len {
 		idx := int(i_video_buffer[i]) * 3
@@ -102,6 +99,13 @@ pub fn i_finish_update() {
 		rgb[base + 1] = palette_rgb[idx + 1]
 		rgb[base + 2] = palette_rgb[idx + 2]
 	}
+	// Always keep the most recent RGB frame for window display.
+	last_rgb = rgb.clone()
+	// Optionally dump a few frames to PPM so rendering is visible without SDL.
+	if !dump_frames || frame_dump_count >= 5 {
+		return
+	}
+	frame_dump_count++
 	header := 'P6\n${screenwidth} ${screenheight}\n255\n'.bytes()
 	mut out := []u8{cap: header.len + rgb.len}
 	out << header
@@ -126,6 +130,18 @@ pub fn i_reset_frame_dumps() {
 
 pub fn i_frame_dump_count() int {
 	return frame_dump_count
+}
+
+pub fn i_last_rgb() []u8 {
+	return last_rgb
+}
+
+pub fn i_set_window_enabled(enabled bool) {
+	window_enabled = enabled
+}
+
+pub fn i_window_enabled() bool {
+	return window_enabled
 }
 
 pub fn i_read_screen(mut scr []u8) {
