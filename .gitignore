@@ -27,3 +27,4 @@ chocolate-doom/src/doom/doomv
 # ignore local Doom resource files:
 *.WAD
 *.wad
+vdoom/vdoom
