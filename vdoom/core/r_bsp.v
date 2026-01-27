@@ -24,5 +24,11 @@ __global dscalelight = []voidptr{}
 pub type DrawFunc = fn (start int, stop int)
 
 pub fn r_clear_clip_segs() {}
-pub fn r_clear_draw_segs() {}
+
+pub fn r_clear_draw_segs() {
+	validcount++
+	if drawsegs.len > 0 {
+		ds_p = &drawsegs[0]
+	}
+}
 pub fn r_render_bsp_node(bspnum int) { _ = bspnum }

@@ -43,17 +43,21 @@ __global spanfunc = ColFunc(unsafe { nil })
 
 // Utility functions.
 pub fn r_point_on_side(x Fixed, y Fixed, node &Node) int {
-	_ = x
-	_ = y
-	_ = node
-	return 0
+	dx := x - node.x
+	dy := y - node.y
+	left := fixed_mul(node.dy >> frac_bits, dx)
+	right := fixed_mul(dy, node.dx >> frac_bits)
+	return if right < left { 0 } else { 1 }
 }
 
 pub fn r_point_on_seg_side(x Fixed, y Fixed, line &Seg) int {
-	_ = x
-	_ = y
-	_ = line
-	return 0
+	dx := x - line.v1.x
+	dy := y - line.v1.y
+	ldx := line.v2.x - line.v1.x
+	ldy := line.v2.y - line.v1.y
+	left := fixed_mul(ldy >> frac_bits, dx)
+	right := fixed_mul(dy, ldx >> frac_bits)
+	return if right < left { 0 } else { 1 }
 }
 
 pub fn r_point_to_angle(x Fixed, y Fixed) int {
@@ -71,9 +75,7 @@ pub fn r_point_to_angle2(x1 Fixed, y1 Fixed, x2 Fixed, y2 Fixed) int {
 }
 
 pub fn r_point_to_dist(x Fixed, y Fixed) Fixed {
-	_ = x
-	_ = y
-	return Fixed(0)
+	return p_approx_distance(x, y)
 }
 
 pub fn r_scale_from_global_angle(visangle int) Fixed {

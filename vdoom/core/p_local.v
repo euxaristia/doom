@@ -132,7 +132,11 @@ pub fn p_move_psprites(curplayer voidptr) { _ = curplayer }
 pub fn p_drop_weapon(player voidptr) { _ = player }
 
 // P_USER
-pub fn p_player_think(player &Player) { _ = player }
+pub fn p_player_think(player &Player) {
+	p_move_player(player)
+	p_calc_height(player)
+	p_pspr_ticker(player)
+}
 
 // P_MOBJ
 pub fn p_respawn_specials() {}
