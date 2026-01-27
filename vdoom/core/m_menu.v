@@ -24,5 +24,11 @@ pub fn m_ticker() {
 	menu_ticks++
 }
 pub fn m_drawer() {}
-pub fn m_init() {}
-pub fn m_start_control_panel() {}
+pub fn m_init() {
+	menuactive = false
+	menu_ticks = 0
+}
+
+pub fn m_start_control_panel() {
+	menuactive = true
+}

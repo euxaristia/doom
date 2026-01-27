@@ -25,4 +25,11 @@ pub fn p_ticker() {
 	p_update_specials()
 	p_respawn_specials()
 	leveltime++
+	if level_timer && level_time_count > 0 {
+		level_time_count--
+		if level_time_count <= 0 {
+			level_timer = false
+			set_game_action(.completed)
+		}
+	}
 }

@@ -5,6 +5,21 @@ module core
 __global level_timer = false
 __global level_time_count = 0
 
+pub fn p_start_level_timer(minutes int) {
+	if minutes <= 0 {
+		level_timer = false
+		level_time_count = 0
+		return
+	}
+	level_timer = true
+	level_time_count = minutes * 60 * ticrate
+}
+
+pub fn p_stop_level_timer() {
+	level_timer = false
+	level_time_count = 0
+}
+
 // Define values for map objects
 pub const mo_teleportman = 14
 

@@ -11,6 +11,14 @@ __global wadfile = ''
 __global mapdir = ''
 __global iwadfile_local = ''
 
+pub fn set_game_action(action GameAction) {
+	gameaction = action
+}
+
+pub fn game_action() GameAction {
+	return gameaction
+}
+
 fn d_run_tic(cmds []TicCmd, ingame []bool) {
 	_ = cmds
 	_ = ingame
@@ -75,11 +83,43 @@ pub fn d_connect_net_game() {
 pub fn d_check_net_game() {
 }
 
+fn d_handle_game_action() {
+	match gameaction {
+		.nothing {}
+		.newgame {
+			g_init_new(startskill, startepisode, startmap)
+			gameaction = .nothing
+		}
+		.loadlevel {
+			p_setup_level(gameepisode, gamemap, 1, gameskill)
+			gameaction = .nothing
+		}
+		.completed {
+			set_game_state(.intermission)
+			wi_start(&wminfo)
+			gameaction = .nothing
+		}
+		.victory {
+			f_start_finale()
+			gameaction = .nothing
+		}
+		.worlddone {
+			gamemap++
+			gameaction = .loadlevel
+		}
+		else {
+			// Ignore unsupported actions for now, but clear the latch.
+			gameaction = .nothing
+		}
+	}
+}
+
 pub fn d_doom_loop() {
 	main_loop_started = true
 	for {
 		i_start_frame()
 		net_update()
+		d_handle_game_action()
 		i_start_tic()
 		try_run_tics()
 		d_display()

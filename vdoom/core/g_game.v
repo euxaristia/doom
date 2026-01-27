@@ -42,11 +42,19 @@ pub fn g_init_new(skill int, episode int, mapnum int) {
 			}
 		}
 	}
+	if timelimit > 0 {
+		p_start_level_timer(timelimit)
+	} else {
+		p_stop_level_timer()
+	}
 	p_setup_level(episode, mapnum, 1, skill)
 }
 
 pub fn g_defered_init_new(skill int, episode int, mapnum int) {
-	g_init_new(skill, episode, mapnum)
+	startskill = skill
+	startepisode = episode
+	startmap = mapnum
+	set_game_action(.newgame)
 }
 
 pub fn g_defered_play_demo(demo string) {
@@ -85,12 +93,16 @@ pub fn g_check_demo_status() bool {
 }
 
 pub fn g_exit_level() {
+	set_game_action(.completed)
 }
 
 pub fn g_secret_exit_level() {
+	set_intermission_secret(true)
+	set_game_action(.completed)
 }
 
 pub fn g_world_done() {
+	set_game_action(.worlddone)
 }
 
 pub fn g_build_ticcmd(cmd &TicCmd, maketic int) {

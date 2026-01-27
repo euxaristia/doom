@@ -112,12 +112,26 @@ pub fn logical_game_mission() GameMission {
 	return d_logical_mission(gamemission)
 }
 
+pub fn set_game_state(state GameState) {
+	gamestate = state
+}
+
+pub fn game_state() GameState {
+	return gamestate
+}
+
 pub fn set_modified_game(modified bool) {
 	modifiedgame = modified
 }
 
 pub fn is_modified_game() bool {
 	return modifiedgame
+}
+
+pub fn set_intermission_secret(didsecret bool) {
+	unsafe {
+		wminfo.didsecret = didsecret
+	}
 }
 
 fn doomstat_init() {

@@ -33,6 +33,7 @@ pub fn d_quit_net_game() {
 }
 
 pub fn try_run_tics() {
+	dup := if ticdup > 0 { ticdup } else { 1 }
 	if loop_interface.build_ticcmd != unsafe { nil } {
 		for i in 0 .. maxplayers {
 			if i < playeringame.len && playeringame[i] {
@@ -40,9 +41,12 @@ pub fn try_run_tics() {
 			}
 		}
 	}
+	run_count := if singletics { 1 } else { dup }
 	if loop_interface.run_tic != unsafe { nil } {
-		loop_interface.run_tic(netcmds, playeringame)
-		gametic++
+		for _ in 0 .. run_count {
+			loop_interface.run_tic(netcmds, playeringame)
+			gametic++
+		}
 		maketic++
 	}
 	if loop_interface.run_menu != unsafe { nil } {
