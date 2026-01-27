@@ -68,8 +68,18 @@ pub fn g_world_done() {
 }
 
 pub fn g_build_ticcmd(cmd &TicCmd, maketic int) {
-	_ = cmd
-	_ = maketic
+	unsafe {
+		cmd.forwardmove = 0
+		cmd.sidemove = 0
+		cmd.angleturn = 0
+		cmd.chatchar = 0
+		cmd.buttons = 0
+		cmd.consistancy = u8(maketic & 0xff)
+		cmd.buttons2 = 0
+		cmd.inventory = 0
+		cmd.lookfly = 0
+		cmd.arti = 0
+	}
 }
 
 pub fn g_ticker() {

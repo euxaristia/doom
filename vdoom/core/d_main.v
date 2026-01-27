@@ -28,6 +28,10 @@ pub fn boot() {
 	doomstat_init()
 	d_items_init()
 	d_main_init()
+	deh_init()
+	m_init()
+	st_init()
+	d_net_init()
 }
 
 pub fn d_process_events() {

@@ -38,6 +38,7 @@ pub fn st_responder(ev &Event) bool {
 
 pub fn st_ticker() {
 	st_clock++
+	st_state = if automapactive { .automap_state } else { .first_person_state }
 }
 
 pub fn st_drawer(fullscreen bool, refresh bool) {

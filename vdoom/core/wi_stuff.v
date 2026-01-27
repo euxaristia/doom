@@ -12,6 +12,12 @@ __global wi_count = 0
 
 pub fn wi_ticker() {
 	wi_count++
+	if wi_state == .stat_count && wi_count > 300 {
+		wi_state = .show_next_loc
+	}
+	if wi_state == .show_next_loc && wi_count > 600 {
+		wi_state = .no_state
+	}
 }
 
 pub fn wi_drawer() {}

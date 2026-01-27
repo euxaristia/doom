@@ -15,6 +15,7 @@ __global singletics = false
 __global gametic = 0
 __global ticdup = 0
 __global loop_interface = LoopInterface{}
+__global maketic = 0
 
 pub fn d_register_loop_callbacks(i &LoopInterface) {
 	loop_interface = *i
@@ -30,11 +31,21 @@ pub fn d_quit_net_game() {
 }
 
 pub fn try_run_tics() {
-	if loop_interface.run_tic == unsafe { nil } {
-		return
+	if loop_interface.build_ticcmd != unsafe { nil } {
+		for i in 0 .. maxplayers {
+			if i < playeringame.len && playeringame[i] {
+				loop_interface.build_ticcmd(&netcmds[i], maketic)
+			}
+		}
 	}
-	loop_interface.run_tic(netcmds, playeringame)
-	gametic++
+	if loop_interface.run_tic != unsafe { nil } {
+		loop_interface.run_tic(netcmds, playeringame)
+		gametic++
+		maketic++
+	}
+	if loop_interface.run_menu != unsafe { nil } {
+		loop_interface.run_menu()
+	}
 }
 
 pub fn d_start_game_loop() {

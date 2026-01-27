@@ -13,13 +13,16 @@ __global message_needs_input = false
 __global save_string_enter = 0
 __global save_slot = 0
 __global save_char_index = 0
+__global menu_ticks = 0
 
 pub fn m_responder(ev &Event) bool {
 	_ = ev
 	return false
 }
 
-pub fn m_ticker() {}
+pub fn m_ticker() {
+	menu_ticks++
+}
 pub fn m_drawer() {}
 pub fn m_init() {}
 pub fn m_start_control_panel() {}

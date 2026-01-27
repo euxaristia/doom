@@ -96,6 +96,9 @@ fn doomstat_init() {
 	if playeringame.len == 0 {
 		playeringame = []bool{len: maxplayers}
 	}
+	if netcmds.len == 0 {
+		netcmds = []TicCmd{len: maxplayers}
+	}
 	if deathmatchstarts.len == 0 {
 		deathmatchstarts = []MapThing{len: max_dm_starts}
 	}

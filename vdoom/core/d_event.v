@@ -54,6 +54,10 @@ pub enum ButtonCode2 {
 pub fn d_post_event(ev &Event) {
 	events[eventhead] = *ev
 	eventhead = (eventhead + 1) & (maxevents - 1)
+	// If the ring buffer overflows, drop the oldest event.
+	if eventhead == eventtail {
+		eventtail = (eventtail + 1) & (maxevents - 1)
+	}
 }
 
 pub fn d_pop_event() ?Event {
