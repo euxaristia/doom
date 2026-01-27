@@ -50,6 +50,33 @@ fn detect_iwad(name string) ?IwadInfo {
 	return none
 }
 
+fn d_iwad_search_dirs() []string {
+	mut dirs := []string{}
+	env := os.getenv('DOOM_WADDIR')
+	if env.len > 0 {
+		dirs << env
+	}
+	dirs << os.join_path(os.getwd(), 'wads')
+	dirs << os.getwd()
+	return dirs
+}
+
+pub fn d_find_iwad() string {
+	env_wad := os.getenv('DOOM_WAD')
+	if env_wad.len > 0 && os.is_file(env_wad) {
+		return env_wad
+	}
+	for dir in d_iwad_search_dirs() {
+		for info in iwads {
+			candidate := os.join_path(dir, info.name)
+			if os.is_file(candidate) {
+				return candidate
+			}
+		}
+	}
+	return ''
+}
+
 pub fn d_iwad_init(path string) {
 	base := os.base(path)
 	info := detect_iwad(base) or {

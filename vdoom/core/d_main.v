@@ -32,6 +32,8 @@ pub fn boot() {
 	m_init()
 	st_init()
 	d_net_init()
+	aes_prng_seed(u64(i_get_time_ms()))
+	d_start_game_loop()
 }
 
 pub fn d_process_events() {

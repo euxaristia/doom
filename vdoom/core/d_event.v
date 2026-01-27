@@ -73,3 +73,8 @@ pub fn d_clear_events() {
 	eventhead = 0
 	eventtail = 0
 }
+
+pub fn d_post_quit_event() {
+	ev := Event{typ: .quit}
+	d_post_event(&ev)
+}

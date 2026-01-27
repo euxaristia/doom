@@ -118,6 +118,11 @@ pub fn m_string_copy(dest string, src string, dest_size int) (string, bool) {
 	return out, true
 }
 
+pub fn m_string_copy_limited(src string, dest_size int) string {
+	out, _ := m_string_copy('', src, dest_size)
+	return out
+}
+
 pub fn m_string_concat(dest string, src string, dest_size int) (string, bool) {
 	if dest_size <= 0 {
 		return '', false

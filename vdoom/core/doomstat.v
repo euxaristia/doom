@@ -108,6 +108,10 @@ pub fn game_description() string {
 	return gamedescription
 }
 
+pub fn logical_game_mission() GameMission {
+	return d_logical_mission(gamemission)
+}
+
 pub fn set_modified_game(modified bool) {
 	modifiedgame = modified
 }

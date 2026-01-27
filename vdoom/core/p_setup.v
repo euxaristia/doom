@@ -17,6 +17,8 @@ pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
 	leveltime = 0
 	gamestate = .level
 	p_init_thinkers()
+	r_init_data()
+	p_pspr_init()
 }
 
 pub fn p_init() {

@@ -9,7 +9,7 @@ fn player_quit_game(player_num int) {
 	}
 	playeringame[player_num] = false
 	if consoleplayer >= 0 && consoleplayer < players.len {
-		players[consoleplayer].message = 'Player ${player_num + 1} left the game'
+		players[consoleplayer].message = deh_string('Player ${player_num + 1} left the game')
 	}
 }
 

@@ -12,15 +12,41 @@ pub fn g_deathmatch_spawn_player(playernum int) {
 }
 
 pub fn g_init_new(skill int, episode int, mapnum int) {
-	_ = skill
-	_ = episode
-	_ = mapnum
+	gameskill = skill
+	gameepisode = episode
+	gamemap = mapnum
+	paused = false
+	p_init()
+	// Vanilla ammo baselines.
+	if maxammo.len == numammo {
+		maxammo[int(AmmoType.clip)] = 200
+		maxammo[int(AmmoType.shell)] = 50
+		maxammo[int(AmmoType.cell)] = 300
+		maxammo[int(AmmoType.misl)] = 50
+	}
+	if clipammo.len == numammo {
+		clipammo[int(AmmoType.clip)] = 10
+		clipammo[int(AmmoType.shell)] = 4
+		clipammo[int(AmmoType.cell)] = 20
+		clipammo[int(AmmoType.misl)] = 1
+	}
+	if players.len > 0 && playeringame.len > 0 {
+		playeringame[0] = true
+		unsafe {
+			players[0].health = deh_initial_health
+			players[0].readyweapon = .pistol
+			players[0].pendingweapon = .pistol
+			players[0].ammo[int(AmmoType.clip)] = deh_initial_bullets
+			for i in 0 .. numammo {
+				players[0].maxammo[i] = maxammo[i]
+			}
+		}
+	}
+	p_setup_level(episode, mapnum, 1, skill)
 }
 
 pub fn g_defered_init_new(skill int, episode int, mapnum int) {
-	_ = skill
-	_ = episode
-	_ = mapnum
+	g_init_new(skill, episode, mapnum)
 }
 
 pub fn g_defered_play_demo(demo string) {
