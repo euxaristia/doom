@@ -12,6 +12,27 @@ fn load_playpal(mut wad Wad) {
 	}
 }
 
+pub fn render_patch_frame(mut wad Wad, patch_name string) {
+	i_init_graphics()
+	v_init()
+	load_playpal(mut wad)
+	render_wad_path = wad.path
+	render_checksum = w_checksum(wad)
+	render_tick = 0
+	i_reset_frame_dumps()
+	name := patch_name.to_upper()
+	if wad.has_lump(name) {
+		if screen := try_decode_patch_fullscreen(mut wad, name) {
+			v_draw_raw_screen(screen)
+			println('render: patch ${name} decoded to screen')
+			i_finish_update()
+			return
+		}
+	}
+	println('render: patch ${name} not found, falling back to demo frame')
+	render_demo_frame(mut wad)
+}
+
 pub fn render_demo_frame(mut wad Wad) {
 	i_init_graphics()
 	v_init()

@@ -16,6 +16,7 @@ fn main() {
 	mut hash_stats := false
 	mut list_hash := false
 	mut zone_mb := 0
+	mut patch_name := ''
 
 	for i := 0; i < args.len; i++ {
 		arg := args[i]
@@ -80,6 +81,15 @@ fn main() {
 					return
 				}
 				find_name = args[i + 1]
+				i++
+			}
+			'--patch' {
+				if i + 1 >= args.len {
+					eprintln('error: missing value for $arg')
+					print_usage()
+					return
+				}
+				patch_name = args[i + 1]
 				i++
 			}
 			'-n', '--max' {
@@ -162,7 +172,11 @@ fn main() {
 	if p.len > 0 {
 		println('iwad path: ${p}')
 	}
-	core.render_demo_frame(mut wad)
+	if patch_name.len > 0 {
+		core.render_patch_frame(mut wad, patch_name)
+	} else {
+		core.render_demo_frame(mut wad)
+	}
 	core.render_more_frames(2)
 
 	if hash_stats {
@@ -278,6 +292,7 @@ fn print_usage() {
 	println('  --find <name>        check lump by name and print details')
 	println('  --extract <name>     extract lump by name (max 8 chars)')
 	println('  --out <path>         output path for extraction')
+	println('  --patch <name>       decode and render a patch lump (eg TITLEPIC)')
 	println('  --hash               build hash table (default)')
 	println('  --no-hash            skip hash table build')
 	println('  --hash-stats         print hash table stats')
