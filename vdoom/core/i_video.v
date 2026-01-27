@@ -63,12 +63,13 @@ pub fn i_shutdown_graphics() {
 pub fn i_set_palette(palette []u8) {
 	if palette.len >= 256 * 3 {
 		i_palette = palette[..256 * 3].clone()
-		// Doom palettes are typically 0..63; scale to 0..255 and apply gamma.
+		// PLAYPAL stores 8-bit channel values already in the 0..255 range.
+		// Scaling as if values were 0..63 will badly over-brighten the image.
 		mut scaled := []u8{len: i_palette.len}
 		for i, v in i_palette {
 			vv := int(v)
-			// If values are in 0..63, scale precisely; otherwise clamp.
-			mut sv := if vv <= 63 { (vv * 255 + 31) / 63 } else { vv }
+			// Clamp to a valid 8-bit range.
+			mut sv := vv
 			if sv < 0 {
 				sv = 0
 			} else if sv > 255 {
