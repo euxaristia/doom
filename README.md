@@ -57,3 +57,25 @@ git clone git@github.com:vlang/doom.git
 cd doom/
 DOOM_FOLDER=`pwd` && ./build_whole_project.sh
 ```
+
+## Pure V MVP
+
+The `vdoom/` entrypoint runs a pure-V “minimum viable product” that:
+- loads a WAD,
+- prints WAD diagnostics, and
+- renders a few demo frames to PPM files.
+
+Run it:
+
+```bash
+./run_vdoom.sh
+```
+
+Or specify a WAD explicitly:
+
+```bash
+DOOM_WAD=./wads/doom1.wad ./run_vdoom.sh --list
+```
+
+Outputs:
+- rendered frames are written to `out/vdoom_frame_*.ppm`
