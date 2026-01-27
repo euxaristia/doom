@@ -1,0 +1,3 @@
+# Treat upstream C sources as vendored so GitHub Linguist focuses on V.
+chocolate-doom/** linguist-vendored
+src/** linguist-vendored
