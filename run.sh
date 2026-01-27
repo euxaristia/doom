@@ -4,7 +4,7 @@ set -e
 
 DOOM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EXECUTABLE="$DOOM_DIR/chocolate-doom/src/chocolate-doom"
-WAD_FILE="$DOOM_DIR/wads/freedoom1.wad"
+WAD_FILE="$DOOM_DIR/wads/doom1.wad"
 
 if [ ! -f "$EXECUTABLE" ]; then
     echo "Error: Game executable not found at $EXECUTABLE"

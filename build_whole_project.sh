@@ -11,7 +11,7 @@ if [ -z ${CC+x} ]; then
   fi
 fi
 if [ -z ${DOOM_FOLDER+x} ]; then export DOOM_FOLDER="$(cd "$(dirname "$0")" && pwd)"; fi
-if [ -z ${WAD_FILE+x} ]; then export WAD_FILE="$DOOM_FOLDER/wads/freedoom1.wad"; fi
+if [ -z ${WAD_FILE+x} ]; then export WAD_FILE="$DOOM_FOLDER/wads/doom1.wad"; fi
 if [ -z ${V_EXE+x} ]; then export V_EXE="$(command -v v)"; fi
 if [ -z "$V_EXE" ]; then echo "Error: v compiler not found in PATH"; exit 1; fi
 
