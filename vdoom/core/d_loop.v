@@ -91,3 +91,7 @@ pub fn d_non_vanilla_playback(conditional bool, lumpnum int, feature string) boo
 pub fn d_rendered_frames() int {
 	return rendered_frames
 }
+
+pub fn d_reset_rendered_frames() {
+	rendered_frames = 0
+}

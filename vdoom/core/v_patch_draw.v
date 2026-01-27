@@ -1,3 +1,4 @@
+@[has_globals]
 module core
 
 struct PatchImage {
@@ -7,6 +8,13 @@ struct PatchImage {
 	topoffset  int
 	columnofs  []int
 	data       []u8
+}
+
+__global patch_cache = map[string]PatchImage{}
+__global patch_cache_wad = ''
+
+fn patch_cache_key(wad_path string, name string) string {
+	return '${wad_path}::${name.to_upper()}'
 }
 
 fn u16_le(data []u8, off int) ?int {
@@ -48,6 +56,20 @@ fn load_patch_image(mut wad Wad, name string) ?PatchImage {
 		columnofs: columnofs
 		data: raw
 	}
+}
+
+fn load_patch_image_cached(mut wad Wad, name string) ?PatchImage {
+	if patch_cache_wad != wad.path {
+		patch_cache = map[string]PatchImage{}
+		patch_cache_wad = wad.path
+	}
+	key := patch_cache_key(wad.path, name)
+	if key in patch_cache {
+		return patch_cache[key]
+	}
+	img := load_patch_image(mut wad, name) or { return none }
+	patch_cache[key] = img
+	return img
 }
 
 fn draw_patch_image(x int, y int, img PatchImage) {
@@ -107,4 +129,8 @@ fn draw_patch_column(mut dest []u8, x int, y int, img PatchImage, col int, src_c
 		// skip pixel data and trailing unused byte
 		p += length + 1
 	}
+}
+
+pub fn patch_cache_count() int {
+	return patch_cache.len
 }

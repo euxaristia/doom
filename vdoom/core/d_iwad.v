@@ -131,3 +131,11 @@ pub fn d_iwad_title() string {
 	}
 	return 'DOOM'
 }
+
+pub fn d_iwad_has_lump(name string) bool {
+	if iwad_path.len == 0 {
+		return false
+	}
+	wad := load_wad_with_options(iwad_path, true, true) or { return false }
+	return wad.has_lump(name)
+}

@@ -82,6 +82,12 @@ pub fn d_start_title() {
 }
 
 pub fn d_display() bool {
+	// Ensure we have a palette-driven frame at least once.
+	if !i_palette_ready() && render_wad_path.len > 0 {
+		mut wad := load_wad_with_options(render_wad_path, true, true) or { return false }
+		render_demo_frame(mut wad)
+		return false
+	}
 	// Render a simple animated frame so output is visible without SDL.
 	render_tick_frame()
 	return false

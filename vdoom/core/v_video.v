@@ -231,10 +231,10 @@ fn v_try_load_patch(name string) ?PatchImage {
 	}
 	mut wad := load_wad_with_options(render_wad_path, true, true) or { return none }
 	if wad.has_lump(name) {
-		return load_patch_image(mut wad, name)
+		return load_patch_image_cached(mut wad, name)
 	}
 	if name != 'INTERPIC' && wad.has_lump('INTERPIC') {
-		return load_patch_image(mut wad, 'INTERPIC')
+		return load_patch_image_cached(mut wad, 'INTERPIC')
 	}
 	return none
 }

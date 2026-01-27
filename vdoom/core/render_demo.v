@@ -42,6 +42,15 @@ pub fn render_demo_frame(mut wad Wad) {
 	i_finish_update()
 }
 
+pub fn render_more_frames(count int) {
+	if count <= 0 {
+		return
+	}
+	for _ in 0 .. count {
+		render_tick_frame()
+	}
+}
+
 pub fn render_tick_frame() {
 	if i_video_buffer.len != screenwidth * screenheight {
 		return

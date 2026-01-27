@@ -162,6 +162,7 @@ fn main() {
 		println('iwad path: ${p}')
 	}
 	core.render_demo_frame(mut wad)
+	core.render_more_frames(2)
 
 	if hash_stats {
 		stats := wad.hash_stats() or {

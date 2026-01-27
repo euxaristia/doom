@@ -111,6 +111,10 @@ pub fn i_reset_frame_dumps() {
 	frame_dump_count = 0
 }
 
+pub fn i_frame_dump_count() int {
+	return frame_dump_count
+}
+
 pub fn i_read_screen(mut scr []u8) {
 	if i_video_buffer.len == 0 || scr.len == 0 {
 		return
