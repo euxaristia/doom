@@ -1,7 +1,7 @@
 @[has_globals]
 module core
 
-__global snd_channels = 0
+__global snd_channels = 8
 
 pub fn s_init(sfx_volume int, music_volume int) {
 	_ = sfx_volume

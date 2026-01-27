@@ -77,6 +77,9 @@ pub fn g_ticker() {
 	if paused {
 		return
 	}
+	if timingdemo && starttime == 0 {
+		starttime = i_get_time_ms()
+	}
 	p_ticker()
 	gametic++
 	// Update positional audio using the console player's mobj when present.

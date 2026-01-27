@@ -1,9 +1,9 @@
 @[has_globals]
 module core
 
-pub const am_msgheader = (int(`a`) << 24) + (int(`m`) << 16)
-pub const am_msgentered = am_msgheader | (int(`e`) << 8)
-pub const am_msgexited = am_msgheader | (int(`x`) << 8)
+pub const am_msgheader = int(`a`) * 16777216 + int(`m`) * 65536
+pub const am_msgentered = am_msgheader + int(`e`) * 256
+pub const am_msgexited = am_msgheader + int(`x`) * 256
 
 __global cheat_amap = CheatSeq{}
 

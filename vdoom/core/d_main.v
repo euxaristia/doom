@@ -9,6 +9,7 @@ __global show_endoom = 1
 __global show_diskicon = 1
 __global wadfile = ''
 __global mapdir = ''
+__global iwadfile_local = ''
 
 pub fn d_process_events() {
 	if storedemo {

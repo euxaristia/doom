@@ -29,3 +29,9 @@ pub fn hu_dequeue_chat_char() u8 {
 }
 
 pub fn hu_erase() {}
+
+fn init() {
+	for i in 0 .. chat_macros.len {
+		chat_macros[i] = 'macro ${i + 1}'
+	}
+}

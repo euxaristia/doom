@@ -3,6 +3,10 @@ module core
 
 // Carries out all thinking of monsters and players.
 pub fn p_ticker() {
+	// Ensure the thinker list is initialized before first use.
+	if voidptr(thinkercap.next) == unsafe { nil } {
+		p_init_thinkers()
+	}
 	if paused {
 		return
 	}

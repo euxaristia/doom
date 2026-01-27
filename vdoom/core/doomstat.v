@@ -14,6 +14,7 @@ __global gameversion = 0
 __global gamevariant = 0
 __global gamedescription = ''
 __global modifiedgame = false
+__global iwadfile = ''
 
 // Skill/map selection
 __global startskill = 0
@@ -81,8 +82,9 @@ __global wminfo = WbStartStruct{}
 __global savegamedir = ''
 __global precache = false
 __global wipegamestate = GameState.level
-__global mouse_sensitivity = 0
+__global mouse_sensitivity_cfg = 0
 __global bodyqueslot = 0
 __global skyflatnum = 0
 __global rndindex = 0
+__global prndindex = 0
 __global netcmds = []TicCmd{}
