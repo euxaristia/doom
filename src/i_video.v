@@ -53,6 +53,11 @@ pub fn i_set_window_title(title &i8) {
 	_ = title
 }
 
+@[export: 'I_InitWindowIcon']
+pub fn i_init_window_icon() {
+	// Icon data is omitted in this minimal port.
+}
+
 @[export: 'I_CheckIsScreensaver']
 pub fn i_check_is_screensaver() {
 	// No-op placeholder.
