@@ -68,3 +68,8 @@ pub fn d_pop_event() ?Event {
 	eventtail = (eventtail + 1) & (maxevents - 1)
 	return ev
 }
+
+pub fn d_clear_events() {
+	eventhead = 0
+	eventtail = 0
+}

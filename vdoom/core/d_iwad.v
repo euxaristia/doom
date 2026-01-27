@@ -27,6 +27,9 @@ const iwads = [
 	IwadInfo{name: 'strife1.wad', mission: .strife, mode: .commercial, description: 'Strife'},
 ]
 
+__global selected_iwad = IwadInfo{}
+__global iwad_detected = false
+
 pub fn d_is_iwad_name(name string) bool {
 	lower := name.to_lower()
 	for info in iwads {
@@ -52,7 +55,10 @@ pub fn d_iwad_init(path string) {
 	info := detect_iwad(base) or {
 		// Fall back to doom defaults when unknown.
 		set_game_identity(.doom, .indetermined, d_game_mission_string(.doom))
+		iwad_detected = false
 		return
 	}
 	set_game_identity(info.mission, info.mode, info.description)
+	selected_iwad = info
+	iwad_detected = true
 }

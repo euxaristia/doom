@@ -93,6 +93,19 @@ pub fn set_game_identity(mission GameMission, mode GameMode, description string)
 	gamemission = mission
 	gamemode = mode
 	gamedescription = description
+	modifiedgame = false
+}
+
+pub fn game_mission() GameMission {
+	return gamemission
+}
+
+pub fn game_mode() GameMode {
+	return gamemode
+}
+
+pub fn game_description() string {
+	return gamedescription
 }
 
 fn doomstat_init() {

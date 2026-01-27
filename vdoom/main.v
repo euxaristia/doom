@@ -149,6 +149,9 @@ fn main() {
 	println('dir offset: ${wad.dir_offset}')
 	println('stream: ${wad.stream}')
 	println('hash: ${wad.has_hash}')
+	println('mission: ${core.d_game_mission_string(core.game_mission())}')
+	println('mode: ${core.d_game_mode_string(core.game_mode())}')
+	println('desc: ${core.game_description()}')
 
 	if hash_stats {
 		stats := wad.hash_stats() or {

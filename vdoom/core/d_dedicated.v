@@ -11,3 +11,6 @@ pub fn d_dedicated_shutdown() {
 	dedicated_mode = false
 }
 
+pub fn d_is_dedicated() bool {
+	return dedicated_mode
+}

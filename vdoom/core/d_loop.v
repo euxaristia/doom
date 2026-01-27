@@ -16,6 +16,7 @@ __global gametic = 0
 __global ticdup = 0
 __global loop_interface = LoopInterface{}
 __global maketic = 0
+__global game_loop_started = false
 
 pub fn d_register_loop_callbacks(i &LoopInterface) {
 	loop_interface = *i
@@ -49,6 +50,8 @@ pub fn try_run_tics() {
 }
 
 pub fn d_start_game_loop() {
+	game_loop_started = true
+	maketic = gametic
 }
 
 pub fn d_init_net_game(connect_data &NetConnectData) bool {

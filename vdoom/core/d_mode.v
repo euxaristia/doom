@@ -126,16 +126,17 @@ const valid_versions = [
 ]
 
 pub fn d_valid_game_version(mission GameMission, version GameVersion) bool {
-	mut logical := mission
-	if mission in [.doom2, .pack_plut, .pack_tnt, .pack_hacx, .pack_chex] {
-		logical = .doom
-	}
+	logical := d_logical_mission(mission)
 	for entry in valid_versions {
 		if entry.mission == logical && entry.version == version {
 			return true
 		}
 	}
 	return false
+}
+
+pub fn d_logical_mission(mission GameMission) GameMission {
+	return if mission in [.doom2, .pack_plut, .pack_tnt, .pack_hacx, .pack_chex] { .doom } else { mission }
 }
 
 pub fn d_is_episode_map(mission GameMission) bool {
