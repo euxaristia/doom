@@ -130,6 +130,7 @@ fn main() {
 		os.setenv('VDoomZoneMB', zone_mb.str(), true)
 	}
 	core.i_print_startup_banner('vdoom (V port)')
+	core.boot()
 	zone := core.i_zone_base()
 	println('zone size: ${zone.size} bytes')
 

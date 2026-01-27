@@ -4,23 +4,23 @@ pub const savegamename = 'doomsav'
 pub const num_quitmessages = 8
 
 pub const doom1_endmsg = [
-	'please do not leave',
-	'you are a hero',
-	'try again soon',
-	'doom awaits',
-	'monsters miss you',
-	'one more level',
-	'keep fragging',
-	'farewell marine',
+	'are you sure you want to\nquit this great game?',
+	"please don't leave, there's more\ndemons to toast!",
+	"let's beat it -- this is turning\ninto a bloodbath!",
+	"i wouldn't leave if i were you.\ndos is much worse.",
+	"you're trying to say you like dos\nbetter than me, right?",
+	"don't leave yet -- there's a\ndemon around that corner!",
+	"ya know, next time you come in here\ni'm gonna toast ya.",
+	'go ahead and leave. see if i care.',
 ]
 
 pub const doom2_endmsg = [
-	'doom2 says bye',
-	'no rest for you',
-	'hell stays open',
-	'come back armed',
-	'you know the way',
-	'still not enough',
-	'just one more',
-	'goodbye marine',
+	'are you sure you want to\nquit this great game?',
+	'you want to quit?\nthen, thou hast lost an eighth!',
+	"don't go now, there's a \ndimensional shambler waiting\nat the dos prompt!",
+	'get outta here and go back\nto your boring programs.',
+	"if i were your boss, i'd \n deathmatch ya in a minute!",
+	'look, bud. you leave now\nand you forfeit your body count!',
+	"just leave. when you come\nback, i'll be waiting with a bat.",
+	"you're lucky i don't smack\nyou for thinking about leaving.",
 ]

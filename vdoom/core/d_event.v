@@ -1,3 +1,4 @@
+@[has_globals]
 module core
 
 pub enum EvType {
@@ -17,6 +18,12 @@ pub mut:
 	data4 int
 	data5 int
 }
+
+pub const maxevents = 64
+
+__global eventhead = 0
+__global eventtail = 0
+__global events = []Event{len: maxevents}
 
 @[_allow_multiple_values]
 pub enum ButtonCode {
@@ -45,9 +52,15 @@ pub enum ButtonCode2 {
 }
 
 pub fn d_post_event(ev &Event) {
-	_ = ev
+	events[eventhead] = *ev
+	eventhead = (eventhead + 1) & (maxevents - 1)
 }
 
 pub fn d_pop_event() ?Event {
-	return none
+	if eventtail == eventhead {
+		return none
+	}
+	ev := events[eventtail]
+	eventtail = (eventtail + 1) & (maxevents - 1)
+	return ev
 }

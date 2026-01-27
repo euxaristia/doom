@@ -9,9 +9,9 @@ __global devparm = false
 
 // Game mode/mission
 __global gamemode = GameMode.indetermined
-__global gamemission = GameMission.none
-__global gameversion = 0
-__global gamevariant = 0
+__global gamemission = GameMission.doom
+__global gameversion = int(GameVersion.exe_final2)
+__global gamevariant = int(GameVariant.vanilla)
 __global gamedescription = ''
 __global modifiedgame = false
 __global iwadfile = ''
@@ -68,14 +68,14 @@ __global singledemo = false
 __global gamestate = GameState.level
 
 // Players/world
-__global players = []Player{len: maxplayers}
-__global playeringame = []bool{len: maxplayers}
+__global players = []Player{}
+__global playeringame = []bool{}
 
 pub const max_dm_starts = 10
-__global deathmatchstarts = []MapThing{len: max_dm_starts}
+__global deathmatchstarts = []MapThing{}
 __global deathmatch_p = &MapThing(unsafe { nil })
-__global playerstarts = []MapThing{len: maxplayers}
-__global playerstartsingame = []bool{len: maxplayers}
+__global playerstarts = []MapThing{}
+__global playerstartsingame = []bool{}
 __global wminfo = WbStartStruct{}
 
 // Engine internals
@@ -88,3 +88,21 @@ __global skyflatnum = 0
 __global rndindex = 0
 __global prndindex = 0
 __global netcmds = []TicCmd{}
+
+fn doomstat_init() {
+	if players.len == 0 {
+		players = []Player{len: maxplayers}
+	}
+	if playeringame.len == 0 {
+		playeringame = []bool{len: maxplayers}
+	}
+	if deathmatchstarts.len == 0 {
+		deathmatchstarts = []MapThing{len: max_dm_starts}
+	}
+	if playerstarts.len == 0 {
+		playerstarts = []MapThing{len: maxplayers}
+	}
+	if playerstartsingame.len == 0 {
+		playerstartsingame = []bool{len: maxplayers}
+	}
+}

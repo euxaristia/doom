@@ -14,18 +14,27 @@ pub mut:
 __global singletics = false
 __global gametic = 0
 __global ticdup = 0
+__global loop_interface = LoopInterface{}
 
 pub fn d_register_loop_callbacks(i &LoopInterface) {
-	_ = i
+	loop_interface = *i
 }
 
 pub fn net_update() {
+	if loop_interface.process_events != unsafe { nil } {
+		loop_interface.process_events()
+	}
 }
 
 pub fn d_quit_net_game() {
 }
 
 pub fn try_run_tics() {
+	if loop_interface.run_tic == unsafe { nil } {
+		return
+	}
+	loop_interface.run_tic(netcmds, playeringame)
+	gametic++
 }
 
 pub fn d_start_game_loop() {

@@ -11,6 +11,25 @@ __global wadfile = ''
 __global mapdir = ''
 __global iwadfile_local = ''
 
+fn d_run_tic(cmds []TicCmd, ingame []bool) {
+	_ = cmds
+	_ = ingame
+	g_ticker()
+}
+
+fn d_main_init() {
+	mut iface := LoopInterface{}
+	iface.process_events = d_process_events
+	iface.run_tic = d_run_tic
+	d_register_loop_callbacks(&iface)
+}
+
+pub fn boot() {
+	doomstat_init()
+	d_items_init()
+	d_main_init()
+}
+
 pub fn d_process_events() {
 	if storedemo {
 		return
@@ -54,9 +73,9 @@ pub fn d_doom_loop() {
 	main_loop_started = true
 	for {
 		i_start_frame()
-		d_process_events()
+		net_update()
 		i_start_tic()
-		g_ticker()
+		try_run_tics()
 		d_display()
 	}
 }
