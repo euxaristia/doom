@@ -55,6 +55,8 @@ pub enum WeaponType {
 	nochange
 }
 
+pub const numweapons = 9
+
 @[_allow_multiple_values]
 pub enum AmmoType {
 	clip
