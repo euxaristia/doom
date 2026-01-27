@@ -9,7 +9,6 @@ pub type GrabMouseCallback = fn () bool
 
 __global video_driver = ''
 __global screenvisible = true
-__global vanilla_keyboard_mapping = 0
 __global screensaver_mode = false
 __global usegamma = 0
 __global i_video_buffer = []u8{}
