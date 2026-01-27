@@ -44,3 +44,9 @@ pub fn deh_load(path string) bool {
 pub fn deh_set_apply_cheats(apply bool) {
 	deh_apply_cheats = apply
 }
+
+pub fn deh_apply_text_block(header string, data string) bool {
+	deh_init_system()
+	deh_set_input_buffer(data)
+	return deh_text_start(header)
+}

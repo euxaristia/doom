@@ -29,6 +29,7 @@ const iwads = [
 
 __global selected_iwad = IwadInfo{}
 __global iwad_detected = false
+__global iwad_path = ''
 
 pub fn d_is_iwad_name(name string) bool {
 	lower := name.to_lower()
@@ -85,17 +86,28 @@ pub fn d_auto_iwad_init() string {
 	return path
 }
 
+pub fn d_iwad_init_from_env() string {
+	path := d_find_iwad()
+	if path.len == 0 {
+		return ''
+	}
+	d_iwad_init(path)
+	return path
+}
+
 pub fn d_iwad_init(path string) {
 	base := os.base(path)
 	info := detect_iwad(base) or {
 		// Fall back to doom defaults when unknown.
 		set_game_identity(.doom, .indetermined, d_game_mission_string(.doom))
 		iwad_detected = false
+		iwad_path = ''
 		return
 	}
 	set_game_identity(info.mission, info.mode, info.description)
 	selected_iwad = info
 	iwad_detected = true
+	iwad_path = path
 }
 
 pub fn d_detected_iwad() (bool, string) {
@@ -107,4 +119,8 @@ pub fn d_iwad_description() string {
 		return ''
 	}
 	return selected_iwad.description
+}
+
+pub fn d_iwad_path() string {
+	return iwad_path
 }

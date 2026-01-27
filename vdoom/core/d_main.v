@@ -45,6 +45,8 @@ pub fn boot() {
 	d_net_init()
 	aes_prng_seed(u64(i_get_time_ms()))
 	d_start_game_loop()
+	// Start a sane default game so the loop has something to run.
+	g_defered_init_new(int(gameskill), 1, 1)
 }
 
 pub fn d_process_events() {

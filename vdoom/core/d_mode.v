@@ -192,3 +192,10 @@ pub fn d_valid_start_params(mission GameMission, mode GameMode, episode int, map
 	}
 	return d_valid_episode_map(mission, mode, episode, mapnum)
 }
+
+pub fn d_clamp_episode_map(mission GameMission, mode GameMode, episode int, mapnum int) (int, int) {
+	epmax, mapmax := d_episode_map_limits(mission, mode)
+	ep := if episode < 1 { 1 } else if episode > epmax { epmax } else { episode }
+	mp := if mapnum < 1 { 1 } else if mapnum > mapmax { mapmax } else { mapnum }
+	return ep, mp
+}

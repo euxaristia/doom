@@ -130,6 +130,10 @@ pub fn is_modified_game() bool {
 	return modifiedgame
 }
 
+pub fn game_identity_string() string {
+	return '${d_game_mission_string(gamemission)}/${d_game_mode_string(gamemode)}'
+}
+
 pub fn set_intermission_secret(didsecret bool) {
 	unsafe {
 		wminfo.didsecret = didsecret

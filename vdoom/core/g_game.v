@@ -106,7 +106,9 @@ pub fn g_init_new(skill int, episode int, mapnum int) {
 }
 
 pub fn g_defered_init_new(skill int, episode int, mapnum int) {
-	set_start_params(skill, episode, mapnum)
+	mission := logical_game_mission()
+	ep, mp := d_clamp_episode_map(mission, game_mode(), episode, mapnum)
+	set_start_params(skill, ep, mp)
 	set_game_action(.newgame)
 }
 

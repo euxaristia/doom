@@ -50,6 +50,19 @@ pub fn deh_input_remaining() int {
 	return deh_input_buffer.len - deh_input_pos
 }
 
+pub fn deh_read_bytes(count int) string {
+	if count <= 0 || deh_input_remaining() == 0 {
+		return ''
+	}
+	mut end := deh_input_pos + count
+	if end > deh_input_buffer.len {
+		end = deh_input_buffer.len
+	}
+	out := deh_input_buffer[deh_input_pos..end]
+	deh_input_pos = end
+	return out
+}
+
 pub fn deh_get_char() u8 {
 	if deh_input_pos >= deh_input_buffer.len {
 		return u8(0)

@@ -53,3 +53,11 @@ pub fn m_arg(idx int) string {
 	}
 	return myargv[idx]
 }
+
+pub fn m_check_parm_value(flag string) ?string {
+	idx := m_check_parm_with_args(flag, 1)
+	if idx <= 0 {
+		return none
+	}
+	return m_arg(idx + 1)
+}
