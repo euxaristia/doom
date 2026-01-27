@@ -89,10 +89,42 @@ __global blocklinks = []voidptr{}
 __global maxammo = []int{len: numammo}
 __global clipammo = []int{len: numammo}
 
-// P_TICK
-pub fn p_init_thinkers() {}
-pub fn p_add_thinker(thinker &Thinker) { _ = thinker }
-pub fn p_remove_thinker(thinker &Thinker) { _ = thinker }
+// P_TICK / thinker list management
+pub fn p_init_thinkers() {
+	thinkercap.removed = false
+	thinkercap.next = &thinkercap
+	thinkercap.prev = &thinkercap
+}
+
+pub fn p_add_thinker(mut thinker Thinker) {
+	// Insert thinker at the end of the doubly-linked list.
+	unsafe {
+		thinker.removed = false
+		thinkercap.prev.next = &thinker
+		thinker.next = &thinkercap
+		thinker.prev = thinkercap.prev
+		thinkercap.prev = &thinker
+	}
+}
+
+pub fn p_remove_thinker(mut thinker Thinker) {
+	// Lazy removal; actual unlink happens during p_run_thinkers.
+	thinker.removed = true
+}
+
+pub fn p_run_thinkers() {
+	mut current := thinkercap.next
+	for current != &thinkercap {
+		mut next := current.next
+		if current.removed {
+			current.next.prev = current.prev
+			current.prev.next = current.next
+		} else if voidptr(current.function.acp1) != unsafe { nil } {
+			current.function.acp1(current)
+		}
+		current = next
+	}
+}
 
 // P_PSPR
 pub fn p_setup_psprites(curplayer voidptr) { _ = curplayer }
@@ -100,7 +132,7 @@ pub fn p_move_psprites(curplayer voidptr) { _ = curplayer }
 pub fn p_drop_weapon(player voidptr) { _ = player }
 
 // P_USER
-pub fn p_player_think(player voidptr) { _ = player }
+pub fn p_player_think(player &Player) { _ = player }
 
 // P_MOBJ
 pub fn p_respawn_specials() {}

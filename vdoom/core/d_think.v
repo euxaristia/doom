@@ -13,9 +13,11 @@ pub mut:
 
 pub type ThinkT = Actionf
 
+@[heap]
 pub struct Thinker {
 pub mut:
 	prev     &Thinker = unsafe { nil }
 	next     &Thinker = unsafe { nil }
 	function ThinkT
+	removed  bool
 }
