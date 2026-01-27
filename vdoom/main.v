@@ -19,7 +19,7 @@ fn main() {
 	mut patch_name := ''
 	mut show_window := false
 	mut animate := false
-	mut window_scale_arg := 2
+	mut window_scale_arg := 3
 	mut gamma_arg := f32(1.2)
 	mut aspect_arg := 'doom43'
 	mut colormap_level_arg := 0
@@ -366,7 +366,7 @@ fn print_usage() {
 	println('  --window             open a simple live window (blocks until closed)')
 	println('  --animate            animate the frame in window mode')
 	println('  --interpic           render INTERPIC (if present)')
-	println('  --scale <n>          integer window scale (default 2)')
+	println('  --scale <n>          integer window scale (default 3)')
 	println('  --gamma <g>          palette gamma (default 1.2, higher is darker)')
 	println('  --aspect <mode>      native|doom43 (default doom43)')
 	println('  --doom43             shorthand for --aspect doom43')
