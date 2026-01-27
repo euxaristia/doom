@@ -1,3 +1,8 @@
+@[has_globals]
 module core
 
-pub fn deh_doom_init() {}
+__global deh_doom_loaded = false
+
+pub fn deh_doom_init() {
+	deh_doom_loaded = false
+}
