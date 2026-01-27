@@ -138,6 +138,12 @@ pub fn set_time_limit(minutes int) {
 	timelimit = minutes
 }
 
+pub fn set_start_params(skill int, episode int, mapnum int) {
+	startskill = skill
+	startepisode = episode
+	startmap = mapnum
+}
+
 fn doomstat_init() {
 	if players.len == 0 {
 		players = []Player{len: maxplayers}

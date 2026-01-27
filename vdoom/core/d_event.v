@@ -85,3 +85,11 @@ pub fn d_event_pending() int {
 	}
 	return maxevents - (eventtail - eventhead)
 }
+
+pub fn d_post_keydown(key int) {
+	ev := Event{
+		typ: .keydown
+		data1: key
+	}
+	d_post_event(&ev)
+}

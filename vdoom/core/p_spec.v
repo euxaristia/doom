@@ -20,6 +20,14 @@ pub fn p_stop_level_timer() {
 	level_time_count = 0
 }
 
+pub fn p_apply_time_limit() {
+	if timelimit > 0 {
+		p_start_level_timer(timelimit)
+	} else {
+		p_stop_level_timer()
+	}
+}
+
 // Define values for map objects
 pub const mo_teleportman = 14
 

@@ -50,6 +50,10 @@ pub fn d_process_events() {
 	}
 	for {
 		ev := d_pop_event() or { break }
+		if ev.typ == .quit {
+			i_quit()
+			return
+		}
 		if m_responder(&ev) {
 			continue
 		}
@@ -84,34 +88,7 @@ pub fn d_check_net_game() {
 }
 
 fn d_handle_game_action() {
-	match gameaction {
-		.nothing {}
-		.newgame {
-			g_init_new(startskill, startepisode, startmap)
-			gameaction = .nothing
-		}
-		.loadlevel {
-			p_setup_level(gameepisode, gamemap, 1, gameskill)
-			gameaction = .nothing
-		}
-		.completed {
-			set_game_state(.intermission)
-			wi_start(&wminfo)
-			gameaction = .nothing
-		}
-		.victory {
-			f_start_finale()
-			gameaction = .nothing
-		}
-		.worlddone {
-			gamemap++
-			gameaction = .loadlevel
-		}
-		else {
-			// Ignore unsupported actions for now, but clear the latch.
-			gameaction = .nothing
-		}
-	}
+	g_handle_game_action()
 }
 
 pub fn d_doom_loop() {

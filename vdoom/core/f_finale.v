@@ -20,6 +20,11 @@ pub fn f_responder(ev &Event) bool {
 
 pub fn f_ticker() {
 	finale_count++
+	// Minimal finale progression: eventually return to demoscreen.
+	if finale_count > u32(textwait * 4) {
+		set_game_state(.demoscreen)
+		finale_count = 0
+	}
 }
 pub fn f_drawer() {}
 pub fn f_start_finale() {

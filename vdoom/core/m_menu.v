@@ -27,8 +27,10 @@ pub fn m_drawer() {}
 pub fn m_init() {
 	menuactive = false
 	menu_ticks = 0
+	paused = false
 }
 
 pub fn m_start_control_panel() {
 	menuactive = true
+	paused = true
 }

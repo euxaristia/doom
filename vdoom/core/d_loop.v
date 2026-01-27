@@ -56,6 +56,10 @@ pub fn try_run_tics() {
 
 pub fn d_start_game_loop() {
 	game_loop_started = true
+	singletics = timingdemo
+	if ticdup < 1 {
+		ticdup = 1
+	}
 	maketic = gametic
 }
 

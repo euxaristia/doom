@@ -19,6 +19,7 @@ pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
 	p_init_thinkers()
 	r_init_data()
 	p_pspr_init()
+	p_apply_time_limit()
 }
 
 pub fn p_init() {

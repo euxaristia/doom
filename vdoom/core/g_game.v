@@ -6,6 +6,61 @@ __global vanilla_demo_limit = 0
 __global oldgamestate = GameState.level
 __global timingdemo = false
 __global starttime = 0
+__global reborn_pending = []bool{len: maxplayers}
+
+fn g_do_reborn(playernum int) {
+	if playernum < 0 || playernum >= players.len {
+		return
+	}
+	unsafe {
+		players[playernum].playerstate = .live
+		players[playernum].health = deh_initial_health
+		players[playernum].viewheight = viewheight_fixed
+		players[playernum].readyweapon = .pistol
+		players[playernum].pendingweapon = .pistol
+		players[playernum].ammo[int(AmmoType.clip)] = deh_initial_bullets
+	}
+	reborn_pending[playernum] = false
+}
+
+fn g_do_completed() {
+	set_game_state(.intermission)
+	wi_start(&wminfo)
+	set_game_action(.nothing)
+}
+
+fn g_do_world_done() {
+	set_game_state(.level)
+	set_game_action(.loadlevel)
+}
+
+fn g_handle_game_action() {
+	// Mirror the vanilla "while gameaction" loop in a minimal way.
+	for game_action() != .nothing {
+		match game_action() {
+			.loadlevel {
+				p_setup_level(gameepisode, gamemap, 1, gameskill)
+				set_game_action(.nothing)
+			}
+			.newgame {
+				g_init_new(startskill, startepisode, startmap)
+				set_game_action(.nothing)
+			}
+			.completed {
+				g_do_completed()
+			}
+			.victory {
+				f_start_finale()
+			}
+			.worlddone {
+				g_do_world_done()
+			}
+			else {
+				set_game_action(.nothing)
+			}
+		}
+	}
+}
 
 pub fn g_deathmatch_spawn_player(playernum int) {
 	_ = playernum
@@ -122,6 +177,16 @@ pub fn g_build_ticcmd(cmd &TicCmd, maketic int) {
 
 pub fn g_ticker() {
 	oldgamestate = gamestate
+	// Process deferred actions and player reborns before ticking the world.
+	for i in 0 .. maxplayers {
+		if i < playeringame.len && playeringame[i] && i < players.len {
+			if players[i].playerstate == .reborn || reborn_pending[i] {
+				reborn_pending[i] = true
+				g_do_reborn(i)
+			}
+		}
+	}
+	g_handle_game_action()
 	if paused {
 		return
 	}

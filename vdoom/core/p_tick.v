@@ -7,6 +7,15 @@ pub fn p_ticker() {
 	if voidptr(thinkercap.next) == unsafe { nil } {
 		p_init_thinkers()
 	}
+	state := game_state()
+	if state == .intermission {
+		wi_ticker()
+		return
+	}
+	if state == .finale {
+		f_ticker()
+		return
+	}
 	if paused {
 		return
 	}
