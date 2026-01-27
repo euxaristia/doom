@@ -35,7 +35,7 @@ __global window_enabled = false
 __global animate_enabled = false
 __global window_scale = 2
 __global gamma_value = f32(1.2)
-__global aspect_mode = 'native'
+__global aspect_mode = 'doom43'
 __global colormap_data = []u8{}
 __global colormap_level = 0
 

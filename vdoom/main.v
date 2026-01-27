@@ -21,7 +21,7 @@ fn main() {
 	mut animate := false
 	mut window_scale_arg := 2
 	mut gamma_arg := f32(1.2)
-	mut aspect_arg := 'native'
+	mut aspect_arg := 'doom43'
 	mut colormap_level_arg := 0
 
 	for i := 0; i < args.len; i++ {
@@ -368,7 +368,7 @@ fn print_usage() {
 	println('  --interpic           render INTERPIC (if present)')
 	println('  --scale <n>          integer window scale (default 2)')
 	println('  --gamma <g>          palette gamma (default 1.2, higher is darker)')
-	println('  --aspect <mode>      native|doom43 (default native)')
+	println('  --aspect <mode>      native|doom43 (default doom43)')
 	println('  --doom43             shorthand for --aspect doom43')
 	println('  --colormap <level>   apply COLORMAP level (default 0)')
 	println('  --hash               build hash table (default)')
