@@ -65,6 +65,8 @@ pub enum AmmoType {
 	noammo
 }
 
+pub const numammo = 4
+
 @[_allow_multiple_values]
 pub enum PowerType {
 	invulnerability
