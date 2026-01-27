@@ -18,6 +18,8 @@ fn main() {
 	mut zone_mb := 0
 	mut patch_name := ''
 	mut show_window := false
+	mut animate := false
+	mut window_scale_arg := 2
 
 	for i := 0; i < args.len; i++ {
 		arg := args[i]
@@ -96,6 +98,21 @@ fn main() {
 			'--window' {
 				show_window = true
 			}
+			'--animate' {
+				animate = true
+			}
+			'--interpic' {
+				patch_name = 'INTERPIC'
+			}
+			'--scale' {
+				if i + 1 >= args.len {
+					eprintln('error: missing value for $arg')
+					print_usage()
+					return
+				}
+				window_scale_arg = args[i + 1].int()
+				i++
+			}
 			'-n', '--max' {
 				if i + 1 >= args.len {
 					eprintln('error: missing value for $arg')
@@ -148,6 +165,12 @@ fn main() {
 	core.d_iwad_init(wad_path)
 	core.i_set_window_title(core.d_iwad_title())
 	core.i_set_window_enabled(show_window)
+	core.i_set_animate_enabled(animate)
+	core.i_set_window_scale(window_scale_arg)
+	if show_window {
+		// Window mode uses the latest RGB frame; avoid dumping files.
+		core.i_set_dump_frames(false)
+	}
 	zone := core.i_zone_base()
 	println('zone size: ${zone.size} bytes')
 
@@ -182,7 +205,10 @@ fn main() {
 	} else {
 		core.render_demo_frame(mut wad)
 	}
-	core.render_more_frames(2)
+	// Only pre-render extra frames when not using a live window, or when animating.
+	if !show_window || animate {
+		core.render_more_frames(2)
+	}
 
 	if hash_stats {
 		stats := wad.hash_stats() or {
@@ -302,6 +328,9 @@ fn print_usage() {
 	println('  --out <path>         output path for extraction')
 	println('  --patch <name>       decode and render a patch lump (eg TITLEPIC)')
 	println('  --window             open a simple live window (blocks until closed)')
+	println('  --animate            animate the frame in window mode')
+	println('  --interpic           render INTERPIC (if present)')
+	println('  --scale <n>          integer window scale (default 2)')
 	println('  --hash               build hash table (default)')
 	println('  --no-hash            skip hash table build')
 	println('  --hash-stats         print hash table stats')

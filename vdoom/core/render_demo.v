@@ -4,6 +4,7 @@ module core
 __global render_tick = 0
 __global render_wad_path = ''
 __global render_checksum = u64(0)
+__global render_was_patch = false
 
 fn load_playpal(mut wad Wad) {
 	pal := wad.read_lump('PLAYPAL') or { return }
@@ -24,11 +25,13 @@ pub fn render_patch_frame(mut wad Wad, patch_name string) {
 	if wad.has_lump(name) {
 		if screen := try_decode_patch_fullscreen(mut wad, name) {
 			v_draw_raw_screen(screen)
+			render_was_patch = true
 			println('render: patch ${name} decoded to screen')
 			i_finish_update()
 			return
 		}
 	}
+	render_was_patch = false
 	println('render: patch ${name} not found, falling back to demo frame')
 	render_demo_frame(mut wad)
 }
@@ -41,6 +44,7 @@ pub fn render_demo_frame(mut wad Wad) {
 	render_checksum = w_checksum(wad)
 	render_tick = 0
 	i_reset_frame_dumps()
+	render_was_patch = false
 	// Try to draw a real Doom patch if available.
 	mut drew_titlepic := false
 	if wad.has_lump('TITLEPIC') {
@@ -92,6 +96,11 @@ pub fn render_more_frames(count int) {
 
 pub fn render_tick_frame() {
 	if i_video_buffer.len != screenwidth * screenheight {
+		return
+	}
+	// Do not draw the animated bar over patch renders like TITLEPIC.
+	if render_was_patch {
+		i_finish_update()
 		return
 	}
 	render_tick++

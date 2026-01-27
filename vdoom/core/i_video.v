@@ -31,6 +31,8 @@ __global dump_frames = true
 __global palette_loaded = false
 __global last_rgb = []u8{}
 __global window_enabled = false
+__global animate_enabled = false
+__global window_scale = 2
 
 pub fn i_init_graphics() {
 	if i_video_buffer.len == 0 {
@@ -142,6 +144,24 @@ pub fn i_set_window_enabled(enabled bool) {
 
 pub fn i_window_enabled() bool {
 	return window_enabled
+}
+
+pub fn i_set_animate_enabled(enabled bool) {
+	animate_enabled = enabled
+}
+
+pub fn i_animate_enabled() bool {
+	return animate_enabled
+}
+
+pub fn i_set_window_scale(scale int) {
+	if scale > 0 {
+		window_scale = scale
+	}
+}
+
+pub fn i_window_scale() int {
+	return window_scale
 }
 
 pub fn i_read_screen(mut scr []u8) {

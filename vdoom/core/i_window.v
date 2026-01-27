@@ -8,10 +8,18 @@ mut:
 	scale     int
 	image_idx int
 	rgba      []u8
+	logged    bool
 }
 
 fn (mut app WindowApp) init() {
-	app.image_idx = app.ctx.new_streaming_image(screenwidth, screenheight, 4, pixel_format: .rgba8)
+	app.image_idx = app.ctx.new_streaming_image(
+		screenwidth,
+		screenheight,
+		4,
+		pixel_format: .rgba8
+		min_filter: .nearest
+		mag_filter: .nearest
+	)
 	if app.rgba.len != screenwidth * screenheight * 4 {
 		app.rgba = []u8{len: screenwidth * screenheight * 4}
 	}
@@ -19,6 +27,18 @@ fn (mut app WindowApp) init() {
 
 fn (mut app WindowApp) frame() {
 	app.ctx.begin()
+	// Clear the whole drawable area each frame to avoid artifacts.
+	real := gg.window_size_real_pixels()
+	if !app.logged {
+		println('window: ctx=${app.ctx.width}x${app.ctx.height} real=${real.width}x${real.height} scale=${app.scale}')
+		app.logged = true
+	}
+	app.ctx.draw_rect_filled(0, 0, app.ctx.width, app.ctx.height, gg.black)
+	app.ctx.draw_rect_filled(0, 0, real.width, real.height, gg.black)
+	// Optionally advance the pure-V renderer each frame.
+	if i_animate_enabled() {
+		render_tick_frame()
+	}
 	rgb := i_last_rgb()
 	if rgb.len == screenwidth * screenheight * 3 {
 		// Convert RGB -> RGBA once per frame, then upload as a streaming texture.
@@ -34,8 +54,27 @@ fn (mut app WindowApp) frame() {
 			app.rgba[dst + 3] = 255
 		}
 		app.ctx.update_pixel_data(app.image_idx, &app.rgba[0])
-		s := f32(app.scale)
-		app.ctx.draw_image_by_id(0, 0, f32(screenwidth) * s, f32(screenheight) * s, app.image_idx)
+		// Draw with integer letterboxing based on real pixel size.
+		mut scale_x := real.width / screenwidth
+		mut scale_y := real.height / screenheight
+		mut scale := if scale_x < scale_y { scale_x } else { scale_y }
+		if scale < 1 {
+			scale = 1
+		}
+		// Respect the configured maximum scale if set.
+		if app.scale > 0 && scale > app.scale {
+			scale = app.scale
+		}
+		draw_w := screenwidth * scale
+		draw_h := screenheight * scale
+		off_x := (real.width - draw_w) / 2
+		off_y := (real.height - draw_h) / 2
+		// Explicitly paint letterbox bars to avoid driver artifacts.
+		app.ctx.draw_rect_filled(0, 0, real.width, off_y, gg.black)
+		app.ctx.draw_rect_filled(0, off_y + draw_h, real.width, real.height - (off_y + draw_h), gg.black)
+		app.ctx.draw_rect_filled(0, off_y, off_x, draw_h, gg.black)
+		app.ctx.draw_rect_filled(off_x + draw_w, off_y, real.width - (off_x + draw_w), draw_h, gg.black)
+		app.ctx.draw_image_by_id(f32(off_x), f32(off_y), f32(draw_w), f32(draw_h), app.image_idx)
 	}
 	app.ctx.end()
 }
@@ -45,23 +84,23 @@ pub fn show_window_if_enabled() {
 		return
 	}
 	rgb := i_last_rgb()
-	println('window: last_rgb len=${rgb.len}')
-	if rgb.len >= 6 {
-		println('window: first_rgb=${rgb[0]},${rgb[1]},${rgb[2]}')
-	}
 	if rgb.len != screenwidth * screenheight * 3 {
 		println('window: no RGB frame available to display')
 		return
 	}
+	scale := i_window_scale()
 	mut app := &WindowApp{
-		scale: 2
+		scale: scale
 		rgba:  []u8{len: screenwidth * screenheight * 4}
 	}
+	win_w := screenwidth * scale
+	win_h := screenheight * scale
 	app.ctx = gg.new_context(
-		width: screenwidth * app.scale
-		height: screenheight * app.scale
+		width: win_w
+		height: win_h
 		create_window: true
 		window_title: 'vdoom (pure V)'
+		bg_color: gg.black
 		init_fn: app.init
 		frame_fn: app.frame
 		user_data: app

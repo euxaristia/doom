@@ -27,3 +27,7 @@ chocolate-doom/src/doom/doomv
 # ignore local Doom resource files:
 vdoom/vdoom
 out/
+vdoom/main
+src/*
+!src/*.v
+!src/TRANSLATION_INDEX.md
