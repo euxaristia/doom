@@ -40,6 +40,8 @@ pub enum Card {
 	numcards
 }
 
+pub const numcards = 6
+
 @[_allow_multiple_values]
 pub enum WeaponType {
 	fist
@@ -79,6 +81,8 @@ pub enum PowerType {
 	infrared
 	numpowers
 }
+
+pub const numpowers = 6
 
 pub const invulntics = 30 * ticrate
 pub const invistics = 60 * ticrate
