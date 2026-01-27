@@ -167,3 +167,12 @@ pub fn d_game_mode_string(mode GameMode) string {
 		.indetermined { 'unknown' }
 	}
 }
+
+// C-style entrypoints used by some upstream modules.
+pub fn d_valid_game_mode_c(mission GameMission, mode GameMode) bool {
+	return d_valid_game_mode(mission, mode)
+}
+
+pub fn d_valid_game_version_c(mission GameMission, version GameVersion) bool {
+	return d_valid_game_version(mission, version)
+}

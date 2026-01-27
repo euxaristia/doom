@@ -152,6 +152,10 @@ fn main() {
 	println('mission: ${core.d_game_mission_string(core.game_mission())}')
 	println('mode: ${core.d_game_mode_string(core.game_mode())}')
 	println('desc: ${core.game_description()}')
+	detected, name := core.d_detected_iwad()
+	if detected {
+		println('iwad: ${name}')
+	}
 
 	if hash_stats {
 		stats := wad.hash_stats() or {

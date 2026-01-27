@@ -17,6 +17,7 @@ __global ticdup = 0
 __global loop_interface = LoopInterface{}
 __global maketic = 0
 __global game_loop_started = false
+pub const max_netgame_stall_tics = 5
 
 pub fn d_register_loop_callbacks(i &LoopInterface) {
 	loop_interface = *i

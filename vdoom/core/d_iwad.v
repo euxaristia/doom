@@ -62,3 +62,7 @@ pub fn d_iwad_init(path string) {
 	selected_iwad = info
 	iwad_detected = true
 }
+
+pub fn d_detected_iwad() (bool, string) {
+	return iwad_detected, selected_iwad.name
+}

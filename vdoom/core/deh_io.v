@@ -3,10 +3,14 @@ module core
 
 __global deh_loaded_files = []string{}
 __global deh_last_error = ''
+__global deh_input_buffer = ''
+__global deh_input_pos = 0
 
 pub fn deh_reset_io() {
 	deh_loaded_files = []string{}
 	deh_last_error = ''
+	deh_input_buffer = ''
+	deh_input_pos = 0
 }
 
 pub fn deh_load_file(path string) bool {
@@ -25,4 +29,18 @@ pub fn deh_load_lump(name string) bool {
 	}
 	deh_loaded_files << 'lump:${name}'
 	return true
+}
+
+pub fn deh_set_input_buffer(data string) {
+	deh_input_buffer = data
+	deh_input_pos = 0
+}
+
+pub fn deh_get_char() u8 {
+	if deh_input_pos >= deh_input_buffer.len {
+		return u8(0)
+	}
+	ch := deh_input_buffer[deh_input_pos]
+	deh_input_pos++
+	return ch
 }

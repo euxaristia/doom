@@ -108,6 +108,14 @@ pub fn game_description() string {
 	return gamedescription
 }
 
+pub fn set_modified_game(modified bool) {
+	modifiedgame = modified
+}
+
+pub fn is_modified_game() bool {
+	return modifiedgame
+}
+
 fn doomstat_init() {
 	if players.len == 0 {
 		players = []Player{len: maxplayers}

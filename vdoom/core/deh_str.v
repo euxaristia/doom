@@ -25,6 +25,9 @@ pub fn deh_replace_string(from string, to string) bool {
 	if from.len == 0 {
 		return false
 	}
+	if !deh_allow_long_strings && to.len > from.len {
+		return false
+	}
 	deh_add_string(from, to)
 	return true
 }

@@ -15,6 +15,8 @@ pub fn deh_init_system() {
 	}
 	deh_init()
 	deh_clear_strings()
+	deh_mapping_clear()
+	deh_reset_io()
 	deh_initialized = true
 	deh_file_loaded = false
 	deh_init_count++
