@@ -30,6 +30,7 @@ const iwads = [
 __global selected_iwad = IwadInfo{}
 __global iwad_detected = false
 __global iwad_path = ''
+__global iwad_checksum = u64(0)
 
 pub fn d_is_iwad_name(name string) bool {
 	lower := name.to_lower()
@@ -102,12 +103,17 @@ pub fn d_iwad_init(path string) {
 		set_game_identity(.doom, .indetermined, d_game_mission_string(.doom))
 		iwad_detected = false
 		iwad_path = ''
+		iwad_checksum = 0
 		return
 	}
 	set_game_identity(info.mission, info.mode, info.description)
 	selected_iwad = info
 	iwad_detected = true
 	iwad_path = path
+	iwad_checksum = wad_checksum(path) or { u64(0) }
+	if iwad_checksum != 0 {
+		set_wad_checksum(iwad_checksum)
+	}
 }
 
 pub fn d_detected_iwad() (bool, string) {
@@ -138,4 +144,8 @@ pub fn d_iwad_has_lump(name string) bool {
 	}
 	wad := load_wad_with_options(iwad_path, true, true) or { return false }
 	return wad.has_lump(name)
+}
+
+pub fn d_iwad_checksum() u64 {
+	return iwad_checksum
 }

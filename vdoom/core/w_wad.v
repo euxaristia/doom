@@ -104,6 +104,11 @@ pub fn wad_read_lump(path string, name string) ![]u8 {
 	return wad.read_lump(name)
 }
 
+pub fn wad_checksum(path string) ?u64 {
+	wad := load_wad_with_options(path, true, true) or { return none }
+	return w_checksum(wad)
+}
+
 pub fn (w Wad) find_lump_index(name string) int {
 	if name.len == 0 || name.len > 8 {
 		return -1

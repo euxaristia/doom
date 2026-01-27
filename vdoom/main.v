@@ -153,6 +153,7 @@ fn main() {
 	println('mission: ${core.d_game_mission_string(core.game_mission())}')
 	println('mode: ${core.d_game_mode_string(core.game_mode())}')
 	println('desc: ${core.game_description()}')
+	println('wad checksum: ${core.wad_checksum_value():016x}')
 	detected, name := core.d_detected_iwad()
 	if detected {
 		println('iwad: ${name}')

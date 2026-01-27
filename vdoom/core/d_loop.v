@@ -95,3 +95,7 @@ pub fn d_rendered_frames() int {
 pub fn d_reset_rendered_frames() {
 	rendered_frames = 0
 }
+
+pub fn d_render_stats() (int, int, int) {
+	return rendered_frames, i_frame_dump_count(), patch_cache_count()
+}

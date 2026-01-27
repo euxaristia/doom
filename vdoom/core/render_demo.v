@@ -3,6 +3,7 @@ module core
 
 __global render_tick = 0
 __global render_wad_path = ''
+__global render_checksum = u64(0)
 
 fn load_playpal(mut wad Wad) {
 	pal := wad.read_lump('PLAYPAL') or { return }
@@ -16,6 +17,7 @@ pub fn render_demo_frame(mut wad Wad) {
 	v_init()
 	load_playpal(mut wad)
 	render_wad_path = wad.path
+	render_checksum = w_checksum(wad)
 	render_tick = 0
 	i_reset_frame_dumps()
 	// Palette gradient background.
@@ -39,6 +41,15 @@ pub fn render_demo_frame(mut wad Wad) {
 	if wad.has_lump('TITLEPIC') {
 		v_draw_patch(screenwidth / 2, screenheight / 2, &Patch{})
 	}
+	// Visualize the directory checksum as a simple barcode.
+	mut sum := render_checksum
+	for i in 0 .. 32 {
+		bit := int(sum & 1)
+		sum >>= 1
+		if bit == 1 {
+			v_draw_filled_box(4 + i * 9, screenheight - 12, 6, 8, 255)
+		}
+	}
 	i_finish_update()
 }
 
@@ -58,7 +69,7 @@ pub fn render_tick_frame() {
 	render_tick++
 	// Simple animated marker so repeated frames differ.
 	bar_y := 120 + (render_tick % 40)
-	v_draw_filled_box(0, bar_y, screenwidth, 4, (render_tick * 3) % 256)
+	v_draw_filled_box(0, bar_y, screenwidth, 4, (render_tick * 3 + int(render_checksum & 0xff)) % 256)
 	v_draw_box(0, bar_y, screenwidth, 4, 255)
 	i_finish_update()
 }

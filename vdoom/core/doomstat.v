@@ -90,6 +90,7 @@ __global skyflatnum = 0
 __global rndindex = 0
 __global prndindex = 0
 __global netcmds = []TicCmd{}
+__global wad_dir_checksum = u64(0)
 
 pub fn set_game_identity(mission GameMission, mode GameMode, description string) {
 	gamemission = mission
@@ -132,6 +133,14 @@ pub fn is_modified_game() bool {
 
 pub fn game_identity_string() string {
 	return '${d_game_mission_string(gamemission)}/${d_game_mode_string(gamemode)}'
+}
+
+pub fn set_wad_checksum(sum u64) {
+	wad_dir_checksum = sum
+}
+
+pub fn wad_checksum_value() u64 {
+	return wad_dir_checksum
 }
 
 pub fn set_intermission_secret(didsecret bool) {

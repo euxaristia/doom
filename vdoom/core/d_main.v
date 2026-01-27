@@ -10,6 +10,7 @@ __global show_diskicon = 1
 __global wadfile = ''
 __global mapdir = ''
 __global iwadfile_local = ''
+__global boot_logged = false
 
 pub fn set_game_action(action GameAction) {
 	gameaction = action
@@ -106,6 +107,10 @@ fn d_handle_game_action() {
 pub fn d_doom_loop() {
 	main_loop_started = true
 	for {
+		if !boot_logged {
+			stat_dump()
+			boot_logged = true
+		}
 		i_start_frame()
 		net_update()
 		d_handle_game_action()
