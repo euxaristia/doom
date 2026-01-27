@@ -26,12 +26,6 @@ pub const maxintercepts = maxintercepts_original + 61
 pub const maxspecialcross = 20
 pub const maxspecialcross_original = 8
 
-pub struct Thinker {
-pub mut:
-	next &Thinker = unsafe { nil }
-	prev &Thinker = unsafe { nil }
-}
-
 pub struct DivLine {
 pub mut:
 	x  Fixed
