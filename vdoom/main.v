@@ -139,7 +139,7 @@ fn main() {
 	println('path: $wad_path')
 	println('size: ${os.file_size(wad_path)} bytes')
 
-	wad := core.load_wad_with_options(wad_path, use_stream, build_hash) or {
+	mut wad := core.load_wad_with_options(wad_path, use_stream, build_hash) or {
 		eprintln('error: $err')
 		return
 	}
@@ -156,6 +156,7 @@ fn main() {
 	if detected {
 		println('iwad: ${name}')
 	}
+	core.render_demo_frame(mut wad)
 
 	if hash_stats {
 		stats := wad.hash_stats() or {

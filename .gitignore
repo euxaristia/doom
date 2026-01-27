@@ -28,3 +28,4 @@ chocolate-doom/src/doom/doomv
 *.WAD
 *.wad
 vdoom/vdoom
+out/

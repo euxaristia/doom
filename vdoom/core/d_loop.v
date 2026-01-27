@@ -18,6 +18,7 @@ __global loop_interface = LoopInterface{}
 __global maketic = 0
 __global game_loop_started = false
 pub const max_netgame_stall_tics = 5
+__global rendered_frames = 0
 
 pub fn d_register_loop_callbacks(i &LoopInterface) {
 	loop_interface = *i
@@ -52,6 +53,7 @@ pub fn try_run_tics() {
 	if loop_interface.run_menu != unsafe { nil } {
 		loop_interface.run_menu()
 	}
+	rendered_frames++
 }
 
 pub fn d_start_game_loop() {

@@ -34,6 +34,9 @@ fn d_main_init() {
 
 pub fn boot() {
 	doomstat_init()
+	i_init_graphics()
+	v_init()
+	v_clear_screen(0)
 	d_items_init()
 	d_main_init()
 	deh_init_system()
@@ -77,7 +80,8 @@ pub fn d_start_title() {
 }
 
 pub fn d_display() bool {
-	// Rendering is not wired up yet; report "no wipe" by default.
+	// Render a simple animated frame so output is visible without SDL.
+	render_tick_frame()
 	return false
 }
 

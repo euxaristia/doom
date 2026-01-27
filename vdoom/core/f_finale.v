@@ -25,6 +25,9 @@ pub fn f_ticker() {
 		set_game_state(.demoscreen)
 		finale_count = 0
 	}
+	if i_palette_ready() {
+		render_tick_frame()
+	}
 }
 pub fn f_drawer() {}
 pub fn f_start_finale() {

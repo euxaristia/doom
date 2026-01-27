@@ -22,6 +22,9 @@ pub fn wi_ticker() {
 	if wi_state == .no_state && !wi_finished {
 		wi_end()
 	}
+	if i_palette_ready() {
+		render_tick_frame()
+	}
 }
 
 pub fn wi_drawer() {}
