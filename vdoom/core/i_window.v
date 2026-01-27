@@ -29,8 +29,9 @@ fn (mut app WindowApp) frame() {
 	app.ctx.begin()
 	// Clear the whole drawable area each frame to avoid artifacts.
 	real := gg.window_size_real_pixels()
+	logical := app.ctx.window_size()
 	if !app.logged {
-		println('window: ctx=${app.ctx.width}x${app.ctx.height} real=${real.width}x${real.height} scale=${app.scale}')
+		println('window: ctx=${app.ctx.width}x${app.ctx.height} logical=${logical.width}x${logical.height} real=${real.width}x${real.height} scale=${app.scale}')
 		app.logged = true
 	}
 	app.ctx.draw_rect_filled(0, 0, app.ctx.width, app.ctx.height, gg.black)
@@ -54,27 +55,29 @@ fn (mut app WindowApp) frame() {
 			app.rgba[dst + 3] = 255
 		}
 		app.ctx.update_pixel_data(app.image_idx, &app.rgba[0])
-		// Draw with integer letterboxing based on real pixel size.
-		mut scale_x := real.width / screenwidth
-		mut scale_y := real.height / screenheight
-		mut scale := if scale_x < scale_y { scale_x } else { scale_y }
-		if scale < 1 {
-			scale = 1
+		// Fit the native 320x200 framebuffer to avoid cropping.
+		target_aspect := f32(screenwidth) / f32(screenheight)
+		// Use logical sizes for viewport math and drawing coordinates.
+		mut view_w := logical.width
+		mut view_h := logical.height
+		mut view_x := 0
+		mut view_y := 0
+		if f32(logical.width) / f32(logical.height) > target_aspect {
+			view_h = logical.height
+			view_w = int(f32(logical.height) * target_aspect)
+			view_x = (logical.width - view_w) / 2
+		} else {
+			view_w = logical.width
+			view_h = int(f32(logical.width) / target_aspect)
+			view_y = (logical.height - view_h) / 2
 		}
-		// Respect the configured maximum scale if set.
-		if app.scale > 0 && scale > app.scale {
-			scale = app.scale
-		}
-		draw_w := screenwidth * scale
-		draw_h := screenheight * scale
-		off_x := (real.width - draw_w) / 2
-		off_y := (real.height - draw_h) / 2
-		// Explicitly paint letterbox bars to avoid driver artifacts.
-		app.ctx.draw_rect_filled(0, 0, real.width, off_y, gg.black)
-		app.ctx.draw_rect_filled(0, off_y + draw_h, real.width, real.height - (off_y + draw_h), gg.black)
-		app.ctx.draw_rect_filled(0, off_y, off_x, draw_h, gg.black)
-		app.ctx.draw_rect_filled(off_x + draw_w, off_y, real.width - (off_x + draw_w), draw_h, gg.black)
-		app.ctx.draw_image_by_id(f32(off_x), f32(off_y), f32(draw_w), f32(draw_h), app.image_idx)
+		// Explicitly paint bars to avoid driver artifacts.
+		app.ctx.draw_rect_filled(0, 0, logical.width, view_y, gg.black)
+		app.ctx.draw_rect_filled(0, view_y + view_h, logical.width, logical.height - (view_y + view_h), gg.black)
+		app.ctx.draw_rect_filled(0, view_y, view_x, view_h, gg.black)
+		app.ctx.draw_rect_filled(view_x + view_w, view_y, logical.width - (view_x + view_w), view_h, gg.black)
+		// Non-uniform scaling inside the 4:3 viewport applies the classic vertical stretch.
+		app.ctx.draw_image_by_id(f32(view_x), f32(view_y), f32(view_w), f32(view_h), app.image_idx)
 	}
 	app.ctx.end()
 }
@@ -93,6 +96,7 @@ pub fn show_window_if_enabled() {
 		scale: scale
 		rgba:  []u8{len: screenwidth * screenheight * 4}
 	}
+	// Match the native 320x200 aspect to avoid letterboxing.
 	win_w := screenwidth * scale
 	win_h := screenheight * scale
 	app.ctx = gg.new_context(
