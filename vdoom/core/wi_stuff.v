@@ -31,6 +31,8 @@ pub fn wi_start(wbstartstruct &WbStartStruct) {
 	wi_state = .stat_count
 	wi_count = 0
 	wi_finished = false
+	set_game_state(.intermission)
+	set_game_action(.nothing)
 }
 
 pub fn wi_end() {

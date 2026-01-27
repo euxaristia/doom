@@ -185,3 +185,10 @@ pub fn d_episode_map_limits(mission GameMission, mode GameMode) (int, int) {
 	}
 	return 1, 1
 }
+
+pub fn d_valid_start_params(mission GameMission, mode GameMode, episode int, mapnum int) bool {
+	if !d_valid_game_mode(mission, mode) {
+		return false
+	}
+	return d_valid_episode_map(mission, mode, episode, mapnum)
+}

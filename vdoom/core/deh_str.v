@@ -21,6 +21,16 @@ pub fn deh_string(s string) string {
 	return s
 }
 
+pub fn deh_string_ci(s string) string {
+	key := s.to_lower()
+	for k, v in deh_strings {
+		if k.to_lower() == key {
+			return v
+		}
+	}
+	return s
+}
+
 pub fn deh_replace_string(from string, to string) bool {
 	if from.len == 0 {
 		return false

@@ -34,3 +34,8 @@ pub fn m_start_control_panel() {
 	menuactive = true
 	paused = true
 }
+
+pub fn m_close_control_panel() {
+	menuactive = false
+	paused = false
+}

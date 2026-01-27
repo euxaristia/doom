@@ -76,7 +76,9 @@ __global deathmatchstarts = []MapThing{}
 __global deathmatch_p = &MapThing(unsafe { nil })
 __global playerstarts = []MapThing{}
 __global playerstartsingame = []bool{}
-__global wminfo = WbStartStruct{}
+__global wminfo = WbStartStruct{
+	plyr: []WbPlayerStruct{}
+}
 
 // Engine internals
 __global savegamedir = ''
@@ -162,6 +164,11 @@ fn doomstat_init() {
 	}
 	if playerstartsingame.len == 0 {
 		playerstartsingame = []bool{len: maxplayers}
+	}
+	if wminfo.plyr.len == 0 {
+		unsafe {
+			wminfo.plyr = []WbPlayerStruct{len: maxplayers}
+		}
 	}
 	if gamedescription.len == 0 {
 		gamedescription = d_game_mission_string(gamemission)

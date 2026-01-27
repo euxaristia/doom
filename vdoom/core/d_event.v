@@ -24,6 +24,7 @@ pub const maxevents = 64
 __global eventhead = 0
 __global eventtail = 0
 __global events = []Event{len: maxevents}
+__global event_dropped = 0
 
 @[_allow_multiple_values]
 pub enum ButtonCode {
@@ -57,6 +58,7 @@ pub fn d_post_event(ev &Event) {
 	// If the ring buffer overflows, drop the oldest event.
 	if eventhead == eventtail {
 		eventtail = (eventtail + 1) & (maxevents - 1)
+		event_dropped++
 	}
 }
 
@@ -72,6 +74,7 @@ pub fn d_pop_event() ?Event {
 pub fn d_clear_events() {
 	eventhead = 0
 	eventtail = 0
+	event_dropped = 0
 }
 
 pub fn d_post_quit_event() {

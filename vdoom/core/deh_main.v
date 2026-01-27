@@ -13,6 +13,10 @@ pub fn deh_init_system() {
 	if deh_initialized {
 		return
 	}
+	// Match upstream behavior: allow disabling cheat replacements.
+	if m_check_parm('-nocheats') > 0 {
+		deh_apply_cheats = false
+	}
 	deh_init()
 	deh_clear_strings()
 	deh_mapping_clear()

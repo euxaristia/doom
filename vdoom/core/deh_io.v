@@ -5,12 +5,14 @@ __global deh_loaded_files = []string{}
 __global deh_last_error = ''
 __global deh_input_buffer = ''
 __global deh_input_pos = 0
+__global deh_last_loaded = ''
 
 pub fn deh_reset_io() {
 	deh_loaded_files = []string{}
 	deh_last_error = ''
 	deh_input_buffer = ''
 	deh_input_pos = 0
+	deh_last_loaded = ''
 }
 
 pub fn deh_load_file(path string) bool {
@@ -19,6 +21,8 @@ pub fn deh_load_file(path string) bool {
 		return false
 	}
 	deh_loaded_files << path
+	deh_last_loaded = path
+	deh_last_error = ''
 	return true
 }
 
@@ -27,7 +31,10 @@ pub fn deh_load_lump(name string) bool {
 		deh_last_error = 'empty lump'
 		return false
 	}
-	deh_loaded_files << 'lump:${name}'
+	entry := 'lump:${name}'
+	deh_loaded_files << entry
+	deh_last_loaded = entry
+	deh_last_error = ''
 	return true
 }
 

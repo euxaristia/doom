@@ -77,6 +77,14 @@ pub fn d_find_iwad() string {
 	return ''
 }
 
+pub fn d_auto_iwad_init() string {
+	path := d_find_iwad()
+	if path.len > 0 {
+		d_iwad_init(path)
+	}
+	return path
+}
+
 pub fn d_iwad_init(path string) {
 	base := os.base(path)
 	info := detect_iwad(base) or {
