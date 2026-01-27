@@ -4,7 +4,7 @@ module core
 // Constants
 pub const float_speed = frac_unit * 4
 pub const maxhealth = 100
-pub const viewheight = 41 * frac_unit
+pub const viewheight_fixed = 41 * frac_unit
 pub const mapblockunits = 128
 pub const mapblocksize = mapblockunits * frac_unit
 pub const mapblockshift = frac_bits + 7
