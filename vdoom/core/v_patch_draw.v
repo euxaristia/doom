@@ -72,6 +72,56 @@ fn load_patch_image_cached(mut wad Wad, name string) ?PatchImage {
 	return img
 }
 
+fn decode_patch_to_screen(img PatchImage, x int, y int) []u8 {
+	mut screen := []u8{len: screenwidth * screenheight}
+	if img.data.len == 0 || img.columnofs.len == 0 {
+		return screen
+	}
+	for col in 0 .. img.width {
+		if col < 0 || col >= img.columnofs.len {
+			continue
+		}
+		mut p := img.columnofs[col]
+		if p <= 0 || p >= img.data.len {
+			continue
+		}
+		dx := x + col - img.leftoffset
+		if dx < 0 || dx >= screenwidth {
+			continue
+		}
+		for p < img.data.len {
+			topdelta := img.data[p]
+			if topdelta == 0xff {
+				break
+			}
+			if p + 2 >= img.data.len {
+				break
+			}
+			length := int(img.data[p + 1])
+			// Skip topdelta, length, unused byte.
+			p += 3
+			for row in 0 .. length {
+				if p + row >= img.data.len {
+					break
+				}
+				dy := y + int(topdelta) + row - img.topoffset
+				if dy < 0 || dy >= screenheight {
+					continue
+				}
+				screen[dy * screenwidth + dx] = img.data[p + row]
+			}
+			// Skip pixel data and trailing unused byte.
+			p += length + 1
+		}
+	}
+	return screen
+}
+
+pub fn try_decode_patch_fullscreen(mut wad Wad, name string) ?[]u8 {
+	img := load_patch_image_cached(mut wad, name) or { return none }
+	return decode_patch_to_screen(img, 0, 0)
+}
+
 fn draw_patch_image(x int, y int, img PatchImage) {
 	if img.data.len == 0 {
 		return

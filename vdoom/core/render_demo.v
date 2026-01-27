@@ -23,10 +23,10 @@ pub fn render_demo_frame(mut wad Wad) {
 	// Try to draw a real Doom patch if available.
 	mut drew_titlepic := false
 	if wad.has_lump('TITLEPIC') {
-		if img := load_patch_image_cached(mut wad, 'TITLEPIC') {
-			draw_patch_image(0, 0, img)
+		if screen := try_decode_patch_fullscreen(mut wad, 'TITLEPIC') {
+			v_draw_raw_screen(screen)
 			drew_titlepic = true
-			println('render: TITLEPIC ${img.width}x${img.height}')
+			println('render: TITLEPIC decoded to screen')
 		}
 	}
 	// Fallback: palette gradient background.
