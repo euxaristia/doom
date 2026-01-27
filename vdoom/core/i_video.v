@@ -54,7 +54,20 @@ pub fn i_shutdown_graphics() {
 pub fn i_set_palette(palette []u8) {
 	if palette.len >= 256 * 3 {
 		i_palette = palette[..256 * 3].clone()
-		palette_rgb = i_palette.clone()
+		// Doom palettes are typically 0..63; scale to 0..255 for PPM output.
+		mut scaled := []u8{len: i_palette.len}
+		for i, v in i_palette {
+			vv := int(v)
+			// If values are in 0..63, scale precisely; otherwise clamp.
+			mut sv := if vv <= 63 { (vv * 255 + 31) / 63 } else { vv }
+			if sv < 0 {
+				sv = 0
+			} else if sv > 255 {
+				sv = 255
+			}
+			scaled[i] = u8(sv)
+		}
+		palette_rgb = scaled.clone()
 		palette_loaded = true
 	}
 }
