@@ -67,15 +67,15 @@ __global singledemo = false
 __global gamestate = GameState.level
 
 // Players/world
-__global players = []voidptr{}
-__global playeringame = []bool{}
+__global players = []Player{len: maxplayers}
+__global playeringame = []bool{len: maxplayers}
 
 pub const max_dm_starts = 10
-__global deathmatchstarts = []voidptr{}
-__global deathmatch_p = unsafe { nil }
-__global playerstarts = []voidptr{}
-__global playerstartsingame = []bool{}
-__global wminfo = unsafe { nil }
+__global deathmatchstarts = []MapThing{len: max_dm_starts}
+__global deathmatch_p = &MapThing(unsafe { nil })
+__global playerstarts = []MapThing{len: maxplayers}
+__global playerstartsingame = []bool{len: maxplayers}
+__global wminfo = WbStartStruct{}
 
 // Engine internals
 __global savegamedir = ''

@@ -3,6 +3,9 @@ module core
 
 __global vanilla_savegame_limit = 0
 __global vanilla_demo_limit = 0
+__global oldgamestate = GameState.level
+__global timingdemo = false
+__global starttime = 0
 
 pub fn g_deathmatch_spawn_player(playernum int) {
 	_ = playernum
@@ -70,6 +73,18 @@ pub fn g_build_ticcmd(cmd &TicCmd, maketic int) {
 }
 
 pub fn g_ticker() {
+	oldgamestate = gamestate
+	if paused {
+		return
+	}
+	p_ticker()
+	gametic++
+	// Update positional audio using the console player's mobj when present.
+	if consoleplayer >= 0 && consoleplayer < players.len {
+		if voidptr(players[consoleplayer].mo) != unsafe { nil } {
+			s_update_sounds(players[consoleplayer].mo)
+		}
+	}
 }
 
 pub fn g_responder(ev &Event) bool {
