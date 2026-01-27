@@ -151,11 +151,23 @@ pub fn p_noise_alert(target voidptr, emmiter voidptr) { _ = target; _ = emmiter 
 
 // P_MAPUTL
 pub fn p_aprox_distance(dx Fixed, dy Fixed) Fixed { _ = dx; _ = dy; return Fixed(0) }
-pub fn p_point_on_line_side(x Fixed, y Fixed, line voidptr) int { _ = x; _ = y; _ = line; return 0 }
+pub fn p_point_on_line_side(x Fixed, y Fixed, line voidptr) int {
+	if line == unsafe { nil } {
+		return 0
+	}
+	ld := unsafe { &Line(line) }
+	return p_point_on_line_side_impl(x, y, ld)
+}
 pub fn p_point_on_divline_side(x Fixed, y Fixed, line &DivLine) int { _ = x; _ = y; _ = line; return 0 }
 pub fn p_make_divline(li voidptr, dl &DivLine) { _ = li; _ = dl }
 pub fn p_intercept_vector(v2 &DivLine, v1 &DivLine) Fixed { _ = v2; _ = v1; return Fixed(0) }
-pub fn p_box_on_line_side(tmbox []Fixed, ld voidptr) int { _ = tmbox; _ = ld; return 0 }
+pub fn p_box_on_line_side(tmbox []Fixed, ld voidptr) int {
+	if ld == unsafe { nil } {
+		return 0
+	}
+	line := unsafe { &Line(ld) }
+	return p_box_on_line_side_impl(tmbox, line)
+}
 pub fn p_line_opening(linedef voidptr) { _ = linedef }
 pub fn p_block_lines_iterator(x int, y int, func fn (line voidptr) bool) bool { _ = x; _ = y; _ = func; return false }
 pub fn p_block_things_iterator(x int, y int, func fn (mobj voidptr) bool) bool { _ = x; _ = y; _ = func; return false }
