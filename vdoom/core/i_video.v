@@ -2,6 +2,7 @@
 module core
 
 import os
+import math
 
 pub const screenwidth = 320
 pub const screenheight = 200
@@ -33,6 +34,10 @@ __global last_rgb = []u8{}
 __global window_enabled = false
 __global animate_enabled = false
 __global window_scale = 2
+__global gamma_value = f32(1.2)
+__global aspect_mode = 'native'
+__global colormap_data = []u8{}
+__global colormap_level = 0
 
 pub fn i_init_graphics() {
 	if i_video_buffer.len == 0 {
@@ -58,7 +63,7 @@ pub fn i_shutdown_graphics() {
 pub fn i_set_palette(palette []u8) {
 	if palette.len >= 256 * 3 {
 		i_palette = palette[..256 * 3].clone()
-		// Doom palettes are typically 0..63; scale to 0..255 for PPM output.
+		// Doom palettes are typically 0..63; scale to 0..255 and apply gamma.
 		mut scaled := []u8{len: i_palette.len}
 		for i, v in i_palette {
 			vv := int(v)
@@ -68,6 +73,18 @@ pub fn i_set_palette(palette []u8) {
 				sv = 0
 			} else if sv > 255 {
 				sv = 255
+			}
+			// Apply a simple gamma curve to better match Doom's look.
+			if gamma_value != 1.0 {
+				norm := f32(sv) / 255.0
+				// gamma_value > 1.0 darkens; < 1.0 brightens.
+				corrected := math.powf(norm, gamma_value)
+				sv = int(corrected * 255.0 + 0.5)
+				if sv < 0 {
+					sv = 0
+				} else if sv > 255 {
+					sv = 255
+				}
 			}
 			scaled[i] = u8(sv)
 		}
@@ -92,8 +109,9 @@ pub fn i_finish_update() {
 	}
 	mut rgb := []u8{len: screenwidth * screenheight * 3}
 	for i in 0 .. i_video_buffer.len {
-		idx := int(i_video_buffer[i]) * 3
-		if idx + 2 >= palette_rgb.len {
+		pal_idx := apply_colormap(int(i_video_buffer[i]))
+		idx := pal_idx * 3
+		if idx < 0 || idx + 2 >= palette_rgb.len {
 			continue
 		}
 		base := i * 3
@@ -162,6 +180,58 @@ pub fn i_set_window_scale(scale int) {
 
 pub fn i_window_scale() int {
 	return window_scale
+}
+
+pub fn i_set_gamma(value f32) {
+	if value > 0.0 {
+		gamma_value = value
+	}
+}
+
+pub fn i_gamma() f32 {
+	return gamma_value
+}
+
+pub fn i_set_aspect_mode(mode string) {
+	m := mode.to_lower()
+	if m == 'native' || m == 'doom43' {
+		aspect_mode = m
+	}
+}
+
+pub fn i_aspect_mode() string {
+	return aspect_mode
+}
+
+pub fn i_set_colormap(data []u8) {
+	colormap_data = data.clone()
+}
+
+pub fn i_set_colormap_level(level int) {
+	if level >= 0 {
+		colormap_level = level
+	}
+}
+
+fn apply_colormap(idx int) int {
+	if colormap_data.len < 256 {
+		return idx
+	}
+	maps := colormap_data.len / 256
+	if maps <= 0 {
+		return idx
+	}
+	mut level := colormap_level
+	if level < 0 {
+		level = 0
+	} else if level >= maps {
+		level = maps - 1
+	}
+	base := level * 256
+	if idx < 0 || idx >= 256 || base + idx >= colormap_data.len {
+		return idx
+	}
+	return int(colormap_data[base + idx])
 }
 
 pub fn i_read_screen(mut scr []u8) {

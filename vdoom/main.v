@@ -20,6 +20,9 @@ fn main() {
 	mut show_window := false
 	mut animate := false
 	mut window_scale_arg := 2
+	mut gamma_arg := f32(1.2)
+	mut aspect_arg := 'native'
+	mut colormap_level_arg := 0
 
 	for i := 0; i < args.len; i++ {
 		arg := args[i]
@@ -113,6 +116,36 @@ fn main() {
 				window_scale_arg = args[i + 1].int()
 				i++
 			}
+			'--gamma' {
+				if i + 1 >= args.len {
+					eprintln('error: missing value for $arg')
+					print_usage()
+					return
+				}
+				gamma_arg = args[i + 1].f32()
+				i++
+			}
+			'--aspect' {
+				if i + 1 >= args.len {
+					eprintln('error: missing value for $arg')
+					print_usage()
+					return
+				}
+				aspect_arg = args[i + 1]
+				i++
+			}
+			'--doom43' {
+				aspect_arg = 'doom43'
+			}
+			'--colormap' {
+				if i + 1 >= args.len {
+					eprintln('error: missing value for $arg')
+					print_usage()
+					return
+				}
+				colormap_level_arg = args[i + 1].int()
+				i++
+			}
 			'-n', '--max' {
 				if i + 1 >= args.len {
 					eprintln('error: missing value for $arg')
@@ -167,6 +200,9 @@ fn main() {
 	core.i_set_window_enabled(show_window)
 	core.i_set_animate_enabled(animate)
 	core.i_set_window_scale(window_scale_arg)
+	core.i_set_gamma(gamma_arg)
+	core.i_set_aspect_mode(aspect_arg)
+	core.i_set_colormap_level(colormap_level_arg)
 	if show_window {
 		// Window mode uses the latest RGB frame; avoid dumping files.
 		core.i_set_dump_frames(false)
@@ -331,6 +367,10 @@ fn print_usage() {
 	println('  --animate            animate the frame in window mode')
 	println('  --interpic           render INTERPIC (if present)')
 	println('  --scale <n>          integer window scale (default 2)')
+	println('  --gamma <g>          palette gamma (default 1.2, higher is darker)')
+	println('  --aspect <mode>      native|doom43 (default native)')
+	println('  --doom43             shorthand for --aspect doom43')
+	println('  --colormap <level>   apply COLORMAP level (default 0)')
 	println('  --hash               build hash table (default)')
 	println('  --no-hash            skip hash table build')
 	println('  --hash-stats         print hash table stats')

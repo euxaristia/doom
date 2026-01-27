@@ -11,6 +11,11 @@ fn load_playpal(mut wad Wad) {
 	if pal.len >= 256 * 3 {
 		i_set_palette(pal[..256 * 3])
 	}
+	if wad.has_lump('COLORMAP') {
+		if cmap := wad.read_lump('COLORMAP') {
+			i_set_colormap(cmap)
+		}
+	}
 }
 
 pub fn render_patch_frame(mut wad Wad, patch_name string) {

@@ -55,8 +55,8 @@ fn (mut app WindowApp) frame() {
 			app.rgba[dst + 3] = 255
 		}
 		app.ctx.update_pixel_data(app.image_idx, &app.rgba[0])
-		// Fit the native 320x200 framebuffer to avoid cropping.
-		target_aspect := f32(screenwidth) / f32(screenheight)
+		// Choose target aspect based on configured presentation mode.
+		target_aspect := if i_aspect_mode() == 'doom43' { f32(4.0 / 3.0) } else { f32(screenwidth) / f32(screenheight) }
 		// Use logical sizes for viewport math and drawing coordinates.
 		mut view_w := logical.width
 		mut view_h := logical.height
@@ -96,9 +96,9 @@ pub fn show_window_if_enabled() {
 		scale: scale
 		rgba:  []u8{len: screenwidth * screenheight * 4}
 	}
-	// Match the native 320x200 aspect to avoid letterboxing.
+	// Window size follows the selected aspect mode.
 	win_w := screenwidth * scale
-	win_h := screenheight * scale
+	win_h := if i_aspect_mode() == 'doom43' { screenheight_4_3 * scale } else { screenheight * scale }
 	app.ctx = gg.new_context(
 		width: win_w
 		height: win_h
