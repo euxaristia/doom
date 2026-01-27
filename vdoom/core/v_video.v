@@ -47,15 +47,15 @@ pub fn v_copy_rect(srcx int, srcy int, source []u8, width int, height int, destx
 }
 
 pub fn v_draw_patch(x int, y int, patch &Patch) {
-	_ = x
-	_ = y
 	_ = patch
+	img := v_try_load_patch('TITLEPIC') or { return }
+	draw_patch_image(x, y, img)
 }
 
 pub fn v_draw_patch_flipped(x int, y int, patch &Patch) {
-	_ = x
-	_ = y
 	_ = patch
+	img := v_try_load_patch('TITLEPIC') or { return }
+	draw_patch_image_flipped(x, y, img)
 }
 
 pub fn v_draw_tl_patch(x int, y int, patch &Patch) {
@@ -83,9 +83,7 @@ pub fn v_draw_xla_patch(x int, y int, patch &Patch) {
 }
 
 pub fn v_draw_patch_direct(x int, y int, patch &Patch) {
-	_ = x
-	_ = y
-	_ = patch
+	v_draw_patch(x, y, patch)
 }
 
 pub fn v_draw_block(x int, y int, width int, height int, src []u8) {
@@ -225,6 +223,20 @@ fn v_buffer() []u8 {
 		v_active_buffer = i_video_buffer
 	}
 	return v_active_buffer
+}
+
+fn v_try_load_patch(name string) ?PatchImage {
+	if render_wad_path.len == 0 {
+		return none
+	}
+	mut wad := load_wad_with_options(render_wad_path, true, true) or { return none }
+	if wad.has_lump(name) {
+		return load_patch_image(mut wad, name)
+	}
+	if name != 'INTERPIC' && wad.has_lump('INTERPIC') {
+		return load_patch_image(mut wad, 'INTERPIC')
+	}
+	return none
 }
 
 fn min(a int, b int) int {

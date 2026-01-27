@@ -3,8 +3,10 @@ module core
 
 __global flat_nums = map[string]int{}
 __global texture_nums = map[string]int{}
+__global patch_nums = map[string]int{}
 __global next_flat_num = 0
 __global next_texture_num = 0
+__global next_patch_num = 0
 
 // Retrieve column data for span blitting.
 pub fn r_get_column(tex int, col int) []u8 {
@@ -46,4 +48,15 @@ pub fn r_check_texture_num_for_name(name string) int {
 		return texture_nums[key]
 	}
 	return -1
+}
+
+pub fn r_patch_num_for_name(name string) int {
+	key := name.to_upper()
+	if key in patch_nums {
+		return patch_nums[key]
+	}
+	idx := next_patch_num
+	patch_nums[key] = idx
+	next_patch_num++
+	return idx
 }

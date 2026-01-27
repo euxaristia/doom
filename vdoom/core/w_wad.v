@@ -117,6 +117,10 @@ pub fn (w Wad) find_lump_index(name string) int {
 	return -1
 }
 
+pub fn (w Wad) has_lump(name string) bool {
+	return w.find_lump_index(name) >= 0
+}
+
 pub fn (w Wad) read_lump(name string) ![]u8 {
 	idx := w.find_lump_index(name)
 	if idx < 0 {

@@ -132,6 +132,7 @@ fn main() {
 	core.i_print_startup_banner('vdoom (V port)')
 	core.boot()
 	core.d_iwad_init(wad_path)
+	core.i_set_window_title(core.d_iwad_title())
 	zone := core.i_zone_base()
 	println('zone size: ${zone.size} bytes')
 
@@ -155,6 +156,10 @@ fn main() {
 	detected, name := core.d_detected_iwad()
 	if detected {
 		println('iwad: ${name}')
+	}
+	p := core.d_iwad_path()
+	if p.len > 0 {
+		println('iwad path: ${p}')
 	}
 	core.render_demo_frame(mut wad)
 

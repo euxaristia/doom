@@ -2,6 +2,7 @@
 module core
 
 __global render_tick = 0
+__global render_wad_path = ''
 
 fn load_playpal(mut wad Wad) {
 	pal := wad.read_lump('PLAYPAL') or { return }
@@ -14,7 +15,9 @@ pub fn render_demo_frame(mut wad Wad) {
 	i_init_graphics()
 	v_init()
 	load_playpal(mut wad)
+	render_wad_path = wad.path
 	render_tick = 0
+	i_reset_frame_dumps()
 	// Palette gradient background.
 	mut screen := []u8{len: screenwidth * screenheight}
 	for y in 0 .. screenheight {
@@ -31,6 +34,10 @@ pub fn render_demo_frame(mut wad Wad) {
 		c := (i * 23) % 256
 		v_draw_filled_box(16 + i * 28, 48, 20, 60, c)
 		v_draw_box(16 + i * 28, 48, 20, 60, 255)
+	}
+	// Try to draw a real Doom patch if available.
+	if wad.has_lump('TITLEPIC') {
+		v_draw_patch(screenwidth / 2, screenheight / 2, &Patch{})
 	}
 	i_finish_update()
 }

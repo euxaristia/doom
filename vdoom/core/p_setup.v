@@ -21,6 +21,7 @@ pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
 	p_pspr_init()
 	p_apply_time_limit()
 	v_clear_screen(0)
+	_ = r_patch_num_for_name('TITLEPIC')
 }
 
 pub fn p_init() {

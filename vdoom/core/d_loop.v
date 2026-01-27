@@ -87,3 +87,7 @@ pub fn d_non_vanilla_playback(conditional bool, lumpnum int, feature string) boo
 	_ = feature
 	return false
 }
+
+pub fn d_rendered_frames() int {
+	return rendered_frames
+}

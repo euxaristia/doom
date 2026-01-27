@@ -124,3 +124,10 @@ pub fn d_iwad_description() string {
 pub fn d_iwad_path() string {
 	return iwad_path
 }
+
+pub fn d_iwad_title() string {
+	if iwad_detected && selected_iwad.description.len > 0 {
+		return selected_iwad.description
+	}
+	return 'DOOM'
+}

@@ -74,7 +74,7 @@ pub fn i_finish_update() {
 		return
 	}
 	// Dump a few frames to PPM so rendering is visible without SDL.
-	if frame_dump_count >= 3 {
+	if frame_dump_count >= 5 {
 		return
 	}
 	frame_dump_count++
@@ -105,6 +105,10 @@ pub fn i_set_dump_frames(enabled bool) {
 
 pub fn i_palette_ready() bool {
 	return palette_loaded
+}
+
+pub fn i_reset_frame_dumps() {
+	frame_dump_count = 0
 }
 
 pub fn i_read_screen(mut scr []u8) {
