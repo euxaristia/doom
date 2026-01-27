@@ -1,12 +1,9 @@
 module core
 
 pub fn p_map_try_move_stub(thing &Mobj, x Fixed, y Fixed) bool {
-	_ = thing
-	_ = x
-	_ = y
-	return true
+	return p_try_move(thing, x, y)
 }
 
 pub fn p_map_slide_move_stub(mo &Mobj) {
-	_ = mo
+	p_slide_move(mo)
 }

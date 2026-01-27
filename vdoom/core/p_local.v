@@ -150,7 +150,9 @@ pub fn p_spawn_player_missile(source voidptr, typ int) { _ = source; _ = typ }
 pub fn p_noise_alert(target voidptr, emmiter voidptr) { _ = target; _ = emmiter }
 
 // P_MAPUTL
-pub fn p_aprox_distance(dx Fixed, dy Fixed) Fixed { _ = dx; _ = dy; return Fixed(0) }
+pub fn p_aprox_distance(dx Fixed, dy Fixed) Fixed {
+	return p_approx_distance(dx, dy)
+}
 pub fn p_point_on_line_side(x Fixed, y Fixed, line voidptr) int {
 	if line == unsafe { nil } {
 		return 0
@@ -158,9 +160,19 @@ pub fn p_point_on_line_side(x Fixed, y Fixed, line voidptr) int {
 	ld := unsafe { &Line(line) }
 	return p_point_on_line_side_impl(x, y, ld)
 }
-pub fn p_point_on_divline_side(x Fixed, y Fixed, line &DivLine) int { _ = x; _ = y; _ = line; return 0 }
-pub fn p_make_divline(li voidptr, dl &DivLine) { _ = li; _ = dl }
-pub fn p_intercept_vector(v2 &DivLine, v1 &DivLine) Fixed { _ = v2; _ = v1; return Fixed(0) }
+pub fn p_point_on_divline_side(x Fixed, y Fixed, line &DivLine) int {
+	return p_point_on_divline_side_impl(x, y, line)
+}
+pub fn p_make_divline(li voidptr, dl &DivLine) {
+	if li == unsafe { nil } {
+		return
+	}
+	line := unsafe { &Line(li) }
+	p_make_divline_impl(line, dl)
+}
+pub fn p_intercept_vector(v2 &DivLine, v1 &DivLine) Fixed {
+	return p_intercept_vector_impl(v2, v1)
+}
 pub fn p_box_on_line_side(tmbox []Fixed, ld voidptr) int {
 	if ld == unsafe { nil } {
 		return 0

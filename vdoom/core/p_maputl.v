@@ -60,3 +60,41 @@ pub fn p_box_on_line_side_impl(tmbox []Fixed, ld &Line) int {
 	}
 	return if p1 == p2 { p1 } else { -1 }
 }
+
+pub fn p_point_on_divline_side_impl(x Fixed, y Fixed, line &DivLine) int {
+	if line.dx == 0 {
+		if x <= line.x {
+			return if line.dy > 0 { 1 } else { 0 }
+		}
+		return if line.dy < 0 { 1 } else { 0 }
+	}
+	if line.dy == 0 {
+		if y <= line.y {
+			return if line.dx < 0 { 1 } else { 0 }
+		}
+		return if line.dx > 0 { 1 } else { 0 }
+	}
+	dx := x - line.x
+	dy := y - line.y
+	left := fixed_mul(line.dy >> frac_bits, dx)
+	right := fixed_mul(dy, line.dx >> frac_bits)
+	return if right < left { 0 } else { 1 }
+}
+
+pub fn p_make_divline_impl(li &Line, dl &DivLine) {
+	unsafe {
+		dl.x = li.v1.x
+		dl.y = li.v1.y
+		dl.dx = li.dx
+		dl.dy = li.dy
+	}
+}
+
+pub fn p_intercept_vector_impl(v2 &DivLine, v1 &DivLine) Fixed {
+	den := fixed_mul(v1.dy >> 8, v2.dx) - fixed_mul(v1.dx >> 8, v2.dy)
+	if den == 0 {
+		return 0
+	}
+	num := fixed_mul((v1.x - v2.x) >> 8, v1.dy) + fixed_mul((v2.y - v1.y) >> 8, v1.dx)
+	return fixed_div(num, den)
+}
