@@ -1,6 +1,7 @@
 module core
 
 import gg
+import sokol.sapp
 
 struct WindowApp {
 mut:
@@ -95,6 +96,17 @@ fn (mut app WindowApp) frame() {
 	app.ctx.end()
 }
 
+fn on_event(e &gg.Event, _data voidptr) {
+	if e.typ != sapp.EventType.key_down {
+		return
+	}
+	match e.key_code {
+		.up { render_menu_move(-1) }
+		.down { render_menu_move(1) }
+		else {}
+	}
+}
+
 pub fn show_window_if_enabled() {
 	if !i_window_enabled() {
 		return
@@ -120,6 +132,7 @@ pub fn show_window_if_enabled() {
 		bg_color: gg.black
 		init_fn: app.init
 		frame_fn: app.frame
+		event_fn: on_event
 		user_data: app
 	)
 	app.ctx.run()
