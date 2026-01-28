@@ -20,6 +20,7 @@ pub mut:
 	z Fixed
 }
 
+@[heap]
 pub struct Sector {
 pub mut:
 	floorheight Fixed

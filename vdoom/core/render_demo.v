@@ -5,6 +5,13 @@ __global render_tick = 0
 __global render_wad_path = ''
 __global render_checksum = u64(0)
 __global render_was_patch = false
+__global render_show_menu = false
+__global render_menu_base = []u8{}
+__global render_menu_item = 0
+
+const menu_lineheight = 16
+const menu_skull_xoff = -32
+const menu_item_count = 6
 
 fn load_playpal(mut wad Wad) {
 	pal := wad.read_lump('PLAYPAL') or { return }
@@ -26,6 +33,7 @@ pub fn render_patch_frame(mut wad Wad, patch_name string) {
 	render_checksum = w_checksum(wad)
 	render_tick = 0
 	i_reset_frame_dumps()
+	render_show_menu = false
 	name := patch_name.to_upper()
 	if wad.has_lump(name) {
 		if screen := try_decode_patch_fullscreen(mut wad, name) {
@@ -50,6 +58,7 @@ pub fn render_demo_frame(mut wad Wad) {
 	render_tick = 0
 	i_reset_frame_dumps()
 	render_was_patch = false
+	render_show_menu = false
 	// Try to draw a real Doom patch if available.
 	mut drew_titlepic := false
 	if wad.has_lump('TITLEPIC') {
@@ -90,6 +99,109 @@ pub fn render_demo_frame(mut wad Wad) {
 	i_finish_update()
 }
 
+fn render_main_menu(mut wad Wad) {
+	i_init_graphics()
+	v_init()
+	load_playpal(mut wad)
+	render_wad_path = wad.path
+	render_checksum = w_checksum(wad)
+	render_tick = 0
+	i_reset_frame_dumps()
+	render_was_patch = false
+	render_show_menu = true
+	render_menu_item = 0
+	// Base layer: TITLEPIC if available, else clear.
+	if wad.has_lump('TITLEPIC') {
+		if screen := try_decode_patch_fullscreen(mut wad, 'TITLEPIC') {
+			v_draw_raw_screen(screen)
+		} else {
+			v_clear_screen(0)
+		}
+	} else {
+		v_clear_screen(0)
+	}
+	// Draw main menu title/logo.
+	draw_menu_patch(mut wad, 'M_DOOM', 94, 2)
+	// Draw menu items from the classic main menu layout.
+	mut x := 97
+	mut y := 64
+	items := ['M_NGAME', 'M_OPTION', 'M_LOADG', 'M_SAVEG', 'M_RDTHIS', 'M_QUITG']
+	for name in items {
+		if draw_menu_patch(mut wad, name, x, y) {
+			y += menu_lineheight
+		} else {
+			y += menu_lineheight
+		}
+	}
+	// Snapshot the base menu without the skull for animation frames.
+	store_menu_base()
+	// Draw initial skull cursor.
+	draw_menu_skull(mut wad, x, 64, render_menu_item, 0)
+	i_finish_update()
+}
+
+fn draw_menu_patch(mut wad Wad, name string, x int, y int) bool {
+	if !wad.has_lump(name) {
+		return false
+	}
+	img := load_patch_image_cached(mut wad, name) or { return false }
+	draw_patch_image(x, y, img)
+	return true
+}
+
+fn draw_menu_skull(mut wad Wad, x int, y int, item int, frame int) {
+	skull := if frame == 0 { 'M_SKULL1' } else { 'M_SKULL2' }
+	if wad.has_lump(skull) {
+		if img := load_patch_image_cached(mut wad, skull) {
+			draw_patch_image(x + menu_skull_xoff, y - 5 + item * menu_lineheight, img)
+			return
+		}
+	}
+	// Fallback: simple box cursor.
+	v_draw_box(x + menu_skull_xoff, y - 5 + item * menu_lineheight, 12, 12, 255)
+}
+
+fn store_menu_base() {
+	if i_video_buffer.len != screenwidth * screenheight {
+		return
+	}
+	if render_menu_base.len != screenwidth * screenheight {
+		render_menu_base = []u8{len: screenwidth * screenheight}
+	}
+	for i := 0; i < render_menu_base.len; i++ {
+		render_menu_base[i] = i_video_buffer[i]
+	}
+}
+
+pub fn render_menu_frame(mut wad Wad) {
+	render_main_menu(mut wad)
+}
+
+pub fn render_menu_move(delta int) {
+	if !render_show_menu {
+		return
+	}
+	mut next := render_menu_item + delta
+	if next < 0 {
+		next = menu_item_count - 1
+	} else if next >= menu_item_count {
+		next = 0
+	}
+	render_menu_item = next
+	render_menu_redraw()
+}
+
+fn render_menu_redraw() {
+	if render_menu_base.len != screenwidth * screenheight {
+		return
+	}
+	v_draw_raw_screen(render_menu_base)
+	mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
+	which_skull := (render_tick / 8) & 1
+	draw_menu_skull(mut wad, 97, 64, render_menu_item, which_skull)
+	i_finish_update()
+}
+
 pub fn render_more_frames(count int) {
 	if count <= 0 {
 		return
@@ -106,6 +218,22 @@ pub fn render_tick_frame() {
 	// Do not draw the animated bar over patch renders like TITLEPIC.
 	if render_was_patch {
 		i_finish_update()
+		return
+	}
+	if render_show_menu {
+		if render_menu_base.len != screenwidth * screenheight {
+			i_finish_update()
+			return
+		}
+		v_draw_raw_screen(render_menu_base)
+		mut wad := load_wad_with_options(render_wad_path, true, true) or {
+			i_finish_update()
+			return
+		}
+		which_skull := (render_tick / 8) & 1
+		draw_menu_skull(mut wad, 97, 64, render_menu_item, which_skull)
+		i_finish_update()
+		render_tick++
 		return
 	}
 	render_tick++

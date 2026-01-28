@@ -17,6 +17,7 @@ fn main() {
 	mut list_hash := false
 	mut zone_mb := 0
 	mut patch_name := ''
+	mut show_menu := false
 	mut show_window := false
 	mut animate := false
 	mut window_scale_arg := 3
@@ -106,6 +107,9 @@ fn main() {
 			}
 			'--interpic' {
 				patch_name = 'INTERPIC'
+			}
+			'--menu' {
+				show_menu = true
 			}
 			'--scale' {
 				if i + 1 >= args.len {
@@ -236,7 +240,9 @@ fn main() {
 	if p.len > 0 {
 		println('iwad path: ${p}')
 	}
-	if patch_name.len > 0 {
+	if show_menu {
+		core.render_menu_frame(mut wad)
+	} else if patch_name.len > 0 {
 		core.render_patch_frame(mut wad, patch_name)
 	} else {
 		core.render_demo_frame(mut wad)
@@ -366,6 +372,7 @@ fn print_usage() {
 	println('  --window             open a simple live window (blocks until closed)')
 	println('  --animate            animate the frame in window mode')
 	println('  --interpic           render INTERPIC (if present)')
+	println('  --menu               render the main menu overlay (if patches exist)')
 	println('  --scale <n>          integer window scale (default 3)')
 	println('  --gamma <g>          palette gamma (default 1.2, higher is darker)')
 	println('  --aspect <mode>      native|doom43 (default doom43)')

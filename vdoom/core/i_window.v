@@ -9,6 +9,8 @@ mut:
 	image_idx int
 	rgba      []u8
 	logged    bool
+	last_up   bool
+	last_down bool
 }
 
 fn (mut app WindowApp) init() {
@@ -40,6 +42,17 @@ fn (mut app WindowApp) frame() {
 	if i_animate_enabled() {
 		render_tick_frame()
 	}
+	// Edge-detect arrow keys for menu navigation.
+	up_now := app.ctx.is_key_down(.up)
+	down_now := app.ctx.is_key_down(.down)
+	if up_now && !app.last_up {
+		render_menu_move(-1)
+	}
+	if down_now && !app.last_down {
+		render_menu_move(1)
+	}
+	app.last_up = up_now
+	app.last_down = down_now
 	rgb := i_last_rgb()
 	if rgb.len == screenwidth * screenheight * 3 {
 		// Convert RGB -> RGBA once per frame, then upload as a streaming texture.
