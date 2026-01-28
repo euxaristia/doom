@@ -106,13 +106,16 @@ fn (mut app WindowApp) frame() {
 	}
 	// Debug overlay for input events (enable with VDOOM_DEBUG_INPUT=1).
 	if i_debug_input() {
-		if app.debug_event.len > 0 || app.debug_keys.len > 0 {
-			app.ctx.draw_rect_filled(4, 4, app.ctx.width, 28, gg.black)
+		if app.ctx.font_inited {
 			if app.debug_event.len > 0 {
-				app.ctx.draw_text_def(8, 8, app.debug_event)
+				app.ctx.draw_text(8, 8, app.debug_event, gg.TextCfg{
+					color: gg.white
+				})
 			}
 			if app.debug_keys.len > 0 {
-				app.ctx.draw_text_def(8, 20, app.debug_keys)
+				app.ctx.draw_text(8, 20, app.debug_keys, gg.TextCfg{
+					color: gg.white
+				})
 			}
 		}
 		// Fallback debug indicator if text rendering is unavailable.
