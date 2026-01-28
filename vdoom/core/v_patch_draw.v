@@ -24,6 +24,11 @@ fn u16_le(data []u8, off int) ?int {
 	return int(u16(data[off]) | (u16(data[off + 1]) << 8))
 }
 
+fn i16_le(data []u8, off int) ?int {
+	val := u16_le(data, off) or { return none }
+	return int(i16(val))
+}
+
 fn u32_le(data []u8, off int) ?int {
 	if off + 4 > data.len {
 		return none
@@ -38,8 +43,8 @@ fn load_patch_image(mut wad Wad, name string) ?PatchImage {
 	}
 	width := u16_le(raw, 0) or { return none }
 	height := u16_le(raw, 2) or { return none }
-	leftoffset := u16_le(raw, 4) or { return none }
-	topoffset := u16_le(raw, 6) or { return none }
+	leftoffset := i16_le(raw, 4) or { return none }
+	topoffset := i16_le(raw, 6) or { return none }
 	if width <= 0 || height <= 0 || width > 2048 || height > 2048 {
 		return none
 	}

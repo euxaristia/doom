@@ -108,11 +108,18 @@ fn (mut app WindowApp) frame() {
 	if i_debug_input() {
 		if app.ctx.font_inited {
 			if app.debug_event.len > 0 {
+				// Subtle shadow for legibility on bright backgrounds.
+				app.ctx.draw_text(9, 9, app.debug_event, gg.TextCfg{
+					color: gg.black
+				})
 				app.ctx.draw_text(8, 8, app.debug_event, gg.TextCfg{
 					color: gg.white
 				})
 			}
 			if app.debug_keys.len > 0 {
+				app.ctx.draw_text(9, 21, app.debug_keys, gg.TextCfg{
+					color: gg.black
+				})
 				app.ctx.draw_text(8, 20, app.debug_keys, gg.TextCfg{
 					color: gg.white
 				})
