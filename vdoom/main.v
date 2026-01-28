@@ -24,6 +24,7 @@ fn main() {
 	mut gamma_arg := f32(1.2)
 	mut aspect_arg := 'doom43'
 	mut colormap_level_arg := 0
+	mut debug_input := false
 
 	for i := 0; i < args.len; i++ {
 		arg := args[i]
@@ -150,6 +151,9 @@ fn main() {
 				colormap_level_arg = args[i + 1].int()
 				i++
 			}
+			'--debug' {
+				debug_input = true
+			}
 			'-n', '--max' {
 				if i + 1 >= args.len {
 					eprintln('error: missing value for $arg')
@@ -207,6 +211,7 @@ fn main() {
 	core.i_set_gamma(gamma_arg)
 	core.i_set_aspect_mode(aspect_arg)
 	core.i_set_colormap_level(colormap_level_arg)
+	core.i_set_debug_input(debug_input)
 	if show_window {
 		// Window mode uses the latest RGB frame; avoid dumping files.
 		core.i_set_dump_frames(false)
@@ -378,6 +383,7 @@ fn print_usage() {
 	println('  --aspect <mode>      native|doom43 (default doom43)')
 	println('  --doom43             shorthand for --aspect doom43')
 	println('  --colormap <level>   apply COLORMAP level (default 0)')
+	println('  --debug              show input debug overlay')
 	println('  --hash               build hash table (default)')
 	println('  --no-hash            skip hash table build')
 	println('  --hash-stats         print hash table stats')

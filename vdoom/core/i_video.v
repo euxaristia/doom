@@ -33,6 +33,7 @@ __global palette_loaded = false
 __global last_rgb = []u8{}
 __global window_enabled = false
 __global animate_enabled = false
+__global debug_input = false
 __global window_scale = 3
 __global gamma_value = f32(1.2)
 __global aspect_mode = 'doom43'
@@ -177,6 +178,14 @@ pub fn i_set_window_scale(scale int) {
 	if scale > 0 {
 		window_scale = scale
 	}
+}
+
+pub fn i_set_debug_input(enabled bool) {
+	debug_input = enabled
+}
+
+pub fn i_debug_input() bool {
+	return debug_input
 }
 
 pub fn i_window_scale() int {
