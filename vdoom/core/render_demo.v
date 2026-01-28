@@ -154,11 +154,12 @@ fn draw_menu_skull(mut wad Wad, x int, y int, item int, frame int) {
 	if wad.has_lump(skull) {
 		if img := load_patch_image_cached(mut wad, skull) {
 			draw_patch_image(x + menu_skull_xoff, y - 5 + item * menu_lineheight, img)
-			return
 		}
 	}
 	// Fallback: simple box cursor.
 	v_draw_box(x + menu_skull_xoff, y - 5 + item * menu_lineheight, 12, 12, 255)
+	// Always draw a tiny marker so cursor motion is visible.
+	v_draw_filled_box(x + menu_skull_xoff - 6, y + item * menu_lineheight, 4, 10, 255)
 }
 
 fn store_menu_base() {
@@ -188,6 +189,7 @@ pub fn render_menu_move(delta int) {
 		next = 0
 	}
 	render_menu_item = next
+	println('menu item -> ${render_menu_item}')
 	render_menu_redraw()
 }
 

@@ -12,6 +12,12 @@ mut:
 	logged    bool
 	last_up   bool
 	last_down bool
+	debug_event string
+	debug_keys  string
+	debug_flash int
+	last_key_code int
+	last_event_type int
+	seen_event bool
 }
 
 fn (mut app WindowApp) init() {
@@ -43,17 +49,20 @@ fn (mut app WindowApp) frame() {
 	if i_animate_enabled() {
 		render_tick_frame()
 	}
-	// Edge-detect arrow keys for menu navigation.
+	// Edge-detect arrow keys for menu navigation (only if events are not firing).
 	up_now := app.ctx.is_key_down(.up)
 	down_now := app.ctx.is_key_down(.down)
-	if up_now && !app.last_up {
-		render_menu_move(-1)
-	}
-	if down_now && !app.last_down {
-		render_menu_move(1)
+	if !app.seen_event {
+		if up_now && !app.last_up {
+			render_menu_move(-1)
+		}
+		if down_now && !app.last_down {
+			render_menu_move(1)
+		}
 	}
 	app.last_up = up_now
 	app.last_down = down_now
+	app.debug_keys = 'poll up=${up_now} down=${down_now} events=${app.seen_event}'
 	rgb := i_last_rgb()
 	if rgb.len == screenwidth * screenheight * 3 {
 		// Convert RGB -> RGBA once per frame, then upload as a streaming texture.
@@ -93,11 +102,46 @@ fn (mut app WindowApp) frame() {
 		// Non-uniform scaling inside the 4:3 viewport applies the classic vertical stretch.
 		app.ctx.draw_image_by_id(f32(view_x), f32(view_y), f32(view_w), f32(view_h), app.image_idx)
 	}
+	// Debug overlay for input events on Wayland.
+	if app.debug_event.len > 0 || app.debug_keys.len > 0 {
+		app.ctx.draw_rect_filled(4, 4, app.ctx.width, 28, gg.black)
+		if app.debug_event.len > 0 {
+			app.ctx.draw_text_def(8, 8, app.debug_event)
+		}
+		if app.debug_keys.len > 0 {
+			app.ctx.draw_text_def(8, 20, app.debug_keys)
+		}
+	}
+	// Fallback debug indicator if text rendering is unavailable.
+	if app.debug_flash > 0 {
+		app.debug_flash--
+	}
+	up_color := if up_now { gg.green } else { gg.red }
+	down_color := if down_now { gg.green } else { gg.red }
+	event_color := if app.debug_flash > 0 { gg.yellow } else { gg.gray }
+	app.ctx.draw_rect_filled(4, 32, 12, 12, up_color)
+	app.ctx.draw_rect_filled(20, 32, 12, 12, down_color)
+	app.ctx.draw_rect_filled(36, 32, 12, 12, event_color)
 	app.ctx.end()
 }
 
 fn on_event(e &gg.Event, _data voidptr) {
+	if _data == unsafe { nil } {
+		return
+	}
+	mut app := unsafe { &WindowApp(_data) }
+	app.debug_event = 'event ${e.typ} key=${e.key_code} repeat=${e.key_repeat}'
+	app.last_key_code = int(e.key_code)
+	app.last_event_type = int(e.typ)
+	app.seen_event = true
+	if e.typ == sapp.EventType.key_down {
+		app.debug_flash = 10
+		println('event key_down key=${e.key_code} repeat=${e.key_repeat}')
+	}
 	if e.typ != sapp.EventType.key_down {
+		return
+	}
+	if e.key_repeat {
 		return
 	}
 	match e.key_code {
@@ -105,6 +149,14 @@ fn on_event(e &gg.Event, _data voidptr) {
 		.down { render_menu_move(1) }
 		else {}
 	}
+}
+
+fn on_char(c u32, data voidptr) {
+	if data == unsafe { nil } {
+		return
+	}
+	mut app := unsafe { &WindowApp(data) }
+	app.debug_event = 'char ${c}'
 }
 
 pub fn show_window_if_enabled() {
@@ -133,6 +185,7 @@ pub fn show_window_if_enabled() {
 		init_fn: app.init
 		frame_fn: app.frame
 		event_fn: on_event
+		char_fn: on_char
 		user_data: app
 	)
 	app.ctx.run()
