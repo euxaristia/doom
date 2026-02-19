@@ -65,6 +65,8 @@ pub fn net_cl_connect(_addr &Net_addr_t, _data &Net_connect_data_t) bool {
 		return false
 	}
 	net_conn_init_client(&client_connection, server_addr, .net_protocol_unknown)
+	// Handshake is not fully translated yet; mark connected for first-pass flow.
+	client_connection.state = .net_conn_state_connected
 	net_client_connected = true
 	net_waiting_for_launch = true
 	net_client_received_wait_data = false
@@ -86,6 +88,7 @@ pub fn net_cl_get_settings(out_settings &Net_gamesettings_t) bool {
 
 @[export: 'NET_CL_Disconnect']
 pub fn net_cl_disconnect() {
+	net_conn_disconnect(&client_connection)
 	if server_addr != unsafe { nil } {
 		net_release_address(server_addr)
 		server_addr = unsafe { nil }
@@ -167,6 +170,7 @@ pub fn net_cl_run() {
 	if client_connection.state == .net_conn_state_disconnected
 		|| client_connection.state == .net_conn_state_disconnected_sleep {
 		net_cl_disconnect()
+		return
 	}
 	net_waiting_for_launch = client_connection.state == .net_conn_state_connected
 		&& client_state == .client_state_waiting_launch
