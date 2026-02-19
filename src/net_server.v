@@ -12,6 +12,7 @@ __global (
 	server_master       &Net_addr_t
 	server_state        int
 	last_master_refresh int
+	server_clients      []&Net_addr_t
 )
 
 const master_refresh_period_secs = 30
@@ -21,6 +22,8 @@ pub fn net_sv_init() {
 	if server_context == unsafe { nil } {
 		server_context = net_new_context()
 	}
+	server_state = 0
+	server_clients = []&Net_addr_t{}
 }
 
 @[export: 'NET_SV_AddModule']
@@ -55,7 +58,7 @@ pub fn net_sv_send_query_response(addr &Net_addr_t) {
 	mut query := Net_querydata_t{}
 	query.version = c'vdoom'
 	query.server_state = server_state
-	query.num_players = 0
+	query.num_players = server_clients.len
 	query.max_players = 8
 	query.gamemode = int(GameMode_t.indetermined)
 	query.gamemission = int(GameMission_t.none_)
@@ -74,6 +77,42 @@ fn net_sv_send_reject(addr &Net_addr_t, msg &i8) {
 	net_write_string(packet, msg)
 	net_send_packet(addr, packet)
 	net_free_packet(packet)
+}
+
+fn net_sv_client_index(addr &Net_addr_t) int {
+	for i, a in server_clients {
+		if a == addr {
+			return i
+		}
+	}
+	return -1
+}
+
+fn net_sv_add_client(addr &Net_addr_t) {
+	if addr == unsafe { nil } {
+		return
+	}
+	if net_sv_client_index(addr) >= 0 {
+		return
+	}
+	net_reference_address(addr)
+	server_clients << addr
+}
+
+fn net_sv_parse_launch(addr &Net_addr_t) {
+	if server_clients.len == 0 || addr != server_clients[0] {
+		return
+	}
+	if server_state != 0 {
+		return
+	}
+	server_state = 1
+	for client_addr in server_clients {
+		packet := net_new_packet(8)
+		net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_launch))
+		net_send_packet(client_addr, packet)
+		net_free_packet(packet)
+	}
 }
 
 fn net_sv_parse_syn(addr &Net_addr_t, packet &Net_packet_t) {
@@ -110,12 +149,14 @@ fn net_sv_parse_syn(addr &Net_addr_t, packet &Net_packet_t) {
 	if player_name == unsafe { nil } {
 		return
 	}
+	_ = player_name
 	reply := net_new_packet(64)
 	net_write_int16(reply, u32(Net_packet_type_t.net_packet_type_syn))
 	net_write_string(reply, c'vdoom')
 	net_write_protocol(reply, protocol)
 	net_send_packet(addr, reply)
 	net_free_packet(reply)
+	net_sv_add_client(addr)
 }
 
 @[export: 'NET_SV_Run']
@@ -148,6 +189,9 @@ pub fn net_sv_run() {
 					.net_packet_type_syn {
 						net_sv_parse_syn(addr, packet)
 					}
+					.net_packet_type_launch {
+						net_sv_parse_launch(addr)
+					}
 					else {}
 				}
 			}
@@ -163,6 +207,10 @@ pub fn net_sv_shutdown() {
 		net_release_address(server_master)
 		server_master = unsafe { nil }
 	}
+	for addr in server_clients {
+		net_release_address(addr)
+	}
+	server_clients = []&Net_addr_t{}
 	server_context = unsafe { nil }
 	server_state = 0
 }
