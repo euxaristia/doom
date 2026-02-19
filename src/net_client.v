@@ -133,6 +133,12 @@ fn net_cl_parse_packet(packet &Net_packet_t) {
 	}
 	_ = net_conn_packet(&client_connection, packet, &packet_type)
 	match Net_packet_type_t(packet_type) {
+		.net_packet_type_syn {
+			net_cl_parse_syn(packet)
+		}
+		.net_packet_type_rejected {
+			net_cl_parse_reject(packet)
+		}
 		.net_packet_type_waiting_data {
 			mut wait := Net_waitdata_t{}
 			if net_read_wait_data(packet, &wait) {
@@ -159,6 +165,43 @@ fn net_cl_parse_packet(packet &Net_packet_t) {
 			}
 		}
 		else {}
+	}
+}
+
+fn set_reject_reason(s &i8) {
+	if s == unsafe { nil } {
+		net_client_reject_reason = unsafe { nil }
+		return
+	}
+	net_client_reject_reason = m_string_duplicate(&char(s))
+}
+
+fn net_cl_parse_syn(packet &Net_packet_t) {
+	server_version := net_read_safe_string(packet)
+	if server_version == unsafe { nil } {
+		return
+	}
+	protocol := net_read_protocol(packet)
+	if protocol == .net_protocol_unknown {
+		set_reject_reason(c'No common network protocol')
+		return
+	}
+	client_connection.state = .net_conn_state_connected
+	client_connection.protocol = protocol
+	if cstring(server_version) != cstring(vdoom_package_string) {
+		eprintln("NET_CL_ParseSYN: local '${cstring(vdoom_package_string)}', server '${cstring(server_version)}'; mismatch may desync.")
+	}
+}
+
+fn net_cl_parse_reject(packet &Net_packet_t) {
+	msg := net_read_safe_string(packet)
+	if msg == unsafe { nil } {
+		return
+	}
+	if client_connection.state == .net_conn_state_connecting {
+		client_connection.state = .net_conn_state_disconnected
+		client_connection.disconnect_reason = .net_disconnect_remote
+		set_reject_reason(msg)
 	}
 }
 
