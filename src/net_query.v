@@ -53,6 +53,10 @@ fn C.free(voidptr)
 @[c: 'stderr']
 __global stderr voidptr
 
+@[c: 'I_Error']
+@[c2v_variadic]
+fn i_error(error &i8, ...)
+
 @[export: 'NET_Query_ResolveMaster']
 pub fn net_query_resolve_master(context &Net_context_t) &Net_addr_t {
 	addr := net_resolve_address(context, master_server_address)
@@ -338,4 +342,149 @@ pub fn net_query_poll(callback Net_query_callback_t, user_data voidptr) int {
 	send_one_query()
 	net_query_get_response(callback, user_data)
 	return if all_targets_done() { 0 } else { 1 }
+}
+
+fn net_query_exit_loop() {
+	query_loop_running = false
+}
+
+fn net_query_query_loop(callback Net_query_callback_t, user_data voidptr) {
+	query_loop_running = true
+	for query_loop_running && net_query_poll(callback, user_data) != 0 {
+		i_sleep(1)
+	}
+}
+
+fn net_query_exit_callback(_addr &Net_addr_t, _data &Net_querydata_t, _ping_time u32, _user_data voidptr) {
+	_ = _addr
+	_ = _data
+	_ = _ping_time
+	_ = _user_data
+	net_query_exit_loop()
+}
+
+fn find_first_responder_index() int {
+	for i, t in query_targets {
+		if t.type_ == .query_target_server && t.state == .query_target_responded {
+			return i
+		}
+	}
+	return -1
+}
+
+fn get_num_responses() int {
+	mut result := 0
+	for t in query_targets {
+		if t.type_ == .query_target_server && t.state == .query_target_responded {
+			result++
+		}
+	}
+	return result
+}
+
+fn game_description(mode int, mission int) string {
+	if mission == int(GameMission_t.doom) {
+		if mode == int(GameMode_t.shareware) {
+			return 'swdoom'
+		} else if mode == int(GameMode_t.registered) {
+			return 'regdoom'
+		} else if mode == int(GameMode_t.retail) {
+			return 'ultdoom'
+		}
+		return 'doom'
+	}
+	return match GameMission_t(mission) {
+		.doom2 { 'doom2' }
+		.pack_tnt { 'tnt' }
+		.pack_plut { 'plutonia' }
+		.pack_chex { 'chex' }
+		.pack_hacx { 'hacx' }
+		.heretic { 'heretic' }
+		.hexen { 'hexen' }
+		.strife { 'strife' }
+		else { '?' }
+	}
+}
+
+fn print_header() {
+	println('')
+	println('Ping  Address             Players Description')
+	println('======================================================================')
+}
+
+fn net_query_print_callback(addr &Net_addr_t, data &Net_querydata_t, ping_time u32, _user_data voidptr) {
+	_ = _user_data
+	if !printed_header {
+		print_header()
+		printed_header = true
+	}
+	mut line := '${ping_time:4}  ${cstring(net_addr_to_string(addr))}  ${data.num_players}/${data.max_players}'
+	if data.gamemode != int(GameMode_t.indetermined) {
+		line += ' (${game_description(data.gamemode, data.gamemission)})'
+	}
+	if data.server_state != 0 {
+		line += ' (game running)'
+	}
+	line += ' ${cstring(data.description)}'
+	println(line)
+}
+
+@[export: 'NET_LANQuery']
+pub fn net_lan_query_export() {
+	if net_start_lan_query() != 0 {
+		println('\nSearching for servers on local LAN ...')
+		net_query_query_loop(net_query_print_callback, unsafe { nil })
+		println('\n${get_num_responses()} server(s) found.')
+		free_targets()
+	}
+}
+
+@[export: 'NET_MasterQuery']
+pub fn net_master_query_export() {
+	if net_start_master_query() != 0 {
+		println('\nSearching for servers on Internet ...')
+		net_query_query_loop(net_query_print_callback, unsafe { nil })
+		println('\n${get_num_responses()} server(s) found.')
+		free_targets()
+	}
+}
+
+@[export: 'NET_QueryAddress']
+pub fn net_query_address_export(addr_str &i8) {
+	net_query_init()
+	addr := net_resolve_address(query_context, addr_str)
+	if addr == unsafe { nil } {
+		i_error(c"NET_QueryAddress: Host '%s' not found!", addr_str)
+		return
+	}
+	idx := get_target_index_for_addr(addr, true)
+	println("\nQuerying '${cstring(addr_str)}'...")
+	net_query_query_loop(net_query_exit_callback, unsafe { nil })
+	if idx >= 0 && query_targets[idx].state == .query_target_responded {
+		net_query_print_callback(addr, &query_targets[idx].data, query_targets[idx].ping_time,
+			unsafe { nil })
+		net_release_address(addr)
+		free_targets()
+	} else {
+		i_error(c"No response from '%s'", addr_str)
+	}
+}
+
+@[export: 'NET_FindLANServer']
+pub fn net_find_lan_server() &Net_addr_t {
+	net_query_init()
+	idx := get_target_index_for_addr(unsafe { nil }, true)
+	if idx >= 0 {
+		query_targets[idx].type_ = .query_target_broadcast
+	}
+	net_query_query_loop(net_query_exit_callback, unsafe { nil })
+	responder_idx := find_first_responder_index()
+	if responder_idx >= 0 {
+		result := query_targets[responder_idx].addr
+		net_reference_address(result)
+		free_targets()
+		return result
+	}
+	free_targets()
+	return unsafe { nil }
 }
