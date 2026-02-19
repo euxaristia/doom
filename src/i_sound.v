@@ -11,11 +11,34 @@ __global (
 	music_volume     int
 	opl_dev_messages bool
 	channel_playing  [max_sound_channels]bool
+	mut snd_sfxdevice        = int(Snddevice_t.snddevice_sb)
+	mut snd_samplerate       = int(44100)
+	mut snd_cachesize        = int(64 * 1024 * 1024)
+	mut snd_maxslicetime_ms  = int(28)
+	mut snd_musiccmd         = &u8(c'')
+	mut snd_dmxoption        = &u8(c'')
+	mut snd_sbport           int
+	mut snd_sbirq            int
+	mut snd_sbdma            int
+	mut snd_mport            int
+	mut opl_io_port          int
 )
 
 @[export: 'I_BindSoundVariables']
 pub fn i_bind_sound_variables() {
-	// No-op placeholder.
+	m_bind_int_variable(c'snd_musicdevice', &snd_musicdevice)
+	m_bind_int_variable(c'snd_sfxdevice', &snd_sfxdevice)
+	m_bind_int_variable(c'snd_sbport', &snd_sbport)
+	m_bind_int_variable(c'snd_sbirq', &snd_sbirq)
+	m_bind_int_variable(c'snd_sbdma', &snd_sbdma)
+	m_bind_int_variable(c'snd_mport', &snd_mport)
+	m_bind_int_variable(c'snd_maxslicetime_ms', &snd_maxslicetime_ms)
+	m_bind_string_variable(c'snd_musiccmd', &snd_musiccmd)
+	m_bind_string_variable(c'snd_dmxoption', &snd_dmxoption)
+	m_bind_int_variable(c'snd_samplerate', &snd_samplerate)
+	m_bind_int_variable(c'snd_cachesize', &snd_cachesize)
+	m_bind_int_variable(c'opl_io_port', &opl_io_port)
+	m_bind_int_variable(c'snd_pitchshift', &snd_pitchshift)
 }
 
 @[export: 'I_InitSound']
