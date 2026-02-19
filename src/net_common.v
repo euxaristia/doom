@@ -3,8 +3,9 @@ module main
 
 // Common networking hooks: minimal manual port.
 
+@[weak]
 __global (
-	mut net_inited bool
+	net_inited bool
 )
 
 @[export: 'NetUpdate']
