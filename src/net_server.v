@@ -13,6 +13,7 @@ __global (
 	server_state        int
 	last_master_refresh int
 	server_clients      []&Net_addr_t
+	last_activity_ms    int
 )
 
 const master_refresh_period_secs = 30
@@ -229,6 +230,9 @@ pub fn net_sv_run() {
 	}
 	// Keep master registration alive.
 	now := i_get_time_ms()
+	if last_activity_ms == 0 {
+		last_activity_ms = now
+	}
 	if server_master != unsafe { nil }
 		&& (now - last_master_refresh) > (master_refresh_period_secs * 1000) {
 		net_query_add_to_master(server_master)
@@ -240,6 +244,7 @@ pub fn net_sv_run() {
 		if !net_recv_packet(server_context, &addr, &packet) {
 			break
 		}
+		last_activity_ms = now
 		if addr == server_master {
 			net_query_add_response(packet)
 		} else {
@@ -271,6 +276,16 @@ pub fn net_sv_run() {
 		net_release_address(addr)
 		net_free_packet(packet)
 	}
+
+	// Deadlock nudge: if no traffic for a while, keepalive-run all connections.
+	if now - last_activity_ms > 1000 {
+		for client_addr in server_clients {
+			_ = client_addr
+			// Placeholder hook for per-client deadlock checks.
+			net_sv_check_deadlock(unsafe { nil })
+		}
+		last_activity_ms = now
+	}
 }
 
 @[export: 'NET_SV_Shutdown']
@@ -285,4 +300,12 @@ pub fn net_sv_shutdown() {
 	server_clients = []&Net_addr_t{}
 	server_context = unsafe { nil }
 	server_state = 0
+	last_activity_ms = 0
+}
+
+@[export: 'NET_SV_CheckDeadlock']
+pub fn net_sv_check_deadlock(_client voidptr) {
+	_ = _client
+	// Full deadlock algorithm depends on full recv/send windows;
+	// first pass keeps the symbol and call path present.
 }
