@@ -468,6 +468,8 @@ pub fn net_query_address_export(addr_str &i8) {
 		net_release_address(addr)
 		free_targets()
 	} else {
+		net_release_address(addr)
+		free_targets()
 		i_error(c"No response from '%s'", addr_str)
 	}
 }
