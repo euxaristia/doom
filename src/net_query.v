@@ -4,6 +4,8 @@ module main
 // Querying servers to find their current status.
 
 const master_server_address = c'master.chocolate-doom.org:2342'
+const query_timeout_secs = 2
+const query_max_attempts = 3
 
 @[weak]
 __global (
@@ -184,4 +186,156 @@ pub fn net_start_master_query() int {
 	}
 	net_release_address(master)
 	return if idx >= 0 { 1 } else { 0 }
+}
+
+fn net_query_send_master_query(addr &Net_addr_t) {
+	mut packet := net_new_packet(4)
+	net_write_int16(packet, u32(Net_master_packet_type_t.net_master_packet_type_query))
+	net_send_packet(addr, packet)
+	net_free_packet(packet)
+	packet = net_new_packet(4)
+	net_write_int16(packet, u32(Net_master_packet_type_t.net_master_packet_type_nat_hole_punch_all))
+	net_send_packet(addr, packet)
+	net_free_packet(packet)
+}
+
+fn net_query_send_query(addr &Net_addr_t) {
+	request := net_new_packet(10)
+	net_write_int16(request, u32(Net_packet_type_t.net_packet_type_query))
+	if addr == unsafe { nil } {
+		net_send_broadcast(query_context, request)
+	} else {
+		net_send_packet(addr, request)
+	}
+	net_free_packet(request)
+}
+
+fn net_query_parse_response(addr &Net_addr_t, packet &Net_packet_t, callback Net_query_callback_t, user_data voidptr) {
+	mut packet_type := u32(0)
+	if !net_read_int16(packet, &packet_type)
+		|| packet_type != u32(Net_packet_type_t.net_packet_type_query_response) {
+		return
+	}
+	mut querydata := Net_querydata_t{}
+	if !net_read_query_data(packet, &querydata) {
+		return
+	}
+	mut idx := get_target_index_for_addr(addr, false)
+	if idx < 0 {
+		bcast_idx := get_target_index_for_addr(unsafe { nil }, false)
+		if bcast_idx < 0 || query_targets[bcast_idx].state != .query_target_queried {
+			return
+		}
+		idx = get_target_index_for_addr(addr, true)
+		if idx < 0 {
+			return
+		}
+		query_targets[idx].state = .query_target_queried
+		query_targets[idx].query_time = query_targets[bcast_idx].query_time
+	}
+	if query_targets[idx].state != .query_target_responded {
+		query_targets[idx].state = .query_target_responded
+		query_targets[idx].data = querydata
+		query_targets[idx].ping_time = u32(i_get_time_ms()) - query_targets[idx].query_time
+		callback(addr, &query_targets[idx].data, query_targets[idx].ping_time, user_data)
+	}
+}
+
+fn net_query_parse_master_response(master_addr &Net_addr_t, packet &Net_packet_t) {
+	mut packet_type := u32(0)
+	if !net_read_int16(packet, &packet_type)
+		|| packet_type != u32(Net_master_packet_type_t.net_master_packet_type_query_response) {
+		return
+	}
+	for {
+		addr_str := net_read_string(packet)
+		if addr_str == unsafe { nil } {
+			break
+		}
+		addr := net_resolve_address(query_context, addr_str)
+		if addr != unsafe { nil } {
+			_ = get_target_index_for_addr(addr, true)
+			net_release_address(addr)
+		}
+	}
+	idx := get_target_index_for_addr(master_addr, true)
+	if idx >= 0 {
+		query_targets[idx].state = .query_target_responded
+	}
+}
+
+fn net_query_parse_packet(addr &Net_addr_t, packet &Net_packet_t, callback Net_query_callback_t, user_data voidptr) {
+	idx := get_target_index_for_addr(addr, false)
+	if idx >= 0 && query_targets[idx].type_ == .query_target_master {
+		net_query_parse_master_response(addr, packet)
+	} else {
+		net_query_parse_response(addr, packet, callback, user_data)
+	}
+}
+
+fn net_query_get_response(callback Net_query_callback_t, user_data voidptr) {
+	mut addr := &Net_addr_t(unsafe { nil })
+	mut packet := &Net_packet_t(unsafe { nil })
+	if net_recv_packet(query_context, &addr, &packet) {
+		net_query_parse_packet(addr, packet, callback, user_data)
+		net_release_address(addr)
+		net_free_packet(packet)
+	}
+}
+
+fn send_one_query() {
+	now := u32(i_get_time_ms())
+	if now - u32(last_query_time) < 50 {
+		return
+	}
+	mut idx := -1
+	for i, t in query_targets {
+		if t.state == .query_target_queued || (t.state == .query_target_queried
+			&& now - t.query_time > u32(query_timeout_secs * 1000)) {
+			idx = i
+			break
+		}
+	}
+	if idx < 0 {
+		return
+	}
+	match query_targets[idx].type_ {
+		.query_target_server { net_query_send_query(query_targets[idx].addr) }
+		.query_target_broadcast { net_query_send_query(unsafe { nil }) }
+		.query_target_master { net_query_send_master_query(query_targets[idx].addr) }
+	}
+	query_targets[idx].state = .query_target_queried
+	query_targets[idx].query_time = now
+	query_targets[idx].query_attempts++
+	last_query_time = int(now)
+}
+
+fn check_target_timeouts() {
+	now := u32(i_get_time_ms())
+	for i, t in query_targets {
+		if t.state == .query_target_queried && t.query_attempts >= query_max_attempts
+			&& now - t.query_time > u32(query_timeout_secs * 1000) {
+			query_targets[i].state = .query_target_no_response
+			if t.type_ == .query_target_master {
+				C.fprintf(stderr, c'NET_MasterQuery: no response from master server.\n')
+			}
+		}
+	}
+}
+
+fn all_targets_done() bool {
+	for t in query_targets {
+		if t.state != .query_target_responded && t.state != .query_target_no_response {
+			return false
+		}
+	}
+	return true
+}
+
+@[export: 'NET_Query_Poll']
+pub fn net_query_poll(callback Net_query_callback_t, user_data voidptr) int {
+	check_target_timeouts()
+	send_one_query()
+	net_query_get_response(callback, user_data)
+	return if all_targets_done() { 0 } else { 1 }
 }
