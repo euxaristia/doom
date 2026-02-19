@@ -140,10 +140,16 @@ fn net_cl_parse_packet(packet &Net_packet_t) {
 			net_cl_parse_reject(packet)
 		}
 		.net_packet_type_waiting_data {
+			if client_state == .client_state_in_game {
+				return
+			}
 			mut wait := Net_waitdata_t{}
 			if net_read_wait_data(packet, &wait) {
-				net_client_wait_data = wait
-				net_client_received_wait_data = true
+				if wait.num_players <= wait.max_players && wait.ready_players <= wait.num_players
+					&& wait.max_players <= 8 {
+					net_client_wait_data = wait
+					net_client_received_wait_data = true
+				}
 			}
 		}
 		.net_packet_type_launch {
@@ -155,7 +161,10 @@ fn net_cl_parse_packet(packet &Net_packet_t) {
 		.net_packet_type_gamestart {
 			mut settings := Net_gamesettings_t{}
 			if net_read_settings(packet, &settings) {
-				net_cl_start_game(&settings)
+				if client_state == .client_state_waiting_start
+					|| client_state == .client_state_waiting_launch {
+					net_cl_start_game(&settings)
+				}
 			}
 		}
 		.net_packet_type_console_message {
