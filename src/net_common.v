@@ -144,22 +144,38 @@ pub fn net_conn_new_reliable(conn &Net_connection_t, packet_type int) &Net_packe
 
 @[export: 'NET_ExpandTicNum']
 pub fn net_expand_tic_num(relative u32, b u32) u32 {
-	base := relative & ~u32(0xff)
-	cand := base | (b & 0xff)
-	if cand + 64 < relative {
-		return cand + 256
+	h := relative & ~u32(0xff)
+	l := relative & u32(0xff)
+	mut result := h | (b & u32(0xff))
+	if l < 0x40 && b > 0xb0 {
+		result -= 0x100
 	}
-	if cand > relative + 64 {
-		return cand - 256
+	if l > 0xb0 && b < 0x40 {
+		result += 0x100
 	}
-	return cand
+	return result
 }
 
 @[export: 'NET_ValidGameSettings']
-pub fn net_valid_game_settings(_mode GameMode_t, _mission GameMission_t, _settings &Net_gamesettings_t) bool {
-	_ = _mode
-	_ = _mission
-	_ = _settings
+pub fn net_valid_game_settings(mode GameMode_t, mission GameMission_t, settings &Net_gamesettings_t) bool {
+	if settings.ticdup <= 0 {
+		return false
+	}
+	if settings.extratics < 0 {
+		return false
+	}
+	if settings.deathmatch < 0 || settings.deathmatch > 3 {
+		return false
+	}
+	if settings.skill < int(Skill_t.sk_noitems) || settings.skill > int(Skill_t.sk_nightmare) {
+		return false
+	}
+	if !d_valid_game_version(mission, GameVersion_t(settings.gameversion)) {
+		return false
+	}
+	if !d_valid_episode_map(mission, mode, settings.episode, settings.map_) {
+		return false
+	}
 	return true
 }
 
