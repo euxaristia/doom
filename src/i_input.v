@@ -56,3 +56,25 @@ pub fn i_tactile_export(_on int, _off int, _total int) {
 	_ = _total
 	// No-op placeholder.
 }
+
+@[export: 'I_AccelerateMouse']
+pub fn i_accelerate_mouse(val int) f64 {
+	if val < 0 {
+		return -i_accelerate_mouse(-val)
+	}
+	if val > mouse_threshold {
+		return f64((val - mouse_threshold)) * mouse_acceleration + f64(mouse_threshold)
+	}
+	return f64(val)
+}
+
+@[export: 'I_AccelerateMouseY']
+pub fn i_accelerate_mouse_y(val int) f64 {
+	if val < 0 {
+		return -i_accelerate_mouse_y(-val)
+	}
+	if val > mouse_threshold_y {
+		return f64((val - mouse_threshold_y)) * mouse_acceleration_y + f64(mouse_threshold_y)
+	}
+	return f64(val)
+}

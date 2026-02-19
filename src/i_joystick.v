@@ -65,3 +65,16 @@ pub fn i_bind_joystick_variables() {
 pub fn i_init_joystick() {
 	joystick_initialized = usejoystick != 0
 }
+
+@[export: 'I_UpdateJoystick']
+pub fn i_update_joystick() {
+	if !joystick_initialized {
+		return
+	}
+	// Input backend polling is not implemented in this baseline port.
+}
+
+@[export: 'I_ShutdownJoystick']
+pub fn i_shutdown_joystick() {
+	joystick_initialized = false
+}
