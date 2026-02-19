@@ -8,9 +8,12 @@ const default_screen_h = 200
 
 fn C.memcpy(voidptr, voidptr, usize) voidptr
 
+@[weak]
 __global (
-	mut grab_mouse_cb voidptr
-	mut video_inited bool
+	grab_mouse_cb      voidptr
+	video_inited       bool
+	video_window_title &i8
+	display_fps_dots   bool
 )
 
 fn ensure_video_buffer() {
@@ -50,7 +53,7 @@ pub fn i_finish_update() {
 
 @[export: 'I_SetWindowTitle']
 pub fn i_set_window_title(title &i8) {
-	_ = title
+	video_window_title = title
 }
 
 @[export: 'I_InitWindowIcon']
@@ -70,7 +73,7 @@ pub fn i_set_grab_mouse_callback(cb voidptr) {
 
 @[export: 'I_DisplayFPSDots']
 pub fn i_display_fps_dots(_dots_on bool) {
-	_ = _dots_on
+	display_fps_dots = _dots_on
 }
 
 @[export: 'I_BindVideoVariables']

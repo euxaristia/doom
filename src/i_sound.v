@@ -3,10 +3,14 @@ module main
 
 // Sound and music system hooks: minimal stubs.
 
+const max_sound_channels = 32
+
+@[weak]
 __global (
-	mut music_playing bool
-	mut music_volume int
-	mut opl_dev_messages bool
+	music_playing    bool
+	music_volume     int
+	opl_dev_messages bool
+	channel_playing  [max_sound_channels]bool
 )
 
 @[export: 'I_BindSoundVariables']
@@ -51,17 +55,25 @@ pub fn i_start_sound_export(_sfxinfo &Sfxinfo_t, _channel int, _vol int, _sep in
 	_ = _vol
 	_ = _sep
 	_ = _pitch
+	if _channel >= 0 && _channel < max_sound_channels {
+		channel_playing[_channel] = true
+		return _channel
+	}
 	return 0
 }
 
 @[export: 'I_StopSound']
 pub fn i_stop_sound_export(_channel int) {
-	_ = _channel
+	if _channel >= 0 && _channel < max_sound_channels {
+		channel_playing[_channel] = false
+	}
 }
 
 @[export: 'I_SoundIsPlaying']
 pub fn i_sound_is_playing_export(_channel int) bool {
-	_ = _channel
+	if _channel >= 0 && _channel < max_sound_channels {
+		return channel_playing[_channel]
+	}
 	return false
 }
 
