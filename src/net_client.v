@@ -3,6 +3,9 @@ module main
 
 // Network client state scaffold.
 
+const net_magic_number = u32(1454104972)
+const vdoom_package_string = c'vdoom'
+
 enum Net_clientstate_t {
 	client_state_waiting_launch
 	client_state_waiting_start
@@ -23,6 +26,9 @@ __global (
 	client_connection             Net_connection_t
 	server_addr                   &Net_addr_t
 	client_context                &Net_context_t
+	net_local_wad_sha1sum         Sha1_digest_t
+	net_local_deh_sha1sum         Sha1_digest_t
+	net_local_is_freedoom         u32
 )
 
 @[export: 'NET_CL_LaunchGame']
@@ -65,6 +71,13 @@ pub fn net_cl_connect(_addr &Net_addr_t, _data &Net_connect_data_t) bool {
 		return false
 	}
 	net_conn_init_client(&client_connection, server_addr, .net_protocol_unknown)
+
+	net_local_wad_sha1sum = _data.wad_sha1sum
+	net_local_deh_sha1sum = _data.deh_sha1sum
+	net_local_is_freedoom = u32(_data.is_freedoom)
+
+	net_cl_send_syn(_data)
+
 	// Handshake is not fully translated yet; mark connected for first-pass flow.
 	client_connection.state = .net_conn_state_connected
 	net_client_connected = true
@@ -147,6 +160,24 @@ fn net_cl_parse_packet(packet &Net_packet_t) {
 		}
 		else {}
 	}
+}
+
+fn net_cl_send_syn(data &Net_connect_data_t) {
+	if client_context == unsafe { nil } || server_addr == unsafe { nil } {
+		return
+	}
+	packet := net_new_packet(64)
+	net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_syn))
+	net_write_int32(packet, net_magic_number)
+	net_write_string(packet, vdoom_package_string)
+	net_write_protocol_list(packet)
+	net_write_connect_data(packet, data)
+	if net_player_name == unsafe { nil } {
+		net_player_name = c'Player'
+	}
+	net_write_string(packet, net_player_name)
+	net_conn_send_packet(&client_connection, packet)
+	net_free_packet(packet)
 }
 
 @[export: 'NET_CL_Run']
