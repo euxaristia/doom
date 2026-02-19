@@ -179,6 +179,38 @@ fn net_sv_parse_resend_request(packet &Net_packet_t) {
 	_ = num_tics
 }
 
+fn net_sv_parse_hole_punch(packet &Net_packet_t) {
+	addr_string := net_read_string(packet)
+	if addr_string == unsafe { nil } {
+		return
+	}
+	addr := net_resolve_address(server_context, addr_string)
+	if addr == unsafe { nil } {
+		return
+	}
+	sendpacket := net_new_packet(16)
+	net_write_int16(sendpacket, u32(Net_packet_type_t.net_packet_type_nat_hole_punch))
+	net_send_packet(addr, sendpacket)
+	net_free_packet(sendpacket)
+	net_release_address(addr)
+}
+
+fn net_sv_master_packet(packet &Net_packet_t) {
+	mut packet_type := u32(0)
+	if !net_read_int16(packet, &packet_type) {
+		return
+	}
+	match Net_master_packet_type_t(packet_type) {
+		.net_master_packet_type_add_response {
+			net_query_add_response(packet)
+		}
+		.net_master_packet_type_nat_hole_punch {
+			net_sv_parse_hole_punch(packet)
+		}
+		else {}
+	}
+}
+
 fn net_sv_parse_syn(addr &Net_addr_t, packet &Net_packet_t) {
 	mut magic := u32(0)
 	if !net_read_int32(packet, &magic) {
@@ -246,7 +278,7 @@ pub fn net_sv_run() {
 		}
 		last_activity_ms = now
 		if addr == server_master {
-			net_query_add_response(packet)
+			net_sv_master_packet(packet)
 		} else {
 			mut packet_type := u32(0)
 			if net_read_int16(packet, &packet_type) {
