@@ -10,6 +10,12 @@ __global (
 	registered_with_master bool
 	got_master_response    bool
 	query_context          &Net_context_t
+	query_targets          []Query_target_t
+	num_targets            int
+	query_loop_running     bool
+	printed_header         bool
+	last_query_time        int
+	securedemo_start_msg   &i8
 	net_sdl_module         Net_module_t
 )
 
@@ -19,8 +25,28 @@ enum Query_target_type_t {
 	query_target_broadcast
 }
 
+enum Query_target_state_t {
+	query_target_queued
+	query_target_queried
+	query_target_responded
+	query_target_no_response
+}
+
+struct Query_target_t {
+mut:
+	type_          Query_target_type_t
+	state          Query_target_state_t
+	addr           &Net_addr_t
+	data           Net_querydata_t
+	ping_time      u32
+	query_time     u32
+	query_attempts u32
+	printed        bool
+}
+
 fn C.printf(&i8, ...int)
 fn C.fprintf(voidptr, &i8, ...int)
+fn C.free(voidptr)
 
 @[c: 'stderr']
 __global stderr voidptr
@@ -83,4 +109,79 @@ pub fn net_request_hole_punch(context &Net_context_t, addr &Net_addr_t) {
 	net_send_packet(master_addr, packet)
 	net_free_packet(packet)
 	net_release_address(master_addr)
+}
+
+fn find_target_index(addr &Net_addr_t) int {
+	for i, t in query_targets {
+		if t.addr == addr {
+			return i
+		}
+	}
+	return -1
+}
+
+fn get_target_index_for_addr(addr &Net_addr_t, create bool) int {
+	idx := find_target_index(addr)
+	if idx >= 0 || !create {
+		return idx
+	}
+	mut t := Query_target_t{}
+	t.type_ = .query_target_server
+	t.state = .query_target_queued
+	t.addr = addr
+	t.query_attempts = 0
+	t.printed = false
+	if addr != unsafe { nil } {
+		net_reference_address(addr)
+	}
+	query_targets << t
+	num_targets = query_targets.len
+	return query_targets.len - 1
+}
+
+fn free_targets() {
+	for t in query_targets {
+		if t.addr != unsafe { nil } {
+			net_release_address(t.addr)
+		}
+	}
+	query_targets = []Query_target_t{}
+	num_targets = 0
+}
+
+@[export: 'NET_Query_Init']
+pub fn net_query_init() {
+	if query_context == unsafe { nil } {
+		query_context = net_new_context()
+		net_add_module(query_context, &net_sdl_module)
+		net_sdl_module.initClient()
+	}
+	free_targets()
+	printed_header = false
+}
+
+@[export: 'NET_StartLANQuery']
+pub fn net_start_lan_query() int {
+	net_query_init()
+	idx := get_target_index_for_addr(unsafe { nil }, true)
+	if idx < 0 {
+		return 0
+	}
+	query_targets[idx].type_ = .query_target_broadcast
+	return 1
+}
+
+@[export: 'NET_StartMasterQuery']
+pub fn net_start_master_query() int {
+	net_query_init()
+	master := net_query_resolve_master(query_context)
+	if master == unsafe { nil } {
+		return 0
+	}
+	idx := get_target_index_for_addr(master, true)
+	if idx >= 0 {
+		query_targets[idx].type_ = .query_target_master
+	}
+	net_release_address(master)
+	return if idx >= 0 { 1 } else { 0 }
 }
