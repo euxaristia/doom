@@ -31,6 +31,8 @@ __global (
 	mut force_software_renderer   int
 	mut grabmouse                 = int(1)
 	mut png_screenshots           = int(1)
+	mut nomouse                   bool
+	mut nograbmouse_override      bool
 )
 
 fn ensure_video_buffer() {
@@ -49,7 +51,27 @@ pub fn i_init_graphics() {
 
 @[export: 'I_GraphicsCheckCommandLine']
 pub fn i_graphics_check_command_line() {
-	// No-op placeholder.
+	nograbmouse_override = m_parm_exists(c'-nograbmouse')
+	if m_check_parm(c'-window') > 0 || m_check_parm(c'-nofullscreen') > 0 {
+		fullscreen = 0
+	}
+	if m_check_parm(c'-fullscreen') > 0 {
+		fullscreen = 1
+	}
+
+	nomouse = m_check_parm(c'-nomouse') > 0
+
+	mut p := m_check_parm_with_args(c'-width', 1)
+	if p > 0 {
+		window_width = C.atoi(myargv[p + 1])
+		fullscreen = 0
+	}
+
+	p = m_check_parm_with_args(c'-height', 1)
+	if p > 0 {
+		window_height = C.atoi(myargv[p + 1])
+		fullscreen = 0
+	}
 }
 
 @[export: 'I_SetPalette']
