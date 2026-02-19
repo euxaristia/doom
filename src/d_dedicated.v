@@ -5,8 +5,7 @@ module main
 
 const package_name = 'Chocolate Doom'
 
-@[export: 'NET_CL_Run']
-pub fn net_cl_run() {
+pub fn net_cl_run_dedicated_noop() {
 	// No client present in a standalone dedicated server.
 }
 
