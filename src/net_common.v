@@ -18,6 +18,11 @@ pub fn net_init_export() {
 	net_inited = true
 }
 
+@[export: 'NET_OpenLog']
+pub fn net_open_log() {
+	// Minimal port: keep hook present; file logging can be added later.
+}
+
 @[export: 'NET_BindVariables']
 pub fn net_bind_variables_export() {
 	// No-op placeholder.
