@@ -3,6 +3,15 @@ module main
 
 // Common networking hooks: minimal manual port.
 
+fn C.fopen(&i8, &i8) voidptr
+fn C.fclose(voidptr) int
+fn C.fputs(&i8, voidptr) int
+fn C.fflush(voidptr) int
+
+@[c: 'I_Error']
+@[c2v_variadic]
+fn i_error(error &i8, ...)
+
 const max_retries = 5
 
 enum Net_connstate_t {
@@ -45,6 +54,7 @@ mut:
 @[weak]
 __global (
 	net_inited bool
+	net_debug  voidptr
 )
 
 @[export: 'NetUpdate']
@@ -59,7 +69,18 @@ pub fn net_init_export() {
 
 @[export: 'NET_OpenLog']
 pub fn net_open_log() {
-	// Minimal port: keep hook present; file logging can be added later.
+	p := m_check_parm_with_args(c'-netlog', 1)
+	if p <= 0 {
+		return
+	}
+	if net_debug != unsafe { nil } {
+		C.fclose(net_debug)
+		net_debug = unsafe { nil }
+	}
+	net_debug = C.fopen(&i8(myargv[p + 1]), c'w')
+	if net_debug == unsafe { nil } {
+		i_error(c'Failed to open %s to write debug log.', &i8(myargv[p + 1]))
+	}
 }
 
 @[export: 'NET_BindVariables']
@@ -181,11 +202,37 @@ pub fn net_valid_game_settings(mode GameMode_t, mission GameMission_t, settings 
 
 @[export: 'NET_Log']
 @[c2v_variadic]
-pub fn net_log(_fmt &i8, ...) {
-	_ = _fmt
+pub fn net_log(fmt &i8, ...) {
+	if net_debug == unsafe { nil } {
+		return
+	}
+	line := '${i_get_time_ms():8}: ${cstring(fmt)}\n'
+	C.fputs(line.str, net_debug)
+	C.fflush(net_debug)
 }
 
 @[export: 'NET_LogPacket']
-pub fn net_log_packet(_packet &Net_packet_t) {
-	_ = _packet
+pub fn net_log_packet(packet &Net_packet_t) {
+	if net_debug == unsafe { nil } {
+		return
+	}
+	bytes := int(packet.len) - int(packet.pos)
+	if bytes <= 0 {
+		return
+	}
+	mut line := '\t'
+	for i := 0; i < bytes; i++ {
+		if i > 0 {
+			if (i % 16) == 0 {
+				line += '\n\t'
+			} else {
+				line += ' '
+			}
+		}
+		b := unsafe { packet.data[packet.pos + u32(i)] }
+		line += '${b:02x}'
+	}
+	line += '\n'
+	C.fputs(line.str, net_debug)
+	C.fflush(net_debug)
 }
