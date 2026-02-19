@@ -43,6 +43,10 @@ pub fn net_cl_launch_game() {
 
 @[export: 'NET_CL_StartGame']
 pub fn net_cl_start_game(settings &Net_gamesettings_t) {
+	if client_context != unsafe { nil } {
+		packet := net_conn_new_reliable(&client_connection, int(Net_packet_type_t.net_packet_type_gamestart))
+		net_conn_send_packet(&client_connection, packet)
+	}
 	client_settings = *settings
 	client_state = .client_state_in_game
 	net_waiting_for_launch = false
