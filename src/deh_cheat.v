@@ -344,7 +344,7 @@ fn deh_cheat_parse_line(context &Deh_context_t, line &i8, tag voidptr) {
 		deh_warning(context, c'Failed to parse assignment')
 		return
 	}
-	unsvalue = &u8(value)
+	unsvalue = unsafe { &u8(value) }
 	cheat = find_cheat_by_name(variable_name)
 	if cheat == (unsafe { nil }) {
 		deh_warning(context, c"Unknown cheat '%s'", variable_name)
@@ -362,7 +362,7 @@ fn deh_cheat_parse_line(context &Deh_context_t, line &i8, tag voidptr) {
 		if deh_apply_cheats {
 			cheat.seq.sequence[i] = unsvalue[i]
 		}
-		i++$
+		i++
 		// Absolute limit - don't exceed
 		if i >= 25 - cheat.seq.parameter_chars {
 			deh_error(context, c'Cheat sequence too long!')

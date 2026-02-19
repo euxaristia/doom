@@ -1,10 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
 DOOM_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-EXECUTABLE="$DOOM_DIR/chocolate-doom/src/chocolate-doom"
 WAD_FILE="$DOOM_DIR/wads/doom1.wad"
+
+if [ -f "$DOOM_DIR/doomv" ]; then
+    EXECUTABLE="$DOOM_DIR/doomv"
+elif [ -f "$DOOM_DIR/crispy-doom/src/crispy-doom" ]; then
+    EXECUTABLE="$DOOM_DIR/crispy-doom/src/crispy-doom"
+elif [ -f "$DOOM_DIR/chocolate-doom/src/chocolate-doom" ]; then
+    EXECUTABLE="$DOOM_DIR/chocolate-doom/src/chocolate-doom"
+else
+    EXECUTABLE="$DOOM_DIR/crispy-doom/src/crispy-doom"
+fi
 
 if [ ! -f "$EXECUTABLE" ]; then
     echo "Error: Game executable not found at $EXECUTABLE"

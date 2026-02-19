@@ -1,4 +1,0 @@
-[project]
-uses_sdl = true
-output_dirname = "doom_v"
-additional_flags = "-I. -I.. -I../.."
