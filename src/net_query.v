@@ -6,6 +6,7 @@ module main
 const master_server_address = c'master.chocolate-doom.org:2342'
 const query_timeout_secs = 2
 const query_max_attempts = 3
+const signature_timeout_secs = 5
 
 @[weak]
 __global (
@@ -49,6 +50,7 @@ mut:
 fn C.printf(&i8, ...int)
 fn C.fprintf(voidptr, &i8, ...int)
 fn C.free(voidptr)
+fn C.memcpy(voidptr, voidptr, usize) voidptr
 
 @[c: 'stderr']
 __global stderr voidptr
@@ -487,4 +489,84 @@ pub fn net_find_lan_server() &Net_addr_t {
 	}
 	free_targets()
 	return unsafe { nil }
+}
+
+fn block_for_packet(addr &Net_addr_t, packet_type u32, timeout_ms u32) &Net_packet_t {
+	start_time := u32(i_get_time_ms())
+	for u32(i_get_time_ms()) < start_time + timeout_ms {
+		mut packet_src := &Net_addr_t(unsafe { nil })
+		mut packet := &Net_packet_t(unsafe { nil })
+		if !net_recv_packet(query_context, &packet_src, &packet) {
+			i_sleep(20)
+			continue
+		}
+		mut read_packet_type := u32(0)
+		if packet_src == addr && net_read_int16(packet, &read_packet_type)
+			&& read_packet_type == packet_type {
+			net_release_address(packet_src)
+			return packet
+		}
+		net_release_address(packet_src)
+		net_free_packet(packet)
+	}
+	return unsafe { nil }
+}
+
+@[export: 'NET_StartSecureDemo']
+pub fn net_start_secure_demo(seed &u8) bool {
+	net_query_init()
+	master_addr := net_query_resolve_master(query_context)
+	if master_addr == unsafe { nil } {
+		return false
+	}
+	request := net_new_packet(10)
+	net_write_int16(request, u32(Net_master_packet_type_t.net_master_packet_type_sign_start))
+	net_send_packet(master_addr, request)
+	net_free_packet(request)
+	response := block_for_packet(master_addr, u32(Net_master_packet_type_t.net_master_packet_type_sign_start_response),
+		u32(signature_timeout_secs * 1000))
+	mut result := false
+	if response != unsafe { nil } {
+		mut tmp_seed := Prng_seed_t{}
+		if net_read_prng_seed(response, mut tmp_seed) {
+			signature := net_read_string(response)
+			if signature != unsafe { nil } {
+				securedemo_start_msg = &i8(m_string_duplicate(&char(signature)))
+				C.memcpy(seed, &tmp_seed[0], 16)
+				result = true
+			}
+		}
+		net_free_packet(response)
+	}
+	net_release_address(master_addr)
+	return result
+}
+
+@[export: 'NET_EndSecureDemo']
+pub fn net_end_secure_demo(demo_hash Sha1_digest_t) &i8 {
+	if query_context == unsafe { nil } {
+		return unsafe { nil }
+	}
+	master_addr := net_query_resolve_master(query_context)
+	if master_addr == unsafe { nil } {
+		return unsafe { nil }
+	}
+	request := net_new_packet(10)
+	net_write_int16(request, u32(Net_master_packet_type_t.net_master_packet_type_sign_end))
+	net_write_sha1_sum(request, demo_hash)
+	net_write_string(request, securedemo_start_msg)
+	net_send_packet(master_addr, request)
+	net_free_packet(request)
+	response := block_for_packet(master_addr, u32(Net_master_packet_type_t.net_master_packet_type_sign_end_response),
+		u32(signature_timeout_secs * 1000))
+	net_release_address(master_addr)
+	if response == unsafe { nil } {
+		return unsafe { nil }
+	}
+	signature := net_read_string(response)
+	net_free_packet(response)
+	if signature == unsafe { nil } {
+		return unsafe { nil }
+	}
+	return &i8(m_string_duplicate(&char(signature)))
 }
