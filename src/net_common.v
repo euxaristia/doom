@@ -13,6 +13,7 @@ fn C.fflush(voidptr) int
 fn i_error(error &i8, ...)
 
 const max_retries = 5
+const net_reliable_packet = u32(1 << 15)
 
 enum Net_connstate_t {
 	net_conn_state_connecting
@@ -108,6 +109,39 @@ fn net_conn_init(conn &Net_connection_t, addr &Net_addr_t, protocol Net_protocol
 	conn.keepalive_recv_time = i_get_time_ms()
 }
 
+fn net_conn_parse_disconnect(conn &Net_connection_t) {
+	reply := net_new_packet(10)
+	net_write_int16(reply, u32(Net_packet_type_t.net_packet_type_disconnect_ack))
+	net_conn_send_packet(conn, reply)
+	net_free_packet(reply)
+	conn.last_send_time = i_get_time_ms()
+	conn.state = .net_conn_state_disconnected_sleep
+	conn.disconnect_reason = .net_disconnect_remote
+}
+
+fn net_conn_parse_disconnect_ack(conn &Net_connection_t) {
+	if conn.state == .net_conn_state_disconnecting {
+		conn.state = .net_conn_state_disconnected
+		conn.disconnect_reason = .net_disconnect_local
+		conn.last_send_time = -1
+	}
+}
+
+fn net_conn_parse_reliable_ack(conn &Net_connection_t, packet &Net_packet_t) {
+	mut seq := u32(0)
+	if !net_read_int8(packet, &seq) {
+		return
+	}
+	if conn.reliable_packets == unsafe { nil } {
+		return
+	}
+	if seq == u32((conn.reliable_packets.seq + 1) & 0xff) {
+		rp := conn.reliable_packets
+		conn.reliable_packets = rp.next
+		net_free_packet(rp.packet)
+	}
+}
+
 @[export: 'NET_Conn_InitClient']
 pub fn net_conn_init_client(conn &Net_connection_t, addr &Net_addr_t, protocol Net_protocol_t) {
 	net_conn_init(conn, addr, protocol)
@@ -122,10 +156,48 @@ pub fn net_conn_init_server(conn &Net_connection_t, addr &Net_addr_t, protocol N
 
 @[export: 'NET_Conn_Packet']
 pub fn net_conn_packet(conn &Net_connection_t, packet &Net_packet_t, packet_type &u32) bool {
-	_ = conn
-	_ = packet
-	_ = packet_type
-	// First-pass: no packet types consumed by common layer.
+	conn.keepalive_recv_time = i_get_time_ms()
+	if ((*packet_type) & net_reliable_packet) != 0 {
+		mut seq := u32(0)
+		if !net_read_int8(packet, &seq) {
+			return true
+		}
+		if seq != u32(conn.reliable_recv_seq & 0xff) {
+			reply := net_new_packet(10)
+			net_write_int16(reply, u32(Net_packet_type_t.net_packet_type_reliable_ack))
+			net_write_int8(reply, u32(conn.reliable_recv_seq & 0xff))
+			net_conn_send_packet(conn, reply)
+			net_free_packet(reply)
+			return true
+		}
+		conn.reliable_recv_seq = (conn.reliable_recv_seq + 1) & 0xff
+		reply := net_new_packet(10)
+		net_write_int16(reply, u32(Net_packet_type_t.net_packet_type_reliable_ack))
+		net_write_int8(reply, u32(conn.reliable_recv_seq & 0xff))
+		net_conn_send_packet(conn, reply)
+		net_free_packet(reply)
+		unsafe {
+			*packet_type &= ~net_reliable_packet
+		}
+	}
+	match Net_packet_type_t(*packet_type) {
+		.net_packet_type_disconnect {
+			net_conn_parse_disconnect(conn)
+			return true
+		}
+		.net_packet_type_disconnect_ack {
+			net_conn_parse_disconnect_ack(conn)
+			return true
+		}
+		.net_packet_type_keepalive {
+			return true
+		}
+		.net_packet_type_reliable_ack {
+			net_conn_parse_reliable_ack(conn, packet)
+			return true
+		}
+		else {}
+	}
 	return false
 }
 
@@ -134,8 +206,13 @@ pub fn net_conn_disconnect(conn &Net_connection_t) {
 	if conn == unsafe { nil } {
 		return
 	}
-	conn.state = .net_conn_state_disconnected
-	conn.disconnect_reason = .net_disconnect_local
+	if conn.state != .net_conn_state_disconnected && conn.state != .net_conn_state_disconnecting
+		&& conn.state != .net_conn_state_disconnected_sleep {
+		conn.state = .net_conn_state_disconnecting
+		conn.disconnect_reason = .net_disconnect_local
+		conn.last_send_time = -1
+		conn.num_retries = 0
+	}
 }
 
 @[export: 'NET_Conn_Run']
@@ -143,23 +220,69 @@ pub fn net_conn_run(conn &Net_connection_t) {
 	if conn == unsafe { nil } {
 		return
 	}
-	// Minimal timeout handling.
+	nowtime := i_get_time_ms()
 	if conn.state == .net_conn_state_connected {
-		if i_get_time_ms() - conn.keepalive_recv_time > 30000 {
+		if nowtime - conn.keepalive_recv_time > 30000 {
 			conn.state = .net_conn_state_disconnected
 			conn.disconnect_reason = .net_disconnect_timeout
+		}
+		if nowtime - conn.keepalive_send_time > 1000 {
+			packet := net_new_packet(10)
+			net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_keepalive))
+			net_conn_send_packet(conn, packet)
+			net_free_packet(packet)
+		}
+		if conn.reliable_packets != unsafe { nil } {
+			if conn.reliable_packets.last_send_time < 0
+				|| nowtime - conn.reliable_packets.last_send_time > 1000 {
+				net_conn_send_packet(conn, conn.reliable_packets.packet)
+				conn.reliable_packets.last_send_time = nowtime
+			}
+		}
+	} else if conn.state == .net_conn_state_disconnecting {
+		if conn.last_send_time < 0 || nowtime - conn.last_send_time > 1000 {
+			if conn.num_retries < max_retries {
+				packet := net_new_packet(10)
+				net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_disconnect))
+				net_conn_send_packet(conn, packet)
+				net_free_packet(packet)
+				conn.last_send_time = nowtime
+				conn.num_retries++
+			} else {
+				conn.state = .net_conn_state_disconnected
+				conn.disconnect_reason = .net_disconnect_local
+			}
+		}
+	} else if conn.state == .net_conn_state_disconnected_sleep {
+		if nowtime - conn.last_send_time > 5000 {
+			conn.state = .net_conn_state_disconnected
+			conn.disconnect_reason = .net_disconnect_remote
 		}
 	}
 }
 
 @[export: 'NET_Conn_NewReliable']
 pub fn net_conn_new_reliable(conn &Net_connection_t, packet_type int) &Net_packet_t {
-	packet := net_new_packet(16)
-	net_write_int16(packet, u32(packet_type))
-	if conn != unsafe { nil } {
-		conn.reliable_send_seq = (conn.reliable_send_seq + 1) & 0xff
-		net_write_int8(packet, u32(conn.reliable_send_seq))
+	packet := net_new_packet(100)
+	net_write_int16(packet, u32(packet_type) | net_reliable_packet)
+	seq := conn.reliable_send_seq
+	net_write_int8(packet, u32(seq & 0xff))
+	rp := &Net_reliable_packet_t{
+		packet:         packet
+		next:           unsafe { nil }
+		seq:            seq
+		last_send_time: -1
 	}
+	if conn.reliable_packets == unsafe { nil } {
+		conn.reliable_packets = rp
+	} else {
+		mut cur := conn.reliable_packets
+		for cur.next != unsafe { nil } {
+			cur = cur.next
+		}
+		cur.next = rp
+	}
+	conn.reliable_send_seq = (conn.reliable_send_seq + 1) & 0xff
 	return packet
 }
 
