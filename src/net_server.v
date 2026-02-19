@@ -3,6 +3,9 @@ module main
 
 // Network server support (first-pass translated scaffold).
 
+const net_magic_number = u32(1454104972)
+const net_old_magic_number = u32(3436803284)
+
 @[weak]
 __global (
 	server_context      &Net_context_t
@@ -65,6 +68,56 @@ pub fn net_sv_send_query_response(addr &Net_addr_t) {
 	net_free_packet(packet)
 }
 
+fn net_sv_send_reject(addr &Net_addr_t, msg &i8) {
+	packet := net_new_packet(64)
+	net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_rejected))
+	net_write_string(packet, msg)
+	net_send_packet(addr, packet)
+	net_free_packet(packet)
+}
+
+fn net_sv_parse_syn(addr &Net_addr_t, packet &Net_packet_t) {
+	mut magic := u32(0)
+	if !net_read_int32(packet, &magic) {
+		return
+	}
+	if magic == net_old_magic_number {
+		net_sv_send_reject(addr, c'You are using an old client version that is not supported by this server.')
+		return
+	}
+	if magic != net_magic_number {
+		return
+	}
+	client_version := net_read_string(packet)
+	if client_version == unsafe { nil } {
+		return
+	}
+	protocol := net_read_protocol_list(packet)
+	if protocol == .net_protocol_unknown {
+		net_sv_send_reject(addr, c'Version mismatch: no common compatible protocol.')
+		return
+	}
+	mut data := Net_connect_data_t{}
+	if !net_read_connect_data(packet, &data) {
+		return
+	}
+	if !d_valid_game_mode(GameMission_t(data.gamemission), GameMode_t(data.gamemode))
+		|| data.max_players > 8 {
+		net_sv_send_reject(addr, c'Invalid game parameters.')
+		return
+	}
+	player_name := net_read_string(packet)
+	if player_name == unsafe { nil } {
+		return
+	}
+	reply := net_new_packet(64)
+	net_write_int16(reply, u32(Net_packet_type_t.net_packet_type_syn))
+	net_write_string(reply, c'vdoom')
+	net_write_protocol(reply, protocol)
+	net_send_packet(addr, reply)
+	net_free_packet(reply)
+}
+
 @[export: 'NET_SV_Run']
 pub fn net_sv_run() {
 	if server_context == unsafe { nil } {
@@ -87,9 +140,16 @@ pub fn net_sv_run() {
 			net_query_add_response(packet)
 		} else {
 			mut packet_type := u32(0)
-			if net_read_int16(packet, &packet_type)
-				&& packet_type == u32(Net_packet_type_t.net_packet_type_query) {
-				net_sv_send_query_response(addr)
+			if net_read_int16(packet, &packet_type) {
+				match Net_packet_type_t(packet_type) {
+					.net_packet_type_query {
+						net_sv_send_query_response(addr)
+					}
+					.net_packet_type_syn {
+						net_sv_parse_syn(addr, packet)
+					}
+					else {}
+				}
 			}
 		}
 		net_release_address(addr)
