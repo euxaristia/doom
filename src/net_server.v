@@ -115,6 +115,47 @@ fn net_sv_parse_launch(addr &Net_addr_t) {
 	}
 }
 
+fn net_sv_parse_gamedata(addr &Net_addr_t, packet &Net_packet_t) {
+	mut recv_seq_low := u32(0)
+	mut start_low := u32(0)
+	mut num_tics := u32(0)
+	if !net_read_int8(packet, &recv_seq_low) || !net_read_int8(packet, &start_low)
+		|| !net_read_int8(packet, &num_tics) {
+		return
+	}
+	for _ in 0 .. int(num_tics) {
+		mut latency := u32(0)
+		if !net_read_int16(packet, &latency) {
+			return
+		}
+		mut diff := Net_ticdiff_t{}
+		if !net_read_ticcmd_diff(packet, &diff, false) {
+			return
+		}
+	}
+	_ = recv_seq_low
+	_ = start_low
+	_ = addr
+}
+
+fn net_sv_parse_gamedata_ack(packet &Net_packet_t) {
+	mut ack_low := u32(0)
+	if !net_read_int8(packet, &ack_low) {
+		return
+	}
+	_ = ack_low
+}
+
+fn net_sv_parse_resend_request(packet &Net_packet_t) {
+	mut start := u32(0)
+	mut num_tics := u32(0)
+	if !net_read_int32(packet, &start) || !net_read_int8(packet, &num_tics) {
+		return
+	}
+	_ = start
+	_ = num_tics
+}
+
 fn net_sv_parse_syn(addr &Net_addr_t, packet &Net_packet_t) {
 	mut magic := u32(0)
 	if !net_read_int32(packet, &magic) {
@@ -191,6 +232,15 @@ pub fn net_sv_run() {
 					}
 					.net_packet_type_launch {
 						net_sv_parse_launch(addr)
+					}
+					.net_packet_type_gamedata {
+						net_sv_parse_gamedata(addr, packet)
+					}
+					.net_packet_type_gamedata_ack {
+						net_sv_parse_gamedata_ack(packet)
+					}
+					.net_packet_type_gamedata_resend {
+						net_sv_parse_resend_request(packet)
 					}
 					else {}
 				}

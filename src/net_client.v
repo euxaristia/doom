@@ -29,6 +29,7 @@ __global (
 	net_local_wad_sha1sum         Sha1_digest_t
 	net_local_deh_sha1sum         Sha1_digest_t
 	net_local_is_freedoom         u32
+	last_gamedata_seq             u32
 )
 
 @[export: 'NET_CL_LaunchGame']
@@ -173,8 +174,47 @@ fn net_cl_parse_packet(packet &Net_packet_t) {
 				println('Message from server:\n${cstring(msg)}')
 			}
 		}
+		.net_packet_type_gamedata {
+			net_cl_parse_gamedata(packet)
+		}
+		.net_packet_type_gamedata_resend {
+			net_cl_parse_resend_request(packet)
+		}
 		else {}
 	}
+}
+
+fn net_cl_send_gamedata_ack(seq_low u32) {
+	packet := net_new_packet(16)
+	net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_gamedata_ack))
+	net_write_int8(packet, seq_low & 0xff)
+	net_conn_send_packet(&client_connection, packet)
+	net_free_packet(packet)
+}
+
+fn net_cl_parse_gamedata(packet &Net_packet_t) {
+	mut seq_low := u32(0)
+	mut num_tics := u32(0)
+	if !net_read_int8(packet, &seq_low) || !net_read_int8(packet, &num_tics) {
+		return
+	}
+	last_gamedata_seq = net_expand_tic_num(last_gamedata_seq, seq_low)
+	for _ in 0 .. int(num_tics) {
+		mut cmd := Net_full_ticcmd_t{}
+		if !net_read_full_ticcmd(packet, &cmd, client_settings.lowres_turn != 0) {
+			return
+		}
+	}
+	net_cl_send_gamedata_ack(seq_low)
+}
+
+fn net_cl_parse_resend_request(packet &Net_packet_t) {
+	mut start := u32(0)
+	mut num_tics := u32(0)
+	if !net_read_int32(packet, &start) || !net_read_int8(packet, &num_tics) {
+		return
+	}
+	net_log(c'client: resend request start=%d num_tics=%d', int(start), int(num_tics))
 }
 
 fn set_reject_reason(s &i8) {
