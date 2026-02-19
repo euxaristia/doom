@@ -16,13 +16,16 @@ __global (
 )
 
 const master_refresh_period_secs = 30
+const server_waiting_launch = 0
+const server_waiting_start = 1
+const server_in_game = 2
 
 @[export: 'NET_SV_Init']
 pub fn net_sv_init() {
 	if server_context == unsafe { nil } {
 		server_context = net_new_context()
 	}
-	server_state = 0
+	server_state = server_waiting_launch
 	server_clients = []&Net_addr_t{}
 }
 
@@ -103,16 +106,35 @@ fn net_sv_parse_launch(addr &Net_addr_t) {
 	if server_clients.len == 0 || addr != server_clients[0] {
 		return
 	}
-	if server_state != 0 {
+	if server_state != server_waiting_launch {
 		return
 	}
-	server_state = 1
+	server_state = server_waiting_start
 	for client_addr in server_clients {
 		packet := net_new_packet(8)
 		net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_launch))
+		net_write_int8(packet, u32(server_clients.len))
 		net_send_packet(client_addr, packet)
 		net_free_packet(packet)
 	}
+
+	// First-pass start broadcast immediately after launch.
+	mut settings := Net_gamesettings_t{}
+	settings.num_players = server_clients.len
+	settings.consoleplayer = 0
+	settings.gameversion = int(GameVersion_t.exe_final2)
+	settings.skill = int(Skill_t.sk_medium)
+	settings.episode = 1
+	settings.map_ = 1
+	settings.ticdup = 1
+	for client_addr in server_clients {
+		packet := net_new_packet(96)
+		net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_gamestart))
+		net_write_settings(packet, &settings)
+		net_send_packet(client_addr, packet)
+		net_free_packet(packet)
+	}
+	server_state = server_in_game
 }
 
 fn net_sv_parse_gamedata(addr &Net_addr_t, packet &Net_packet_t) {

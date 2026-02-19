@@ -154,6 +154,11 @@ fn net_cl_parse_packet(packet &Net_packet_t) {
 			}
 		}
 		.net_packet_type_launch {
+			mut num_players := u32(0)
+			if !net_read_int8(packet, &num_players) {
+				return
+			}
+			net_client_wait_data.num_players = int(num_players)
 			net_waiting_for_launch = false
 			if client_state == .client_state_waiting_launch {
 				client_state = .client_state_waiting_start
