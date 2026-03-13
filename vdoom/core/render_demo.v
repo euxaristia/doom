@@ -319,13 +319,20 @@ pub fn render_menu_activate() {
 				return
 			}
 		}
-		.options {
-			if item.name == 'M_ENDGAM' {
-				mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
-				render_menu_set(mut wad, .main)
-				return
-			}
+	.options {
+		if item.name == 'M_MESSG' {
+			show_messages = 1 - show_messages
+			return
 		}
+		if item.name == 'M_DETAIL' {
+			detail_level = 1 - detail_level
+			return
+		}
+		if item.name == 'M_MSENS' {
+			mouse_sensitivity = (mouse_sensitivity + 1) % 11
+			return
+		}
+	}
 	}
 	println('menu action: ${item.name}')
 }
