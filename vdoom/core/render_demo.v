@@ -311,6 +311,15 @@ pub fn render_menu_activate() {
 			if item.name == 'M_NGAME' {
 				g_defered_init_new(2, 1, 1) // skill=medium, episode=1, map=1
 				render_show_menu = false
+				// Clear screen and show "loading" when starting game
+				v_clear_screen(0)
+				// Draw a simple loading text
+				for y := 0; y < screenheight; y++ {
+					for x := 0; x < screenwidth; x++ {
+						i_video_buffer[y * screenwidth + x] = 0
+					}
+				}
+				i_finish_update()
 				return
 			}
 			if item.name == 'M_QUITG' {
@@ -408,10 +417,7 @@ pub fn render_tick_frame() {
 		render_tick++
 		return
 	}
-	render_tick++
-	// Simple animated marker so repeated frames differ.
-	bar_y := 120 + (render_tick % 40)
-	v_draw_filled_box(0, bar_y, screenwidth, 4, (render_tick * 3 + int(render_checksum & 0xff)) % 256)
-	v_draw_box(0, bar_y, screenwidth, 4, 255)
+	// Game running - just clear screen for now
+	v_clear_screen(0)
 	i_finish_update()
 }
