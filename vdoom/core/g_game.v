@@ -1,6 +1,8 @@
 @[has_globals]
 module core
 
+import os
+
 __global vanilla_savegame_limit = 0
 __global vanilla_demo_limit = 0
 __global oldgamestate = GameState.level
@@ -117,15 +119,66 @@ pub fn g_defered_play_demo(demo string) {
 }
 
 pub fn g_load_game(name string) {
-	_ = name
+	if !os.exists(name) {
+		println('save file not found: ${name}')
+		return
+	}
+	data := os.read_file(name) or {
+		println('failed to read save: ${err}')
+		return
+	}
+	lines := data.split('\n')
+	for line in lines {
+		if line.starts_with('episode=') {
+			gameepisode = line[8..].int()
+		}
+		if line.starts_with('map=') {
+			gamemap = line[4..].int()
+		}
+		if line.starts_with('skill=') {
+			gameskill = line[6..].int()
+		}
+		if line.starts_with('health=') {
+			if players.len > 0 {
+				players[0].health = line[7..].int()
+			}
+		}
+	}
+	println('loaded game: episode ${gameepisode}, map ${gamemap}, skill ${gameskill}')
+	p_setup_level(gameepisode, gamemap, 1, gameskill)
+	render_show_menu = false
+	v_clear_screen(0)
+	i_finish_update()
 }
 
 pub fn g_do_load_game() {
 }
 
 pub fn g_save_game(slot int, description string) {
-	_ = slot
-	_ = description
+	save_dir := os.join_path(os.home_dir(), '.vdoom')
+	os.mkdir_all(save_dir) or {}
+	save_path := os.join_path(save_dir, 'save${slot}.dsg')
+	
+	mut content := ' Doom V Save Game\n'
+	content += 'description=${description}\n'
+	content += 'version=1\n'
+	content += 'episode=${gameepisode}\n'
+	content += 'map=${gamemap}\n'
+	content += 'skill=${gameskill}\n'
+	
+	if players.len > 0 {
+		content += 'player_x=${players[0].mo.x}\n'
+		content += 'player_y=${players[0].mo.y}\n'
+		content += 'player_z=${players[0].mo.z}\n'
+		content += 'player_angle=${players[0].mo.angle}\n'
+		content += 'health=${players[0].health}\n'
+	}
+	
+	os.write_file(save_path, content) or {
+		println('failed to save game: ${err}')
+		return
+	}
+	println('game saved to ${save_path}')
 }
 
 pub fn g_record_demo(name string) {
