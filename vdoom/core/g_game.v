@@ -128,24 +128,73 @@ pub fn g_load_game(name string) {
 		return
 	}
 	lines := data.split('\n')
+	mut save_episode := 1
+	mut save_map := 1
+	mut save_skill := 2
+	mut save_health := 100
+	mut save_armor := 0
+	mut save_armortype := 0
+	mut save_weapon := 0
+	mut save_ammo_clip := 0
+	mut save_ammo_shell := 0
+	mut save_ammo_cell := 0
+	mut save_ammo_misl := 0
+	
 	for line in lines {
 		if line.starts_with('episode=') {
-			gameepisode = line[8..].int()
+			save_episode = line[8..].int()
 		}
 		if line.starts_with('map=') {
-			gamemap = line[4..].int()
+			save_map = line[4..].int()
 		}
 		if line.starts_with('skill=') {
-			gameskill = line[6..].int()
+			save_skill = line[6..].int()
 		}
 		if line.starts_with('health=') {
-			if players.len > 0 {
-				players[0].health = line[7..].int()
-			}
+			save_health = line[7..].int()
+		}
+		if line.starts_with('armor=') {
+			save_armor = line[6..].int()
+		}
+		if line.starts_with('armortype=') {
+			save_armortype = line[10..].int()
+		}
+		if line.starts_with('weapon=') {
+			save_weapon = line[7..].int()
+		}
+		if line.starts_with('ammo_clip=') {
+			save_ammo_clip = line[10..].int()
+		}
+		if line.starts_with('ammo_shell=') {
+			save_ammo_shell = line[11..].int()
+		}
+		if line.starts_with('ammo_cell=') {
+			save_ammo_cell = line[10..].int()
+		}
+		if line.starts_with('ammo_misl=') {
+			save_ammo_misl = line[10..].int()
 		}
 	}
-	println('loaded game: episode ${gameepisode}, map ${gamemap}, skill ${gameskill}')
+	println('loaded game: episode ${save_episode}, map ${save_map}, skill ${save_skill}')
+	gameepisode = save_episode
+	gamemap = save_map
+	gameskill = save_skill
 	p_setup_level(gameepisode, gamemap, 1, gameskill)
+	
+	// Restore player state
+	if players.len > 0 {
+		unsafe {
+			players[0].health = save_health
+			players[0].armorpoints = save_armor
+			players[0].armortype = save_armortype
+			players[0].readyweapon = WeaponType(save_weapon)
+		}
+		players[0].ammo[int(AmmoType.clip)] = save_ammo_clip
+		players[0].ammo[int(AmmoType.shell)] = save_ammo_shell
+		players[0].ammo[int(AmmoType.cell)] = save_ammo_cell
+		players[0].ammo[int(AmmoType.misl)] = save_ammo_misl
+	}
+	
 	render_show_menu = false
 	v_clear_screen(0)
 	i_finish_update()
@@ -161,17 +210,25 @@ pub fn g_save_game(slot int, description string) {
 	
 	mut content := ' Doom V Save Game\n'
 	content += 'description=${description}\n'
-	content += 'version=1\n'
+	content += 'version=2\n'
 	content += 'episode=${gameepisode}\n'
 	content += 'map=${gamemap}\n'
 	content += 'skill=${gameskill}\n'
 	
 	if players.len > 0 {
-		content += 'player_x=${players[0].mo.x}\n'
-		content += 'player_y=${players[0].mo.y}\n'
-		content += 'player_z=${players[0].mo.z}\n'
-		content += 'player_angle=${players[0].mo.angle}\n'
-		content += 'health=${players[0].health}\n'
+		p := &players[0]
+		content += 'player_x=${p.mo.x}\n'
+		content += 'player_y=${p.mo.y}\n'
+		content += 'player_z=${p.mo.z}\n'
+		content += 'player_angle=${p.mo.angle}\n'
+		content += 'health=${p.health}\n'
+		content += 'armor=${p.armorpoints}\n'
+		content += 'armortype=${p.armortype}\n'
+		content += 'weapon=${int(p.readyweapon)}\n'
+		content += 'ammo_clip=${p.ammo[int(AmmoType.clip)]}\n'
+		content += 'ammo_shell=${p.ammo[int(AmmoType.shell)]}\n'
+		content += 'ammo_cell=${p.ammo[int(AmmoType.cell)]}\n'
+		content += 'ammo_misl=${p.ammo[int(AmmoType.misl)]}\n'
 	}
 	
 	os.write_file(save_path, content) or {
