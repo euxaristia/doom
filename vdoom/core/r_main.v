@@ -102,16 +102,46 @@ pub fn r_render_player_view(player voidptr) {
 	}
 	p := unsafe { &Player(player) }
 	
-	// Clear the screen
-	v_clear_screen(0)
-	
-	// For now, just show player position info
-	// Full 3D rendering would require implementing the full renderer
-	if p.mo != unsafe { nil } {
-		// Player is positioned, rendering would happen here
+	if p.mo == unsafe { nil } {
+		return
 	}
 	
+	// Setup the view frame
+	r_setup_frame(p)
+	
+	// Clear buffers
+	r_clear_clip_segs()
+	r_clear_draw_segs()
+	r_clear_planes()
+	r_clear_sprites()
+	
+	// Render the world
+	if numnodes == 0 {
+		return
+	}
+	
+	// Render the BSP tree
+	r_render_bsp_node(numnodes - 1)
+	
+	// Draw floors and ceilings
+	r_draw_planes()
+	
+	// Draw masked elements (sprites, etc)
+	r_draw_masked()
+	
 	i_finish_update()
+}
+
+fn r_setup_frame(player &Player) {
+	unsafe {
+		viewx := player.mo.x
+		viewy := player.mo.y
+		viewz := player.viewz
+		viewangle := player.mo.angle
+		
+		viewcos = fixed_cos(viewangle)
+		viewsin = fixed_sin(viewangle)
+	}
 }
 
 pub fn r_init() {}

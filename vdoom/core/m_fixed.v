@@ -16,3 +16,13 @@ pub fn fixed_div(a Fixed, b Fixed) Fixed {
 fn abs(v Fixed) Fixed {
     return if v < 0 { -v } else { v }
 }
+
+pub fn fixed_sin(angle u32) Fixed {
+    idx := (angle >> angle_to_fineshift) & (fine_angles - 1)
+    return finesine[idx]
+}
+
+pub fn fixed_cos(angle u32) Fixed {
+    idx := (angle >> angle_to_fineshift) & (fine_angles - 1)
+    return finecosine[idx]
+}
