@@ -1,6 +1,8 @@
 @[has_globals]
 module core
 
+import os
+
 __global render_tick = 0
 __global render_wad_path = ''
 __global render_checksum = u64(0)
@@ -21,6 +23,8 @@ const menu_skull_xoff = -32
 enum MenuScreen {
 	main
 	options
+	load
+	save
 }
 
 struct MenuItem {
@@ -137,7 +141,7 @@ fn render_menu_set(mut wad Wad, screen MenuScreen) {
         v_clear_screen(0)
     }
 	// Build menu definition.
-	match screen {
+		match screen {
 		.main {
 			render_menu_x = 97
 			render_menu_y = 64
@@ -171,6 +175,22 @@ fn render_menu_set(mut wad Wad, screen MenuScreen) {
 			if i_debug_input() {
 				println('menu skull lumps: M_SKULL1=${wad.has_lump("M_SKULL1")} M_SKULL2=${wad.has_lump("M_SKULL2")}')
 			}
+		}
+		.load, .save {
+			render_menu_x = 97
+			render_menu_y = 63
+			render_menu_items = [
+				MenuItem{name: '', selectable: true}, // slot 0
+				MenuItem{name: '', selectable: true}, // slot 1
+				MenuItem{name: '', selectable: true}, // slot 2
+				MenuItem{name: '', selectable: true}, // slot 3
+				MenuItem{name: '', selectable: true}, // slot 4
+				MenuItem{name: '', selectable: true}, // slot 5
+				MenuItem{name: '', selectable: true}, // slot 6
+				MenuItem{name: '', selectable: true}, // slot 7
+			]
+			title := if screen == .load { 'M_LOADTTL' } else { 'M_SAVETTL' }
+			draw_menu_patch(mut wad, title, 72, 16)
 		}
 	}
 	// Draw menu items.
@@ -308,12 +328,20 @@ pub fn render_menu_activate() {
 				render_menu_set(mut wad, .options)
 				return
 			}
+			if item.name == 'M_LOADG' {
+				mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
+				render_menu_set(mut wad, .load)
+				return
+			}
+			if item.name == 'M_SAVEG' {
+				mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
+				render_menu_set(mut wad, .save)
+				return
+			}
 			if item.name == 'M_NGAME' {
-				g_defered_init_new(2, 1, 1) // skill=medium, episode=1, map=1
+				g_defered_init_new(2, 1, 1)
 				render_show_menu = false
-				// Clear screen and show "loading" when starting game
 				v_clear_screen(0)
-				// Draw a simple loading text
 				for y := 0; y < screenheight; y++ {
 					for x := 0; x < screenwidth; x++ {
 						i_video_buffer[y * screenwidth + x] = 0
@@ -328,20 +356,40 @@ pub fn render_menu_activate() {
 				return
 			}
 		}
-	.options {
-		if item.name == 'M_MESSG' {
-			show_messages = 1 - show_messages
-			return
+		.options {
+			if item.name == 'M_MESSG' {
+				show_messages = 1 - show_messages
+				return
+			}
+			if item.name == 'M_DETAIL' {
+				detail_level = 1 - detail_level
+				return
+			}
+			if item.name == 'M_MSENS' {
+				mouse_sensitivity = (mouse_sensitivity + 1) % 11
+				return
+			}
 		}
-		if item.name == 'M_DETAIL' {
-			detail_level = 1 - detail_level
-			return
+		.load, .save {
+			slot := render_menu_item
+			if slot >= 0 && slot < 8 {
+				save_path := os.join_path(os.home_dir(), '.vdoom', 'save${slot}.dsg')
+				if render_menu_screen == .load {
+					if os.exists(save_path) {
+						g_load_game(save_path)
+						render_show_menu = false
+						v_clear_screen(0)
+						i_finish_update()
+						return
+					}
+				} else {
+					g_save_game(slot, 'Save Game ${slot + 1}')
+					mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
+					render_menu_set(mut wad, .main)
+					return
+				}
+			}
 		}
-		if item.name == 'M_MSENS' {
-			mouse_sensitivity = (mouse_sensitivity + 1) % 11
-			return
-		}
-	}
 	}
 	println('menu action: ${item.name}')
 }
@@ -350,9 +398,12 @@ pub fn render_menu_back() {
 	if !render_show_menu {
 		return
 	}
-	if render_menu_screen == .options {
-		mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
-		render_menu_set(mut wad, .main)
+	match render_menu_screen {
+		.options, .load, .save {
+			mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
+			render_menu_set(mut wad, .main)
+		}
+		else {}
 	}
 }
 
