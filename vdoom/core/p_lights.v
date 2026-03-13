@@ -7,3 +7,7 @@ pub fn p_lights_turn_on_stub(line &Line, bright int) {
 pub fn p_lights_start_strobing_stub(line &Line) {
 	ev_start_light_strobing(line)
 }
+
+pub fn p_do_lights() {}
+
+pub fn p_light_tick() {}
