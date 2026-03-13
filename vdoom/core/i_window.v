@@ -21,6 +21,9 @@ mut:
 }
 
 fn (mut app WindowApp) init() {
+	if screenwidth <= 0 || screenheight <= 0 {
+		return
+	}
 	app.image_idx = app.ctx.new_streaming_image(
 		screenwidth,
 		screenheight,
@@ -66,7 +69,7 @@ fn (mut app WindowApp) frame() {
 		app.debug_keys = 'poll up=${up_now} down=${down_now} events=${app.seen_event}'
 	}
 	rgb := i_last_rgb()
-	if rgb.len == screenwidth * screenheight * 3 {
+	if rgb.len == screenwidth * screenheight * 3 && app.image_idx >= 0 {
 		// Convert RGB -> RGBA once per frame, then upload as a streaming texture.
 		if app.rgba.len != screenwidth * screenheight * 4 {
 			app.rgba = []u8{len: screenwidth * screenheight * 4}
