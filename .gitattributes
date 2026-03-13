@@ -1,0 +1,6 @@
+# V language files (use V not Verilog)
+*.v linguist-language=V
+
+# Ignore build artifacts
+*.o linguist-vendored
+vdoom/vdoom_test linguist-vendored

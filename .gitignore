@@ -26,6 +26,7 @@ chocolate-doom/src/doom/doomv
 
 # ignore local Doom resource files:
 vdoom/vdoom
+vdoom/vdoom_test
 out/
 vdoom/main
 src/*
