@@ -58,10 +58,6 @@ pub fn p_cross_special_line(linenum int, side int, thing &Mobj) {
 	_ = thing
 }
 
-pub fn p_player_in_special_sector(player voidptr) {
-	_ = player
-}
-
 pub fn two_sided(sector int, line int) int {
 	if sector < 0 || sector >= numsectors {
 		return 0

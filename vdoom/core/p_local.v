@@ -5,6 +5,15 @@ module core
 pub const float_speed = frac_unit * 4
 pub const maxhealth = 100
 pub const viewheight_fixed = 41 * frac_unit
+pub const viewheight = 41
+pub const centerview = 0
+pub const no_center = 1
+pub const tocenter = 8
+pub const lookdir_min = -90
+pub const lookdir_max = 90
+pub const look_units = 3
+pub const look_steps = 20
+pub const maxbob = 0x100000
 pub const mapblockunits = 128
 pub const mapblocksize = mapblockunits * frac_unit
 pub const mapblockshift = frac_bits + 7
@@ -25,6 +34,9 @@ pub const maxintercepts_original = 128
 pub const maxintercepts = maxintercepts_original + 61
 pub const maxspecialcross = 20
 pub const maxspecialcross_original = 8
+pub const stop_speed = frac_unit
+pub const coff = 1
+pub const snum_sounds = 2
 
 pub struct DivLine {
 pub mut:
@@ -131,24 +143,9 @@ pub fn p_setup_psprites(curplayer voidptr) { _ = curplayer }
 pub fn p_move_psprites(curplayer voidptr) { _ = curplayer }
 pub fn p_drop_weapon(player voidptr) { _ = player }
 
-// P_USER
-pub fn p_player_think(player &Player) {
-	p_move_player(player)
-	p_calc_height(player)
-	p_pspr_ticker(player)
-}
+// P_USER stub - actual implementation in p_user.v
 
-// P_MOBJ
-pub fn p_respawn_specials() {}
-pub fn p_spawn_mobj(x Fixed, y Fixed, z Fixed, typ int) voidptr { _ = x; _ = y; _ = z; _ = typ; return unsafe { nil } }
-pub fn p_remove_mobj(th voidptr) { _ = th }
-pub fn p_subst_null_mobj(th voidptr) voidptr { _ = th; return unsafe { nil } }
-pub fn p_set_mobj_state(mobj voidptr, state int) bool { _ = mobj; _ = state; return false }
-pub fn p_mobj_thinker(mobj voidptr) { _ = mobj }
-pub fn p_spawn_puff(x Fixed, y Fixed, z Fixed) { _ = x; _ = y; _ = z }
-pub fn p_spawn_blood(x Fixed, y Fixed, z Fixed, damage int) { _ = x; _ = y; _ = z; _ = damage }
-pub fn p_spawn_missile(source voidptr, dest voidptr, typ int) voidptr { _ = source; _ = dest; _ = typ; return unsafe { nil } }
-pub fn p_spawn_player_missile(source voidptr, typ int) { _ = source; _ = typ }
+// P_MOBJ - actual implementation in p_mobj.v
 
 // P_ENEMY
 pub fn p_noise_alert(target voidptr, emmiter voidptr) { _ = target; _ = emmiter }
@@ -206,6 +203,4 @@ pub fn p_aim_line_attack(t1 voidptr, angle int, distance Fixed) Fixed { _ = t1; 
 pub fn p_line_attack(t1 voidptr, angle int, distance Fixed, slope Fixed, damage int) { _ = t1; _ = angle; _ = distance; _ = slope; _ = damage }
 pub fn p_radius_attack(spot voidptr, source voidptr, damage int) { _ = spot; _ = source; _ = damage }
 
-// P_INTER
-pub fn p_touch_special_thing(special voidptr, toucher voidptr) { _ = special; _ = toucher }
-pub fn p_damage_mobj(target voidptr, inflictor voidptr, source voidptr, damage int) { _ = target; _ = inflictor; _ = source; _ = damage }
+// P_INTER stubs - actual implementation in p_inter.v

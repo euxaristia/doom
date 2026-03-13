@@ -11,7 +11,6 @@ __global colormaps = []u8{}
 // View sizes.
 __global viewwidth = 0
 __global scaledviewwidth = 0
-__global viewheight = 0
 __global firstflat = 0
 __global flattranslation = []int{}
 __global texturetranslation = []int{}

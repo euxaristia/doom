@@ -22,6 +22,7 @@ pub mut:
 	viewheight     Fixed
 	deltaviewheight Fixed
 	bob            Fixed
+	bob2           Fixed
 	health         int
 	armorpoints    int
 	armortype      int
@@ -50,6 +51,15 @@ pub mut:
 	colormap       int
 	psprites       []PspDef = []PspDef{len: numpsprites}
 	didsecret      bool
+	lookdir       int
+	oldlookdir    int
+	recoilpitch   int
+	oldrecoilpitch int
+	oldviewz      Fixed
+	centering     bool
+	jump_tics    int
+	neghealth     int
+	so            voidptr
 }
 
 pub struct WbPlayerStruct {

@@ -10,14 +10,14 @@ pub enum PsprNum {
 	numpsprites
 }
 
-pub const numpsprites = 2
-
 pub struct PspDef {
 pub mut:
 	state voidptr
 	tics  int
 	sx    Fixed
 	sy    Fixed
+	sx2   Fixed
+	sy2   Fixed
 }
 
 pub fn p_pspr_init() {

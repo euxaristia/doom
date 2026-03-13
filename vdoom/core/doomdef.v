@@ -84,6 +84,8 @@ pub enum PowerType {
 
 pub const numpowers = 6
 
+pub const numpsprites = 2
+
 pub const invulntics = 30 * ticrate
 pub const invistics = 60 * ticrate
 pub const infratics = 120 * ticrate
