@@ -123,7 +123,7 @@ pub fn i_finish_update() {
 	}
 	// Always keep the most recent RGB frame for window display.
 	last_rgb = rgb.clone()
-	// Optionally dump a few frames to PPM so rendering is visible without SDL.
+	// Optionally dump frames to PPM so rendering is visible without SDL.
 	if !dump_frames || frame_dump_count >= 5 {
 		return
 	}

@@ -20,6 +20,7 @@ fn main() {
 	mut show_menu := false
 	mut show_window := false
 	mut animate := false
+	mut loop_forever := false
 	mut window_scale_arg := 3
 	mut gamma_arg := f32(1.2)
 	mut aspect_arg := 'doom43'
@@ -105,6 +106,9 @@ fn main() {
 			}
 			'--animate' {
 				animate = true
+			}
+			'--loop' {
+				loop_forever = true
 			}
 			'--interpic' {
 				patch_name = 'INTERPIC'
@@ -253,7 +257,9 @@ fn main() {
 		core.render_demo_frame(mut wad)
 	}
 	// Only pre-render extra frames when not using a live window, or when animating.
-	if !show_window || animate {
+	if loop_forever {
+		core.render_loop()
+	} else if !show_window || animate {
 		core.render_more_frames(2)
 	}
 

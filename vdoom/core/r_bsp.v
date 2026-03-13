@@ -14,8 +14,8 @@ __global markfloor = false
 __global markceiling = false
 __global skymap = false
 
-__global drawsegs = []DrawSeg{len: maxdrawsegs}
-__global ds_p = &DrawSeg(unsafe { nil })
+__global drawsegs &DrawSeg
+__global ds_p &DrawSeg
 
 __global hscalelight = []voidptr{}
 __global vscalelight = []voidptr{}
@@ -27,9 +27,12 @@ pub fn r_clear_clip_segs() {}
 
 pub fn r_clear_draw_segs() {
 	validcount++
-	if drawsegs.len > 0 {
-		ds_p = &drawsegs[0]
-	}
+	ds_p = drawsegs
+}
+
+pub fn r_init_bsp() {
+	drawsegs = &DrawSeg(unsafe { nil })
+	ds_p = &DrawSeg(unsafe { nil })
 }
 
 pub fn r_render_bsp_node(bspnum int) {

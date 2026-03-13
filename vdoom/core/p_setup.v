@@ -43,7 +43,7 @@ pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
 		return
 	}
 	
-	map_base := wad.get_lump_index(lumpname)
+	map_base := wad.find_lump_index(lumpname)
 	
 	// Load all map components
 	p_load_blockmap(map_base + 5) // ML_BLOCKMAP
@@ -207,11 +207,11 @@ pub fn p_load_linedefs(lump int) {
 			line.slopetype = .negative
 		}
 		
-		if sidenum[0] >= 0 && sidenum[0] < numsides {
-			line.frontsector = sides[sidenum[0]].sector
+		if line.sidenum[0] >= 0 && line.sidenum[0] < numsides {
+			line.frontsector = sides[line.sidenum[0]].sector
 		}
-		if sidenum[1] >= 0 && sidenum[1] < numsides {
-			line.backsector = sides[sidenum[1]].sector
+		if line.sidenum[1] >= 0 && line.sidenum[1] < numsides {
+			line.backsector = sides[line.sidenum[1]].sector
 		}
 	}
 }
@@ -273,7 +273,7 @@ pub fn p_load_subsectors(lump int) {
 	
 	// Link to sectors
 	for i in 0 .. numsubsectors {
-		ss := &subsectors[i]
+		mut ss := &subsectors[i]
 		if ss.firstline >= 0 && int(ss.firstline) < numsegs {
 			seg := &segs[ss.firstline]
 			ss.sector = seg.frontsector

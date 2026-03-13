@@ -443,6 +443,17 @@ pub fn render_more_frames(count int) {
 	}
 }
 
+pub fn render_loop() {
+	mut frame_count := 0
+	for {
+		render_tick_frame()
+		frame_count++
+		if frame_count % 10 == 0 {
+			println('game frame ${frame_count}')
+		}
+	}
+}
+
 pub fn render_tick_frame() {
 	if i_video_buffer.len != screenwidth * screenheight {
 		return
