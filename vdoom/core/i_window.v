@@ -24,6 +24,9 @@ fn (mut app WindowApp) init() {
 	if screenwidth <= 0 || screenheight <= 0 {
 		return
 	}
+	if screenwidth * screenheight <= 0 {
+		return
+	}
 	app.image_idx = app.ctx.new_streaming_image(
 		screenwidth,
 		screenheight,
@@ -32,9 +35,10 @@ fn (mut app WindowApp) init() {
 		min_filter: .nearest
 		mag_filter: .nearest
 	)
-	if app.rgba.len != screenwidth * screenheight * 4 {
-		app.rgba = []u8{len: screenwidth * screenheight * 4}
+	if app.image_idx < 0 {
+		return
 	}
+	app.rgba = []u8{len: screenwidth * screenheight * 4}
 }
 
 fn (mut app WindowApp) frame() {
@@ -69,11 +73,8 @@ fn (mut app WindowApp) frame() {
 		app.debug_keys = 'poll up=${up_now} down=${down_now} events=${app.seen_event}'
 	}
 	rgb := i_last_rgb()
-	if rgb.len == screenwidth * screenheight * 3 && app.image_idx >= 0 {
+	if rgb.len == screenwidth * screenheight * 3 && app.image_idx >= 0 && app.rgba.len == screenwidth * screenheight * 4 {
 		// Convert RGB -> RGBA once per frame, then upload as a streaming texture.
-		if app.rgba.len != screenwidth * screenheight * 4 {
-			app.rgba = []u8{len: screenwidth * screenheight * 4}
-		}
 		for i := 0; i < screenwidth * screenheight; i++ {
 			src := i * 3
 			dst := i * 4
@@ -106,6 +107,9 @@ fn (mut app WindowApp) frame() {
 		app.ctx.draw_rect_filled(view_x + view_w, view_y, logical.width - (view_x + view_w), view_h, gg.black)
 		// Non-uniform scaling inside the 4:3 viewport applies the classic vertical stretch.
 		app.ctx.draw_image_by_id(f32(view_x), f32(view_y), f32(view_w), f32(view_h), app.image_idx)
+	} else {
+		// No valid RGB - just draw black
+		app.ctx.draw_rect_filled(0, 0, logical.width, logical.height, gg.black)
 	}
 	// Debug overlay for input events (enable with VDOOM_DEBUG_INPUT=1).
 	if i_debug_input() {
