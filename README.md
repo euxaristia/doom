@@ -1,81 +1,89 @@
-# DOOM.v
-DOOM translated from C to V.  Builds in 0.7 seconds (x25 speed-up).
+# DOOM.v - A V Language Reimplementation of DOOM
 
+A ground-up rewrite of DOOM (based on crispy-doom) in the [V programming language](https://vlang.io/).
 
-Current problems that will be fixed asap:
+## Status
 
-- #define consts are replaced with their values
-- No indentation in functions
-- Music works fine, but monster and weapon sounds don't
+**In Progress** - This is an ongoing effort to translate crispy-doom from C to V.
 
+Current capabilities:
+- WAD file loading and parsing
+- Basic frame rendering to PPM files
+- Core game structures and types
+- Player physics (movement, thrust, view height)
+- Map object (Mobj) system
+- Enemy AI stubs
+- Sound/music enums defined
 
-It is possible to translate files one by one and gradually replace C with V. Object files compiled with V have full binary compatibility with object files produced by C, and can be a drop-in replacement:
+## Project Structure
 
-```bash
-# Download and build DOOM
-git clone https://github.com/chocolate-doom/chocolate-doom
-cd chocolate-doom
-cmake .
-make chocolate-doom
-
-# Build p_enemy.v and replace the object file
-wget https://raw.githubusercontent.com/vlang/doom/master/p_enemy.v
-v -lib translated p_enemy.v
-cp p_enemy.o src/doom/CMakeFiles/doom.dir/p_enemy.c.o
-
-# Rebuild it again with p_enemy.v.o and launch it
-make chocolate-doom && src/chocolate-doom -width 640
+```
+doom/
+├── vdoom/                  # Pure V implementation
+│   ├── main.v             # Entry point
+│   ├── core/              # Core game engine (105 .v files)
+│   │   ├── p_user.v       # Player controls
+│   │   ├── p_mobj.v       # Map objects
+│   │   ├── p_enemy.v      # Enemy AI
+│   │   ├── p_inter.v      # Game interactions
+│   │   ├── r_main.v       # Rendering
+│   │   └── ...
+│   ├── engine/            # Rendering engine (empty)
+│   ├── io/                # I/O stubs (empty)
+│   └── platform/          # Platform code (empty)
+├── wads/                  # Game WAD files
+│   └── doom1.wad
+└── crispy-doom/           # Original C implementation (reference)
 ```
 
-There are several things that are allowed in translated code:
-- Globals
-- `++/--` expressions and int to bool conversions (`for i-- {`)
-- Variables can be unused
-- Immutability is not enforced
+## Building
 
-All of these except for the globals are going to be fixed by the translator: 
+### Prerequisites
 
-- `++/--` expressions will be replaced with statements at the right place
-- unused variables will be removed
-- mutable variables will be marked as mutable.
+- V compiler (latest version)
+- SDL2 development libraries (for full DOOM)
+- A DOOM WAD file (doom1.wad, doom.wad, etc.)
 
-## How to build and run this demo
-
-### Preparations (Ubuntu Linux)
-
-1. Install dependencies
-   ```bash
-   apt install libsdl2-dev libsdl2-mixer-dev libsdl2-net-dev
-   ```
-
-2. Download doom1.wad into `~/Downloads` from [here](https://distro.ibiblio.org/slitaz/sources/packages/d/doom1.wad). (ref: `External links` section in [this doomwiki page](https://doomwiki.org/wiki/DOOM1.WAD))
-
-### Clone, build and run the demo
+### Building the MVP
 
 ```bash
-git clone git@github.com:vlang/doom.git
-cd doom/
-DOOM_FOLDER=`pwd` && ./build_whole_project.sh
+cd vdoom
+v -enable-globals -o vdoom_test main.v
 ```
 
-## Pure V MVP
-
-The `vdoom/` entrypoint runs a pure-V “minimum viable product” that:
-- loads a WAD,
-- prints WAD diagnostics, and
-- renders a few demo frames to PPM files.
-
-Run it:
+### Running
 
 ```bash
-./run_vdoom.sh
+# Run with default WAD
+./vdoom_test
+
+# Specify a WAD file
+./vdoom_test -iwad ./wads/doom1.wad
+
+# Show help
+./vdoom_test -help
 ```
 
-Or specify a WAD explicitly:
+Output frames are written to `out/vdoom_frame_*.ppm`.
 
-```bash
-DOOM_WAD=./wads/doom1.wad ./run_vdoom.sh --list
-```
+## Why V?
 
-Outputs:
-- rendered frames are written to `out/vdoom_frame_*.ppm`
+V is a fast, compiled language with:
+- C interoperability
+- No null pointer exceptions
+- Built-in serialization
+- Cross-platform support
+- 25x faster compilation than C
+
+## Goals
+
+The ultimate goal is a fully playable DOOM engine written entirely in V that is:
+- Binary compatible with crispy-doom
+- Feature-complete with all original DOOM functionality
+- Easier to maintain and extend than the C original
+
+## References
+
+- [crispy-doom](https://github.com/fabiangreffrath/crispy-doom) - Original C source
+- [V Programming Language](https://vlang.io/)
+- [DOOM Wiki](https://doomwiki.org/)
