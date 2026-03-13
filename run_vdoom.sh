@@ -5,4 +5,4 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
 # Prefer DOOM_WAD if provided; otherwise let vdoom pick defaults.
-exec v run vdoom/main.v "$@"
+exec "$ROOT/vdoom/vdoom_test" "$@"

@@ -190,9 +190,51 @@ pub fn p_set_thing_position(thing voidptr) { _ = thing }
 
 // P_MAP
 pub fn p_check_position(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x; _ = y; return false }
-pub fn p_try_move(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x; _ = y; return false }
+
+pub fn p_try_move(thing voidptr, x Fixed, y Fixed) bool {
+	if voidptr(thing) == unsafe { nil } {
+		return false
+	}
+	m := unsafe { &Mobj(thing) }
+	unsafe {
+		m.x = x
+		m.y = y
+		if m.subsector != voidptr(0) {
+			ss := &Subsector(m.subsector)
+			m.floorz = ss.sector.floorheight
+			m.ceilingz = ss.sector.ceilingheight
+		}
+	}
+	return true
+}
+
 pub fn p_teleport_move(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x; _ = y; return false }
-pub fn p_slide_move(mo voidptr) { _ = mo }
+pub fn p_slide_move(mo voidptr) {
+	if voidptr(mo) == unsafe { nil } {
+		return
+	}
+	m := unsafe { &Mobj(mo) }
+	unsafe {
+		newx := m.x + m.momx
+		newy := m.y + m.momy
+		if p_try_move(mo, newx, newy) {
+			m.momx = 0
+			m.momy = 0
+		} else {
+			tryx := m.x + m.momx
+			tryy := m.y
+			if p_try_move(mo, tryx, tryy) {
+				m.momx = 0
+			} else {
+				tryx = m.x
+				tryy = m.y + m.momy
+				if p_try_move(mo, tryx, tryy) {
+					m.momy = 0
+				}
+			}
+		}
+	}
+}
 // p_check_sight is in p_sight.v
 
 pub fn p_use_lines(player voidptr) { _ = player }

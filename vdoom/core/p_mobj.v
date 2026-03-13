@@ -82,7 +82,30 @@ pub fn p_spawn_blood(x Fixed, y Fixed, z Fixed, damage int) {
 }
 
 pub fn p_mobj_thinker(mobj &Mobj) {
-	_ = mobj
+	unsafe {
+		if mobj.flags & mf_nosector == 0 {
+			mobj.subsector = voidptr(r_point_in_subsector(mobj.x, mobj.y))
+			ss := &Subsector(mobj.subsector)
+			if ss != voidptr(0) && ss.sector != voidptr(0) {
+				if mobj.z < ss.sector.floorheight {
+					mobj.z = ss.sector.floorheight
+				}
+				if mobj.z > ss.sector.ceilingheight - mobj.height {
+					mobj.z = ss.sector.ceilingheight - mobj.height
+				}
+			}
+		}
+		if (mobj.flags & mf_noclip) == 0 && mobj.player == 0 {
+			p_slide_move(voidptr(mobj))
+		}
+		if mobj.subsector != voidptr(0) {
+			ss := &Subsector(mobj.subsector)
+			if ss != voidptr(0) && ss.sector != voidptr(0) {
+				mobj.floorz = ss.sector.floorheight
+				mobj.ceilingz = ss.sector.ceilingheight
+			}
+		}
+	}
 }
 
 pub fn p_respawn_specials() {}

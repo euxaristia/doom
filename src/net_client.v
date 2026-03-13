@@ -5,6 +5,7 @@ module main
 
 const net_magic_number = u32(1454104972)
 const vdoom_package_string = c'vdoom'
+const client_backuptics = 128
 
 enum Net_clientstate_t {
 	client_state_waiting_launch
@@ -30,6 +31,10 @@ __global (
 	net_local_deh_sha1sum         Sha1_digest_t
 	net_local_is_freedoom         u32
 	last_gamedata_seq             u32
+	last_ticcmd                   Ticcmd_t
+	send_queue_active             [client_backuptics]bool
+	send_queue_seq                [client_backuptics]u32
+	send_queue_diff               [client_backuptics]Net_ticdiff_t
 )
 
 @[export: 'NET_CL_LaunchGame']
@@ -53,9 +58,18 @@ pub fn net_cl_start_game(settings &Net_gamesettings_t) {
 }
 
 @[export: 'NET_CL_SendTiccmd']
-pub fn net_cl_send_ticcmd(_ticcmd &Ticcmd_t, _maketic int) {
-	_ = _ticcmd
-	_ = _maketic
+pub fn net_cl_send_ticcmd(ticcmd &Ticcmd_t, maketic int) {
+	if !net_client_connected || client_state != .client_state_in_game {
+		return
+	}
+	mut diff := Net_ticdiff_t{}
+	net_ticcmd_diff(&last_ticcmd, ticcmd, &diff)
+	idx := maketic % client_backuptics
+	send_queue_active[idx] = true
+	send_queue_seq[idx] = u32(maketic)
+	send_queue_diff[idx] = diff
+	last_ticcmd = *ticcmd
+	net_cl_send_tics(maketic, maketic)
 }
 
 @[export: 'NET_CL_Connect']
@@ -128,6 +142,10 @@ pub fn net_cl_init() {
 	server_addr = unsafe { nil }
 	client_context = unsafe { nil }
 	client_connection = Net_connection_t{}
+	last_ticcmd = Ticcmd_t{}
+	send_queue_active = [client_backuptics]bool{}
+	send_queue_seq = [client_backuptics]u32{}
+	send_queue_diff = [client_backuptics]Net_ticdiff_t{}
 	client_state = .client_state_waiting_launch
 }
 
@@ -224,6 +242,32 @@ fn net_cl_parse_resend_request(packet &Net_packet_t) {
 		return
 	}
 	net_log(c'client: resend request start=%d num_tics=%d', int(start), int(num_tics))
+	if num_tics == 0 {
+		return
+	}
+	end := int(start + num_tics - 1)
+	net_cl_send_tics(int(start), end)
+}
+
+fn net_cl_send_tics(start int, end int) {
+	if start < 0 || end < start {
+		return
+	}
+	packet := net_new_packet(512)
+	net_write_int16(packet, u32(Net_packet_type_t.net_packet_type_gamedata))
+	net_write_int8(packet, last_gamedata_seq & 0xff)
+	net_write_int8(packet, u32(start & 0xff))
+	net_write_int8(packet, u32(end - start + 1))
+	for i := start; i <= end; i++ {
+		idx := i % client_backuptics
+		if !send_queue_active[idx] || send_queue_seq[idx] != u32(i) {
+			continue
+		}
+		net_write_int16(packet, 0)
+		net_write_ticcmd_diff(packet, &send_queue_diff[idx], client_settings.lowres_turn != 0)
+	}
+	net_conn_send_packet(&client_connection, packet)
+	net_free_packet(packet)
 }
 
 fn set_reject_reason(s &i8) {
