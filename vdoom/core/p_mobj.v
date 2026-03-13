@@ -81,7 +81,7 @@ pub fn p_spawn_blood(x Fixed, y Fixed, z Fixed, damage int) {
 	_ = damage
 }
 
-pub fn p_mobj_thinker(mobj &Mobj) {
+pub fn p_mobj_thinker(mut mobj &Mobj) {
 	unsafe {
 		if mobj.flags & mf_nosector == 0 {
 			mobj.subsector = voidptr(r_point_in_subsector(mobj.x, mobj.y))
@@ -97,6 +97,20 @@ pub fn p_mobj_thinker(mobj &Mobj) {
 		}
 		if (mobj.flags & mf_noclip) == 0 && mobj.player == 0 {
 			p_slide_move(voidptr(mobj))
+		}
+		mobj.x += mobj.momx
+		mobj.y += mobj.momy
+		mobj.z += mobj.momz
+		if mobj.z > mobj.floorz && mobj.momz != 0 {
+			mobj.momz -= gravity >> 4
+			if mobj.momz < -maxvelocity {
+				mobj.momz = -maxvelocity
+			}
+		} else {
+			mobj.momz = 0
+			if mobj.z < mobj.floorz {
+				mobj.z = mobj.floorz
+			}
 		}
 		if mobj.subsector != voidptr(0) {
 			ss := &Subsector(mobj.subsector)

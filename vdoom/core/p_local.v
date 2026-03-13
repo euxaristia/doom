@@ -22,6 +22,7 @@ pub const mapbtofrac = mapblockshift - frac_bits
 pub const playerradius = 16 * frac_unit
 pub const maxradius = 32 * frac_unit
 pub const gravity = frac_unit
+pub const maxvelocity = 30 * frac_unit
 pub const maxmove = 30 * frac_unit
 pub const userange = 64 * frac_unit
 pub const meeleerange = 64 * frac_unit
@@ -189,7 +190,22 @@ pub fn p_unset_thing_position(thing voidptr) { _ = thing }
 pub fn p_set_thing_position(thing voidptr) { _ = thing }
 
 // P_MAP
-pub fn p_check_position(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x; _ = y; return false }
+pub fn p_check_position(thing voidptr, x Fixed, y Fixed) bool {
+	if voidptr(thing) == unsafe { nil } {
+		return false
+	}
+	m := unsafe { &Mobj(thing) }
+	ss := r_point_in_subsector(x, y)
+	if ss == unsafe { nil } {
+		return false
+	}
+	unsafe {
+		m.floorz = ss.sector.floorheight
+		m.ceilingz = ss.sector.ceilingheight
+		m.subsector = voidptr(ss)
+	}
+	return true
+}
 
 pub fn p_try_move(thing voidptr, x Fixed, y Fixed) bool {
 	if voidptr(thing) == unsafe { nil } {

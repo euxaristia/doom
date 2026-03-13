@@ -308,8 +308,24 @@ pub fn render_menu_activate() {
 				render_menu_set(mut wad, .options)
 				return
 			}
+			if item.name == 'M_NGAME' {
+				g_defered_init_new(2, 1, 1) // skill=medium, episode=1, map=1
+				render_show_menu = false
+				return
+			}
+			if item.name == 'M_QUITG' {
+				set_game_action(.completed)
+				render_show_menu = false
+				return
+			}
 		}
-		.options {}
+		.options {
+			if item.name == 'M_ENDGAM' {
+				mut wad := load_wad_with_options(render_wad_path, true, true) or { return }
+				render_menu_set(mut wad, .main)
+				return
+			}
+		}
 	}
 	println('menu action: ${item.name}')
 }

@@ -143,6 +143,25 @@ pub fn p_player_think(player &Player) {
 		p_move_player(player)
 	}
 
+	unsafe {
+		player.mo.x += player.mo.momx
+		player.mo.y += player.mo.momy
+		player.mo.z += player.mo.momz
+		if player.mo.z > player.mo.floorz && player.mo.momz != 0 {
+			player.mo.momz -= gravity >> 4
+			if player.mo.momz < -maxvelocity {
+				player.mo.momz = -maxvelocity
+			}
+		} else {
+			player.mo.momz = 0
+			if player.mo.z < player.mo.floorz {
+				player.mo.z = player.mo.floorz
+			}
+		}
+		player.mo.momx >>= 2
+		player.mo.momy >>= 2
+	}
+
 	p_calc_height(player)
 
 	if cmd.buttons & int(ButtonCode.bt_special) != 0 {
