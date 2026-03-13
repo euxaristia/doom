@@ -100,7 +100,7 @@ pub fn d_connect_net_game() {
 pub fn d_check_net_game() {
 }
 
-fn d_handle_game_action() {
+pub fn d_handle_game_action() {
 	g_handle_game_action()
 }
 

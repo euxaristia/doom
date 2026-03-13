@@ -444,12 +444,17 @@ pub fn render_more_frames(count int) {
 }
 
 pub fn render_loop() {
+	println('render_loop: starting')
 	mut frame_count := 0
+	d_handle_game_action()
+	println('after d_handle_game_action: gameaction=${game_action()}, gamestate=${gamestate}')
 	for {
-		render_tick_frame()
+		d_handle_game_action()
+		try_run_tics()
+		d_display()
 		frame_count++
 		if frame_count % 10 == 0 {
-			println('game frame ${frame_count}')
+			println('game frame ${frame_count}: gamestate=${gamestate}, render_show_menu=${render_show_menu}')
 		}
 	}
 }

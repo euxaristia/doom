@@ -5,8 +5,8 @@ pub const fine_angles = 8192
 pub const fine_mask = fine_angles - 1
 pub const fine_angles_half = fine_angles / 2
 
-pub const finesine = []Fixed{}
-pub const finecosine = []Fixed{}
+__global finesine = []Fixed{}
+__global finecosine = []Fixed{}
 
 // Angle constants
 pub const angle_t_u32_max = u32(0xffffffff)

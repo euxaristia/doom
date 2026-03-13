@@ -36,17 +36,22 @@ fn g_do_world_done() {
 	set_game_action(.loadlevel)
 }
 
-fn g_handle_game_action() {
+pub fn g_handle_game_action() {
 	// Mirror the vanilla "while gameaction" loop in a minimal way.
+	mut loop_count := 0
 	for game_action() != .nothing {
+		loop_count++
+		println('g_handle_game_action: iteration ${loop_count}, gameaction=${game_action()}')
 		match game_action() {
 			.loadlevel {
+				println('g_handle_game_action: calling p_setup_level')
 				p_setup_level(gameepisode, gamemap, 1, gameskill)
 				set_game_action(.nothing)
 			}
 			.newgame {
+				println('g_handle_game_action: calling g_init_new')
 				g_init_new(startskill, startepisode, startmap)
-				set_game_action(.nothing)
+				set_game_action(.loadlevel)
 			}
 			.completed {
 				g_do_completed()
@@ -58,6 +63,7 @@ fn g_handle_game_action() {
 				g_do_world_done()
 			}
 			else {
+				println('g_handle_game_action: unknown gameaction')
 				set_game_action(.nothing)
 			}
 		}

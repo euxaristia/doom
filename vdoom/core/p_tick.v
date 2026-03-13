@@ -26,8 +26,10 @@ pub fn p_ticker() {
 		}
 	}
 	for i in 0 .. maxplayers {
-		if i < playeringame.len && playeringame[i] {
-			p_player_think(&players[i])
+		if i < playeringame.len && playeringame[i] && i < players.len {
+			if voidptr(players[i].mo) != unsafe { nil } {
+				p_player_think(&players[i])
+			}
 		}
 	}
 	p_run_thinkers()

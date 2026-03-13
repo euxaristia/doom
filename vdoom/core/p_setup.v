@@ -9,6 +9,7 @@ __global last_setup_episode = 0
 __global last_setup_map = 0
 
 pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
+	println('p_setup_level: episode=${episode}, mapnum=${mapnum}')
 	level_setup_count++
 	last_setup_episode = episode
 	last_setup_map = mapnum
@@ -35,26 +36,33 @@ pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
 		lumpname = 'E${episode}M${mapnum}'
 	}
 	
+	println('p_setup_level: loading lump ${lumpname}')
+	
 	// Load map data from WAD
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or {
+		println('p_setup_level: failed to load wad: ${err}')
+		return
+	}
 	
 	if !wad.has_lump(lumpname) {
-		println('map not found: ${lumpname}')
+		println('p_setup_level: lump ${lumpname} not found')
 		return
 	}
 	
 	map_base := wad.find_lump_index(lumpname)
+	println('p_setup_level: map_base=${map_base}')
 	
 	// Load all map components
-	p_load_blockmap(map_base + 5) // ML_BLOCKMAP
-	p_load_vertexes(map_base + 1) // ML_VERTEXES
-	p_load_sectors(map_base + 2)  // ML_SECTORS
+	p_load_blockmap(map_base + 10) // ML_BLOCKMAP
+	p_load_vertexes(map_base + 4) // ML_VERTEXES
+	p_load_sectors(map_base + 8)  // ML_SECTORS
 	p_load_sidedefs(map_base + 3) // ML_SIDEDEFS
-	p_load_linedefs(map_base + 4) // ML_LINEDEFS
+	p_load_linedefs(map_base + 2) // ML_LINEDEFS
 	p_load_subsectors(map_base + 6) // ML_SSECTORS
 	p_load_nodes(map_base + 7)    // ML_NODES
-	p_load_segs(map_base + 8)    // ML_SEGS
+	p_load_segs(map_base + 5)     // ML_SEGS
 	p_load_reject(map_base + 9)   // ML_REJECT
+	p_load_things(map_base + 1)   // ML_THINGS
 	p_group_lines()
 	
 	println('loaded map: ${lumpname}')
@@ -73,11 +81,56 @@ pub fn p_init() {
 	level_setup_count = 0
 }
 
+pub fn p_load_things(lump int) {
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
+	data := wad.read_lump_num(lump) or { return }
+	
+	numthings := data.len / 10
+	println('p_load_things: ${numthings} things')
+	
+	for i in 0 .. numthings {
+		offset := i * 10
+		mt := &MapThing{
+			x: i16(data[offset]) | (i16(data[offset + 1]) << 8)
+			y: i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
+			angle: i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
+			typ: i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
+			options: i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
+		}
+		if i < 5 {
+			println('Thing ${i}: type=${mt.typ}, x=${mt.x}, y=${mt.y}')
+		}
+		p_spawn_map_thing(mt)
+	}
+}
+
+pub fn p_spawn_map_thing(mthing voidptr) {
+	mt := unsafe { &MapThing(mthing) }
+	println('p_spawn_map_thing: typ=${mt.typ}')
+	
+	if mt.typ == 1 {
+		// Player 1 spawn
+		mut player := &players[0]
+		x := Fixed(int(mt.x) * 65536)
+		y := Fixed(int(mt.y) * 65536)
+		z := Fixed(0) // ONFLOORZ
+		
+		mobj := p_spawn_player(x, y, z, player)
+		player.mo = mobj
+		player.playerstate = .live
+		player.viewz = Fixed(41 * 65536)
+		player.viewheight = Fixed(41 * 65536)
+		
+		println('Spawned player 1 at (${mt.x}, ${mt.y})')
+	}
+}
+
 pub fn p_load_vertexes(lump int) {
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
 	
 	numvertexes = data.len / 4
+	println('p_load_vertexes: lump=${lump}, data.len=${data.len}, numvertexes=${numvertexes}')
 	vertexes = []Vertex{len: numvertexes}
 	
 	for i in 0 .. numvertexes {
@@ -92,7 +145,7 @@ pub fn p_load_vertexes(lump int) {
 }
 
 pub fn p_load_sectors(lump int) {
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
 	
 	numsectors = data.len / 26
@@ -104,7 +157,7 @@ pub fn p_load_sectors(lump int) {
 		ceilingheight := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
 		floorpic := i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
 		ceilingpic := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
-		lightlevel := i16(data[offset + 8]) | (i16(data[offset + 9]) << 10)
+		lightlevel := i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
 		special := i16(data[offset + 10]) | (i16(data[offset + 11]) << 8)
 		tag := i16(data[offset + 12]) | (i16(data[offset + 13]) << 8)
 		
@@ -121,7 +174,7 @@ pub fn p_load_sectors(lump int) {
 }
 
 pub fn p_load_sidedefs(lump int) {
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
 	
 	numsides = data.len / 30
@@ -133,7 +186,7 @@ pub fn p_load_sidedefs(lump int) {
 		rowoffset := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
 		toptexture := i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
 		bottomtexture := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
-		midtexture := i16(data[offset + 8]) | (i16(data[offset + 9]) << 10)
+		midtexture := i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
 		sector_idx := i16(data[offset + 28]) | (i16(data[offset + 29]) << 8)
 		
 		sides[i] = Side{
@@ -153,26 +206,35 @@ pub fn p_load_sidedefs(lump int) {
 }
 
 pub fn p_load_linedefs(lump int) {
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
 	
 	numlines = data.len / 14
+	println('p_load_linedefs: lump=${lump}, data.len=${data.len}, numlines=${numlines}, numvertexes=${numvertexes}')
 	lines = []Line{len: numlines}
 	
 	for i in 0 .. numlines {
 		offset := i * 14
-		v1 := i16(data[offset]) | (i16(data[offset + 1]) << 8)
-		v2 := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
+		v1 := u16(data[offset]) | (u16(data[offset + 1]) << 8)
+		v2 := u16(data[offset + 2]) | (u16(data[offset + 3]) << 8)
 		flags := i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
 		special := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
-		tag := i16(data[offset + 8]) | (i16(data[offset + 9]) << 10)
+		tag := i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
+		
+		if i < 5 {
+			println('Line ${i}: v1=${v1}, v2=${v2}, numvertexes=${numvertexes}')
+		}
 		
 		mut line := &lines[i]
-		if v1 >= 0 && v1 < numvertexes {
+		if int(v1) < numvertexes {
 			line.v1 = &vertexes[v1]
+		} else {
+			println('ERROR: v1=${v1} >= numvertexes=${numvertexes}')
 		}
-		if v2 >= 0 && v2 < numvertexes {
+		if int(v2) < numvertexes {
 			line.v2 = &vertexes[v2]
+		} else {
+			println('ERROR: v2=${v2} >= numvertexes=${numvertexes}')
 		}
 		line.dx = line.v2.x - line.v1.x
 		line.dy = line.v2.y - line.v1.y
@@ -217,7 +279,7 @@ pub fn p_load_linedefs(lump int) {
 }
 
 pub fn p_load_segs(lump int) {
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
 	
 	numsegs = data.len / 12
@@ -225,18 +287,18 @@ pub fn p_load_segs(lump int) {
 	
 	for i in 0 .. numsegs {
 		offset := i * 12
-		v1 := i16(data[offset]) | (i16(data[offset + 1]) << 8)
-		v2 := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
+		v1 := u16(data[offset]) | (u16(data[offset + 1]) << 8)
+		v2 := u16(data[offset + 2]) | (u16(data[offset + 3]) << 8)
 		angle := u16(data[offset + 4]) | (u16(data[offset + 5]) << 8)
 		linedef := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
 		side := i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
 		offset_ := i16(data[offset + 10]) | (i16(data[offset + 11]) << 8)
 		
 		mut seg := &segs[i]
-		if v1 >= 0 && v1 < numvertexes {
+		if int(v1) < numvertexes {
 			seg.v1 = &vertexes[v1]
 		}
-		if v2 >= 0 && v2 < numvertexes {
+		if int(v2) < numvertexes {
 			seg.v2 = &vertexes[v2]
 		}
 		seg.angle = angle
@@ -254,7 +316,7 @@ pub fn p_load_segs(lump int) {
 }
 
 pub fn p_load_subsectors(lump int) {
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
 	
 	numsubsectors = data.len / 4
@@ -282,7 +344,7 @@ pub fn p_load_subsectors(lump int) {
 }
 
 pub fn p_load_nodes(lump int) {
-	wad := load_wad_with_options(wadfile, true, false) or { return }
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
 	
 	// Nodes are 28 bytes each
@@ -320,8 +382,8 @@ pub fn p_load_nodes(lump int) {
 			for j in 0 .. 2 {
 				child_offset := offset + 8 + j * 2
 				if child_offset + 1 < data.len {
-					child := i16(data[child_offset]) | (i16(data[child_offset + 1]) << 8)
-					nodes[i].children[j] = u16(child)
+					child := u16(data[child_offset]) | (u16(data[child_offset + 1]) << 8)
+					nodes[i].children[j] = child
 				}
 			}
 			
@@ -351,9 +413,6 @@ pub fn p_load_reject(lump int) {
 
 pub fn p_group_lines() {}
 
-pub fn p_spawn_map_thing(mthing voidptr) {
-	_ = mthing
-}
 
 pub fn p_get_num_for_map(episode int, mapnum int) int {
 	_ = episode
