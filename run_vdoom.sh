@@ -4,5 +4,6 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$ROOT"
 
-# Prefer DOOM_WAD if provided; otherwise let vdoom pick defaults.
-exec "$ROOT/vdoom/vdoom_test" "$@"
+WAD="${1:-$ROOT/wads/doom1.wad}"
+
+exec "$ROOT/vdoom/vdoom_test" "$WAD" --menu --window --animate
