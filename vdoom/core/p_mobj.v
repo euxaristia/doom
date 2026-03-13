@@ -105,3 +105,85 @@ pub const mobj_no_height = 0
 pub const mobj_no_radius = 0
 pub const mobj_spawn_height = 0
 pub const mobj_spawn_radius = 0
+
+pub fn p_spawn_player(x Fixed, y Fixed, z Fixed, player &Player) &Mobj {
+	mut mobj := &Mobj{}
+	unsafe {
+		mobj.x = x
+		mobj.y = y
+		mobj.z = z
+		mobj.angle = 0
+		mobj.player = player
+		mobj.health = 100
+		mobj.flags = mf_solid | mf_shootable | mf_countkill
+		mobj.reactiontime = 18
+	}
+	return mobj
+}
+
+pub fn p_remove_player_mobj(mobj &Mobj) {
+	_ = mobj
+}
+
+pub fn p_spawn_missile(source &Mobj, dest &Mobj, missiletype int) &Mobj {
+	_ = source
+	_ = dest
+	_ = missiletype
+	return unsafe { nil }
+}
+
+pub fn p_spawn_player_missile(source &Mobj, missiletype int) {
+	_ = source
+	_ = missiletype
+}
+
+pub fn p_x_movement(mobj &Mobj) {
+	_ = mobj
+}
+
+pub fn p_z_movement(mobj &Mobj) {
+	_ = mobj
+}
+
+pub fn p_mobj_position(mobj &Mobj) {
+	_ = mobj
+}
+
+pub fn p_mobj_on_segs(mobj &Mobj) {
+	_ = mobj
+}
+
+pub fn p_unlink_mobj(mobj &Mobj) {
+	_ = mobj
+}
+
+pub fn p_link_mobj(mobj &Mobj) {
+	_ = mobj
+}
+
+pub fn p_spawn_teleport_fog(x Fixed, y Fixed, z Fixed) {
+	_ = x
+	_ = y
+	_ = z
+}
+
+pub fn p_mobj_check_spawnpos(x Fixed, y Fixed, z Fixed, mobj &Mobj) {
+	_ = x
+	_ = y
+	_ = z
+	_ = mobj
+}
+
+pub fn p_is_mobj_dead(mobj &Mobj) bool {
+	_ = mobj
+	return false
+}
+
+pub fn p_mobj_damaged(mobj &Mobj, damage int) {
+	_ = mobj
+	_ = damage
+}
+
+pub fn p_check_mobj_explode(mobj &Mobj) {
+	_ = mobj
+}

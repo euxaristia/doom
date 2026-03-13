@@ -223,3 +223,76 @@ const mf_countitem = 0x800000
 const mf_skullfly = 0x1000000
 const mf_notdmatch = 0x2000000
 const mf_translation = 0xc000000
+
+pub fn p_player_in_special_sector(player &Player) {
+	_ = player
+}
+
+pub fn p_clear_shadow_from_player(player &Player) {
+	unsafe {
+		if player.mo != voidptr(0) {
+			player.mo.flags &= ~mf_shadow
+		}
+	}
+}
+
+pub fn p_set_shadow_on_player(player &Player) {
+	unsafe {
+		if player.mo != voidptr(0) {
+			player.mo.flags |= mf_shadow
+		}
+	}
+}
+
+pub fn p_set_player_view_height(player &Player, height Fixed) {
+	unsafe {
+		player.viewheight = height
+	}
+}
+
+pub fn p_set_player_deltaviewheight(player &Player, delta Fixed) {
+	unsafe {
+		player.deltaviewheight = delta
+	}
+}
+
+pub fn p_set_player_recoilpitch(player &Player, pitch int) {
+	unsafe {
+		player.recoilpitch = pitch
+	}
+}
+
+pub fn p_set_player_lookdir(player &Player, lookdir int) {
+	unsafe {
+		player.lookdir = lookdir
+	}
+}
+
+pub fn p_get_player_lookdir(player &Player) int {
+	unsafe {
+		return player.lookdir
+	}
+}
+
+pub fn p_player_center_view(player &Player) {
+	unsafe {
+		player.lookdir = 0
+	}
+}
+
+pub fn p_player_on_ground(player &Player) bool {
+	unsafe {
+		return player.mo.z <= player.mo.floorz
+	}
+}
+
+pub fn p_player_jump(player &Player, jumpboolean bool) {
+	_ = player
+	_ = jumpboolean
+}
+
+pub fn p_player_set_centering(player &Player, cent bool) {
+	unsafe {
+		player.centering = cent
+	}
+}

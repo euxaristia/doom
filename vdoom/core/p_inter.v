@@ -80,10 +80,6 @@ pub fn p_give_ammo(player &Player, ammo AmmoType, amount int) bool {
 	return false
 }
 
-pub fn p_player_in_special_sector(player &Player) {
-	_ = player
-}
-
 pub fn p_touch_other_special_thing(special &Mobj, toucher &Mobj) {
 	_ = special
 	_ = toucher

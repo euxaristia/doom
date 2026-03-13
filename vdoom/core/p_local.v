@@ -138,14 +138,11 @@ pub fn p_run_thinkers() {
 	}
 }
 
-// P_PSPR
-pub fn p_setup_psprites(curplayer voidptr) { _ = curplayer }
-pub fn p_move_psprites(curplayer voidptr) { _ = curplayer }
-pub fn p_drop_weapon(player voidptr) { _ = player }
+// P_PSPR stubs - actual implementation in p_pspr.v
 
 // P_USER stub - actual implementation in p_user.v
 
-// P_MOBJ - actual implementation in p_mobj.v
+// P_MOBJ stubs - actual implementation in p_mobj.v
 
 // P_ENEMY
 pub fn p_noise_alert(target voidptr, emmiter voidptr) { _ = target; _ = emmiter }
