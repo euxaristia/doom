@@ -196,7 +196,8 @@ pub fn p_check_position(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x
 pub fn p_try_move(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x; _ = y; return false }
 pub fn p_teleport_move(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x; _ = y; return false }
 pub fn p_slide_move(mo voidptr) { _ = mo }
-pub fn p_check_sight(t1 voidptr, t2 voidptr) bool { _ = t1; _ = t2; return false }
+// p_check_sight is in p_sight.v
+
 pub fn p_use_lines(player voidptr) { _ = player }
 pub fn p_change_sector(sector voidptr, crunch bool) bool { _ = sector; _ = crunch; return false }
 pub fn p_aim_line_attack(t1 voidptr, angle int, distance Fixed) Fixed { _ = t1; _ = angle; _ = distance; return Fixed(0) }
