@@ -73,6 +73,7 @@ pub fn g_init_new(skill int, episode int, mapnum int) {
 	gameepisode = episode
 	gamemap = mapnum
 	paused = false
+	render_show_menu = false
 	p_init()
 	// Vanilla ammo baselines.
 	if maxammo.len == numammo {
@@ -304,6 +305,12 @@ pub fn g_ticker() {
 		starttime = i_get_time_ms()
 	}
 	p_ticker()
+	
+	// Render the view if game is running
+	if !render_show_menu && gamestate == .level && consoleplayer >= 0 && consoleplayer < players.len {
+		r_render_player_view(voidptr(&players[consoleplayer]))
+	}
+	
 	gametic++
 	// Update positional audio using the console player's mobj when present.
 	if consoleplayer >= 0 && consoleplayer < players.len {

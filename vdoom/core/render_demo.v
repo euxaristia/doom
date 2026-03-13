@@ -468,7 +468,11 @@ pub fn render_tick_frame() {
 		render_tick++
 		return
 	}
-	// Game running - just clear screen for now
-	v_clear_screen(0)
-	i_finish_update()
+	// Game running - render the player view
+	if gamestate == .level && consoleplayer >= 0 && consoleplayer < players.len {
+		r_render_player_view(voidptr(&players[consoleplayer]))
+	} else {
+		v_clear_screen(0)
+		i_finish_update()
+	}
 }

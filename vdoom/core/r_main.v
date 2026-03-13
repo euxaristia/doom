@@ -97,7 +97,21 @@ pub fn r_add_point_to_box(x int, y int, mut box []Fixed) {
 
 // Refresh/render entry points.
 pub fn r_render_player_view(player voidptr) {
-	_ = player
+	if voidptr(player) == unsafe { nil } {
+		return
+	}
+	p := unsafe { &Player(player) }
+	
+	// Clear the screen
+	v_clear_screen(0)
+	
+	// For now, just show player position info
+	// Full 3D rendering would require implementing the full renderer
+	if p.mo != unsafe { nil } {
+		// Player is positioned, rendering would happen here
+	}
+	
+	i_finish_update()
 }
 
 pub fn r_init() {}
