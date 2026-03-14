@@ -189,67 +189,33 @@ pub fn p_path_traverse(x1 Fixed, y1 Fixed, x2 Fixed, y2 Fixed, flags int, trav T
 pub fn p_unset_thing_position(thing voidptr) { _ = thing }
 pub fn p_set_thing_position(thing voidptr) { _ = thing }
 
-// P_MAP
+// P_MAP - implementations in p_map.v
 pub fn p_check_position(thing voidptr, x Fixed, y Fixed) bool {
 	if voidptr(thing) == unsafe { nil } {
 		return false
 	}
-	m := unsafe { &Mobj(thing) }
-	ss := r_point_in_subsector(x, y)
-	if ss == unsafe { nil } {
-		return false
-	}
-	unsafe {
-		m.floorz = ss.sector.floorheight
-		m.ceilingz = ss.sector.ceilingheight
-		m.subsector = voidptr(ss)
-	}
-	return true
+	return p_check_position_impl(unsafe { &Mobj(thing) }, x, y)
 }
 
 pub fn p_try_move(thing voidptr, x Fixed, y Fixed) bool {
 	if voidptr(thing) == unsafe { nil } {
 		return false
 	}
-	m := unsafe { &Mobj(thing) }
-	unsafe {
-		m.x = x
-		m.y = y
-		if m.subsector != voidptr(0) {
-			ss := &Subsector(m.subsector)
-			m.floorz = ss.sector.floorheight
-			m.ceilingz = ss.sector.ceilingheight
-		}
-	}
-	return true
+	return p_try_move_impl(unsafe { &Mobj(thing) }, x, y)
 }
 
-pub fn p_teleport_move(thing voidptr, x Fixed, y Fixed) bool { _ = thing; _ = x; _ = y; return false }
+pub fn p_teleport_move(thing voidptr, x Fixed, y Fixed) bool {
+	if voidptr(thing) == unsafe { nil } {
+		return false
+	}
+	return p_teleport_move_impl(unsafe { &Mobj(thing) }, x, y)
+}
+
 pub fn p_slide_move(mo voidptr) {
 	if voidptr(mo) == unsafe { nil } {
 		return
 	}
-	m := unsafe { &Mobj(mo) }
-	unsafe {
-		newx := m.x + m.momx
-		newy := m.y + m.momy
-		if p_try_move(mo, newx, newy) {
-			m.momx = 0
-			m.momy = 0
-		} else {
-			tryx := m.x + m.momx
-			tryy := m.y
-			if p_try_move(mo, tryx, tryy) {
-				m.momx = 0
-			} else {
-				tryx = m.x
-				tryy = m.y + m.momy
-				if p_try_move(mo, tryx, tryy) {
-					m.momy = 0
-				}
-			}
-		}
-	}
+	p_slide_move_impl(unsafe { &Mobj(mo) })
 }
 // p_check_sight is in p_sight.v
 
