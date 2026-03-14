@@ -7,10 +7,11 @@ A phased approach to translating crispy-doom from C to V.
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
 - ~95% complete for core game structures
-- ~60% complete for actual game logic
+- ~70% complete for actual game logic
 - Phase 2: Core Game Logic - COMPLETED
 - Phase 3: Rendering Engine - COMPLETED
-- Phase 4: Audio System (in progress)
+- Phase 4: Audio System - COMPLETED
+- Phase 5: User Interface (in progress)
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -97,7 +98,7 @@ Implement the software renderer.
 
 ---
 
-## Phase 4: Audio System
+## Phase 4: Audio System (COMPLETED)
 
 ### Goals
 Implement sound and music playback.
@@ -105,12 +106,12 @@ Implement sound and music playback.
 ### Tasks
 
 #### 4.1 Sound Engine
-- [ ] s_sound.v - Sound manager
-- [ ] s_musinfo.v - Music tracking
-- [ ] i_sound.v - SDL audio bindings
+- [x] s_sound.v - Sound manager
+- [x] s_musinfo.v - Music tracking
+- [x] i_sound.v - SDL audio bindings
 
 #### 4.2 Audio Data
-- [ ] Complete sounds.v with all SFX
+- [x] Complete sounds.v with all SFX
 - [ ] Music track definitions
 
 **Estimated: 2 weeks**
