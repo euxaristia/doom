@@ -6,10 +6,11 @@ A phased approach to translating crispy-doom from C to V.
 
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
-- ~75% complete for core game structures
-- ~25% complete for actual game logic
+- ~80% complete for core game structures
+- ~30% complete for actual game logic
 - Phase 2.2 Map Objects: p_mobj.v spawning/state machine/thinker complete
 - Phase 2.3 Map & Collision: p_map.v movement/collision, p_setup.v level loading
+- Phase 2.4 Enemy AI: p_enemy.v chase/attack/sight tracking implemented
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -54,9 +55,9 @@ Implement the main game loop and player mechanics.
 - [x] p_setup.v - Level loading
 
 #### 2.4 Enemy AI
-- [ ] p_enemy.v - Chase behavior
-- [ ] p_enemy.v - Attack patterns
-- [ ] p_enemy.v - Line of sight tracking
+- [x] p_enemy.v - Chase behavior
+- [x] p_enemy.v - Attack patterns
+- [x] p_enemy.v - Line of sight tracking
 - [ ] p_sight.v - Complete visibility checks
 
 #### 2.5 Interactions
