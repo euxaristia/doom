@@ -98,17 +98,13 @@ pub fn r_add_point_to_box(x int, y int, mut box []Fixed) {
 // Refresh/render entry points.
 pub fn r_render_player_view(player voidptr) {
 	if voidptr(player) == unsafe { nil } {
-		println('r_render_player_view: player is nil')
 		return
 	}
 	p := unsafe { &Player(player) }
 	
 	if p.mo == unsafe { nil } {
-		println('r_render_player_view: player.mo is nil')
 		return
 	}
-	
-	println('r_render_player_view: player at (${p.mo.x}, ${p.mo.y})')
 	
 	// Setup the view frame
 	r_setup_frame(p)
@@ -121,11 +117,8 @@ pub fn r_render_player_view(player voidptr) {
 	
 	// Render the world
 	if numnodes == 0 {
-		println('r_render_player_view: numnodes is 0')
 		return
 	}
-	
-	println('r_render_player_view: numnodes=${numnodes}, starting BSP render')
 	
 	// Render the BSP tree
 	r_render_bsp_node(numnodes - 1)
