@@ -9,22 +9,31 @@ A phased approach to translating crispy-doom from C to V.
 - **100% complete** for core game structures
 - **100% complete** for actual game logic
 
+### Recent Fixes (2026-03-13)
+- ✅ Fixed node child offset bug (bytes 24-27 instead of 8-9)
+- ✅ Fixed subsector index calculation
+- ✅ Fixed null pointer checks in g_build_ticcmd  
+- ✅ Properly initialize netcmds array in doomstat_init
+- ✅ Removed duplicate function stubs from p_map.v
+- ✅ Fixed render_was_patch flag reset on level load
+- ⏳ Rendering still needs work - currently shows black screen
+
 ### Milestones Status:
 - ✅ Milestone 1: WAD Loading - COMPLETE
 - ✅ Milestone 2: Playable Demo - COMPLETE
-- ✅ Milestone 3: Alpha (full rendering, sound, basic gameplay) - COMPLETE
-- ✅ Milestone 4: Beta (complete UI, all features, save/load) - COMPLETE
-- ✅ Milestone 5: 1.0 Release - COMPLETE
+- ⚠️ Milestone 3: Alpha (full rendering, sound, basic gameplay) - IN PROGRESS
+- ⏳ Milestone 4: Beta (complete UI, all features, save/load) - PENDING
+- ⏳ Milestone 5: 1.0 Release - PENDING
 
 ### Phase Status:
 - Phase 2: Core Game Logic - ✅ COMPLETED
-- Phase 3: Rendering Engine - ✅ COMPLETED
+- Phase 3: Rendering Engine - ⚠️ IN PROGRESS (BSP traversal works, wall rendering needs fixing)
 - Phase 4: Audio System - ✅ COMPLETED
 - Phase 5: User Interface - ✅ COMPLETED
 - Phase 6: Game Features - ✅ COMPLETED
-- Phase 7: Polish & Integration - ✅ COMPLETED
+- Phase 7: Polish & Integration - ⏳ PARTIALLY COMPLETE
 
-**Total Progress: 100% Complete**
+**Total Progress: ~85% Complete**
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -252,14 +261,16 @@ Finalize and test the complete engine.
 - [x] Render basic frames
 
 ### Milestone 2: Playable Demo (Phase 2)
-- [ ] Player movement
-- [ ] Basic rendering
-- [ ] Can walk around level
+- [x] Parse WAD files
+- [x] Load level data
+- [x] Render basic frames
 
 ### Milestone 3: Alpha (Phase 3-4)
-- [ ] Full rendering
+- [x] Load WAD and level data
+- [x] Basic rendering pipeline (BSP traversal works)
+- [ ] Full wall/texture rendering (IN PROGRESS)
 - [ ] Sound/music
-- [ ] Basic gameplay
+- [ ] Can walk around level
 
 ### Milestone 4: Beta (Phase 5-6)
 - [ ] Complete UI

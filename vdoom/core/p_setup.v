@@ -88,7 +88,6 @@ pub fn p_load_things(lump int) {
 	data := wad.read_lump_num(lump) or { return }
 	
 	numthings := data.len / 10
-	println('p_load_things: ${numthings} things')
 	
 	for i in 0 .. numthings {
 		offset := i * 10
@@ -99,16 +98,12 @@ pub fn p_load_things(lump int) {
 			typ: i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
 			options: i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
 		}
-		if i < 5 {
-			println('Thing ${i}: type=${mt.typ}, x=${mt.x}, y=${mt.y}')
-		}
 		p_spawn_map_thing(mt)
 	}
 }
 
 pub fn p_spawn_map_thing(mthing voidptr) {
 	mt := unsafe { &MapThing(mthing) }
-	println('p_spawn_map_thing: typ=${mt.typ}')
 	
 	if mt.typ == 1 {
 		// Player 1 spawn

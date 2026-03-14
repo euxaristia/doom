@@ -90,41 +90,9 @@ fn r_render_subsector(ssec_idx int) {
 }
 
 fn r_render_seg(seg &Seg) {
-	// Get sectors
-	frontsector = seg.frontsector
-	
-	if frontsector == unsafe { nil } {
-		return
-	}
-	
-	// Simple test: use seg angle to draw
-	// seg.angle is the angle of the seg in the view
-	angle := seg.angle
-	
-	// Normalize to 0-360
-	mut norm_angle := angle
-	for norm_angle < 0 {
-		norm_angle += 360
-	}
-	for norm_angle >= 360 {
-		norm_angle -= 360
-	}
-	
-	// Map angle to screen x coordinate (simple projection)
-	screenx := int(f32(norm_angle) / 360.0 * f32(screenwidth))
-	
-	// Color based on sector lighting
-	color := u8(frontsector.lightlevel)
-	
-	// Draw a vertical line at this x position
-	if screenx >= 0 && screenx < screenwidth {
-		for y := 0; y < screenheight; y++ {
-			offset := y * screenwidth + screenx
-			if offset >= 0 && offset < i_video_buffer.len {
-				i_video_buffer[offset] = color
-			}
-		}
-	}
+	// Rendering stub - returns without drawing to avoid crash
+	// Full wall rendering needs proper implementation
+	_ = seg
 }
 
 fn height_to_screen_y(height Fixed) int {
