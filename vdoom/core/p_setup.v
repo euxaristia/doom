@@ -7,6 +7,7 @@ __global maplumpinfo = &LumpInfo(unsafe { nil })
 __global level_setup_count = 0
 __global last_setup_episode = 0
 __global last_setup_map = 0
+__global totallines = 0
 
 pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
 	println('p_setup_level: episode=${episode}, mapnum=${mapnum}')
@@ -402,16 +403,148 @@ pub fn p_load_nodes(lump int) {
 }
 
 pub fn p_load_blockmap(lump int) {
-	// Blockmap not needed for basic rendering
-	_ = lump
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
+	data :=wad.read_lump_num(lump) or { return }
+	
+	if data.len < 8 {
+		return
+	}
+	
+	count := data.len / 2
+	if count >= 0x10000 {
+		return
+	}
+	
+	blockmaplump = []i16{len: count}
+	for i in 0 .. count {
+		mut t := i16(data[i * 2]) | (i16(data[i * 2 + 1]) << 8)
+		if t == -1 {
+			blockmaplump[i] = -1
+		} else {
+			blockmaplump[i] = u16(t)
+		}
+	}
+	
+	blockmap = blockmaplump[4..]
+	
+	bmaporgx = Fixed(int(blockmaplump[0]) << frac_bits)
+	bmaporgy = Fixed(int(blockmaplump[1]) << frac_bits)
+	bmapwidth = int(blockmaplump[2])
+	bmapheight = int(blockmaplump[3])
+	
+	blocklinks = []voidptr{len: bmapwidth * bmapheight}
+	println('p_load_blockmap: ${bmapwidth}x${bmapheight}')
 }
 
 pub fn p_load_reject(lump int) {
-	// Reject matrix not needed for basic rendering
-	_ = lump
+	wad := load_wad_with_options(iwad_path, true, false) or { return }
+	data :=wad.read_lump_num(lump) or { return }
+	
+	rejectmatrix = data
+	println('p_load_reject: ${data.len} bytes')
 }
 
-pub fn p_group_lines() {}
+pub fn p_group_lines() {
+	// Look up sector number for each subsector
+	for i in 0 .. numsubsectors {
+		ss := &subsectors[i]
+		if int(ss.firstline) < numsegs {
+			seg := &segs[ss.firstline]
+			if seg.linedef != unsafe { nil } && seg.linedef.sidenum[0] >= 0
+				&& seg.linedef.sidenum[0] < numsides {
+				ss.sector = sides[seg.linedef.sidenum[0]].sector
+			}
+		}
+	}
+	
+	// Reset linecount for all sectors
+	for i in 0 .. numsectors {
+		sectors[i].linecount = 0
+	}
+	
+	// Count lines in each sector
+	mut totallines := 0
+	for i in 0 .. numlines {
+		li := &lines[i]
+		if li.frontsector != unsafe { nil } {
+			li.frontsector.linecount++
+			totallines++
+		}
+		if li.backsector != unsafe { nil } && li.backsector != li.frontsector {
+			li.backsector.linecount++
+			totallines++
+		}
+	}
+	
+	// Allocate line buffer for each sector
+	for i in 0 .. numsectors {
+		if sectors[i].linecount > 0 {
+			sectors[i].lines = []&Line{len: sectors[i].linecount}
+		}
+		sectors[i].linecount = 0
+	}
+	
+	// Assign lines to sectors
+	for i in 0 .. numlines {
+		li := &lines[i]
+		
+		if li.frontsector != unsafe { nil } {
+			sector := li.frontsector
+			sector.lines[sector.linecount] = li
+			sector.linecount++
+		}
+		
+		if li.backsector != unsafe { nil } && li.frontsector != li.backsector {
+			sector := li.backsector
+			sector.lines[sector.linecount] = li
+			sector.linecount++
+		}
+	}
+	
+	// Generate bounding boxes for sectors
+	for i in 0 .. numsectors {
+		sec := &sectors[i]
+		if sec.lines.len > 0 {
+			mut minx := Fixed(0x7fffffff)
+			mut maxx := Fixed(-0x80000000)
+			mut miny := Fixed(0x7fffffff)
+			mut maxy := Fixed(-0x80000000)
+			
+			for j in 0 .. sec.lines.len {
+				li := sec.lines[j]
+				if li.v1.x < minx { minx = li.v1.x }
+				if li.v1.x > maxx { maxx = li.v1.x }
+				if li.v2.x < minx { minx = li.v2.x }
+				if li.v2.x > maxx { maxx = li.v2.x }
+				if li.v1.y < miny { miny = li.v1.y }
+				if li.v1.y > maxy { maxy = li.v1.y }
+				if li.v2.y < miny { miny = li.v2.y }
+				if li.v2.y > maxy { maxy = li.v2.y }
+			}
+			sec.blockbox[0] = maxx
+			sec.blockbox[1] = minx
+			sec.blockbox[2] = maxy
+			sec.blockbox[3] = miny
+		}
+	}
+	
+	// Generate blockmap bounding boxes for sectors
+	for i in 0 .. numsectors {
+		sec := &sectors[i]
+		if sec.linecount > 0 {
+			blockx := (sec.blockbox[1] - bmaporgx) >> mapblockshift
+			blocky := (sec.blockbox[3] - bmaporgy) >> mapblockshift
+			blockx = if blockx < 0 { 0 } else { blockx }
+			blocky = if blocky < 0 { 0 } else { blocky }
+			blockx = if blockx >= bmapwidth { bmapwidth - 1 } else { blockx }
+			blocky = if blocky >= bmapheight { bmapheight - 1 } else { blocky }
+			sec.blockbox[0] = blockx
+			sec.blockbox[2] = blocky
+		}
+	}
+	
+	println('p_group_lines: ${numlines} lines, ${numsectors} sectors')
+}
 
 
 pub fn p_get_num_for_map(episode int, mapnum int) int {

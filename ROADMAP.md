@@ -6,10 +6,10 @@ A phased approach to translating crispy-doom from C to V.
 
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
-- ~70% complete for core game structures
-- ~20% complete for actual game logic
+- ~75% complete for core game structures
+- ~25% complete for actual game logic
 - Phase 2.2 Map Objects: p_mobj.v spawning/state machine/thinker complete
-- Phase 2.3 Map & Collision: p_map.v movement/collision implemented
+- Phase 2.3 Map & Collision: p_map.v movement/collision, p_setup.v level loading
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -50,8 +50,8 @@ Implement the main game loop and player mechanics.
 #### 2.3 Map & Collision
 - [x] p_map.v - Movement collision detection
 - [x] p_map.v - Blockmap traversal
-- [ ] p_maputl.v - Map utilities
-- [ ] p_setup.v - Level loading
+- [x] p_maputl.v - Map utilities
+- [x] p_setup.v - Level loading
 
 #### 2.4 Enemy AI
 - [ ] p_enemy.v - Chase behavior
