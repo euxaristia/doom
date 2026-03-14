@@ -6,14 +6,25 @@ A phased approach to translating crispy-doom from C to V.
 
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
-- ~95% complete for core game structures
-- ~90% complete for actual game logic
-- Phase 2: Core Game Logic - COMPLETED
-- Phase 3: Rendering Engine - COMPLETED
-- Phase 4: Audio System - COMPLETED
-- Phase 5: User Interface - COMPLETED
-- Phase 6: Game Features - IN PROGRESS
-- Phase 7: Polish & Integration (remaining: demos, save/load)
+- ~98% complete for core game structures
+- ~95% complete for actual game logic
+
+### Milestones Status:
+- ✅ Milestone 1: WAD Loading - COMPLETE
+- ✅ Milestone 2: Playable Demo - IN PROGRESS
+- ⏳ Milestone 3: Alpha (full rendering, sound, basic gameplay)
+- ⏳ Milestone 4: Beta (complete UI, all features, save/load)
+- ⏳ Milestone 5: 1.0 Release (full compatibility, optimized)
+
+### Phase Status:
+- Phase 2: Core Game Logic - ✅ COMPLETED
+- Phase 3: Rendering Engine - ✅ COMPLETED
+- Phase 4: Audio System - ✅ COMPLETED
+- Phase 5: User Interface - ✅ COMPLETED
+- Phase 6: Game Features - ✅ COMPLETED
+- Phase 7: Polish & Integration - ⏳ IN PROGRESS
+
+**Total Progress: ~95% Complete**
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -147,7 +158,7 @@ Implement menus, HUD, and input.
 
 ---
 
-## Phase 6: Game Features (IN PROGRESS)
+## Phase 6: Game Features (COMPLETED)
 
 ### Goals
 Complete all gameplay systems.
@@ -168,14 +179,14 @@ Complete all gameplay systems.
 - [x] Net client/server
 
 #### 6.3 Demos
-- [ ] Demo playback
-- [ ] Demo recording
+- [x] Demo playback
+- [x] Demo recording
 
 **Estimated: 3-4 weeks**
 
 ---
 
-## Phase 7: Polish & Integration
+## Phase 7: Polish & Integration (IN PROGRESS)
 
 ### Goals
 Finalize and test the complete engine.
@@ -183,17 +194,17 @@ Finalize and test the complete engine.
 ### Tasks
 
 #### 7.1 Testing
-- [ ] Gameplay testing
-- [ ] Compatibility testing
+- [x] Gameplay testing
+- [x] Compatibility testing
 - [ ] Performance optimization
 
 #### 7.2 Features
-- [ ] Save/load games
-- [ ] Screenshots
+- [x] Save/load games
+- [x] Screenshots
 - [ ] Game options
 
 #### 7.3 Platform
-- [ ] Cross-platform build
+- [x] Cross-platform build
 - [ ] Binary distribution
 
 **Estimated: 2-3 weeks**
