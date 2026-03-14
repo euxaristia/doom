@@ -29,6 +29,7 @@ fn d_run_tic(cmds []TicCmd, ingame []bool) {
 fn d_main_init() {
 	mut iface := LoopInterface{}
 	iface.process_events = d_process_events
+	iface.build_ticcmd = g_build_ticcmd
 	iface.run_tic = d_run_tic
 	d_register_loop_callbacks(&iface)
 }

@@ -23,6 +23,9 @@ pub const ang5 = u32(0x22222222) // ANG180 / 36
 
 pub const angle_to_fineshift = 19
 pub const angle_to_sky_shift = 22
+pub const angletofineshift = 19
+pub const ang360 = u32(0x100000000)
+pub const angletoscreen_shift = 26
 
 pub const look_min = -90
 pub const look_max = 90

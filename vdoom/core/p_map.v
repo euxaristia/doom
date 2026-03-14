@@ -1,9 +1,5 @@
+@[has_globals]
 module core
-
-const box_top = 0
-const box_bottom = 1
-const box_left = 2
-const box_right = 3
 
 __global tmthing &Mobj
 __global tmflags int

@@ -258,9 +258,21 @@ fn main() {
 	}
 	// Only pre-render extra frames when not using a live window, or when animating.
 	if loop_forever {
-		core.render_loop()
-	} else if !show_window || animate {
-		core.render_more_frames(2)
+		if show_window {
+			// Interactive loop with window
+			core.show_window_if_enabled()
+		} else {
+			// Headless loop
+			core.render_loop()
+		}
+	} else {
+		if !show_window || animate {
+			core.render_more_frames(2)
+		}
+		if show_window {
+			// Open window for interactive play
+			core.show_window_if_enabled()
+		}
 	}
 
 	if hash_stats {

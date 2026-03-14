@@ -3,6 +3,8 @@ module core
 import gg
 import sokol.sapp
 
+__global game_ctx = &gg.Context(unsafe { nil })
+
 struct WindowApp {
 mut:
 	ctx       &gg.Context = unsafe { nil }
@@ -41,21 +43,24 @@ fn (mut app WindowApp) init() {
 	app.rgba = []u8{len: screenwidth * screenheight * 4}
 }
 
-fn (mut app WindowApp) frame() {
-	app.ctx.begin()
-	// Clear the whole drawable area each frame to avoid artifacts.
-	real := gg.window_size_real_pixels()
-	logical := app.ctx.window_size()
-	if !app.logged {
-		println('window: ctx=${app.ctx.width}x${app.ctx.height} logical=${logical.width}x${logical.height} real=${real.width}x${real.height} scale=${app.scale}')
-		app.logged = true
-	}
-	app.ctx.draw_rect_filled(0, 0, app.ctx.width, app.ctx.height, gg.black)
-	app.ctx.draw_rect_filled(0, 0, real.width, real.height, gg.black)
-	// Optionally advance the pure-V renderer each frame.
-	if i_animate_enabled() {
+	fn (mut app WindowApp) frame() {
+		app.ctx.begin()
+		// Clear the whole drawable area each frame to avoid artifacts.
+		real := gg.window_size_real_pixels()
+		logical := app.ctx.window_size()
+		if !app.logged {
+			println('window: ctx=${app.ctx.width}x${app.ctx.height} logical=${logical.width}x${logical.height} real=${real.width}x${real.height} scale=${app.scale}')
+			app.logged = true
+		}
+		app.ctx.draw_rect_filled(0, 0, app.ctx.width, app.ctx.height, gg.black)
+		app.ctx.draw_rect_filled(0, 0, real.width, real.height, gg.black)
+		
+		// Process events
+		d_process_events()
+		
+		// Advance the game logic and render
+		try_run_tics()
 		render_tick_frame()
-	}
 	// Edge-detect arrow keys for menu navigation (only if events are not firing).
 	up_now := app.ctx.is_key_down(.up)
 	down_now := app.ctx.is_key_down(.down)
@@ -157,24 +162,30 @@ fn on_event(e &gg.Event, _data voidptr) {
 		app.last_event_type = int(e.typ)
 	}
 	app.seen_event = true
+	
+	// Push events to the Doom event queue
 	if e.typ == sapp.EventType.key_down {
 		if i_debug_input() {
 			app.debug_flash = 10
 			println('event key_down key=${e.key_code} repeat=${e.key_repeat}')
 		}
-	}
-	if e.typ != sapp.EventType.key_down {
-		return
-	}
-	if e.key_repeat {
-		return
-	}
-	match e.key_code {
-		.up { render_menu_move(-1) }
-		.down { render_menu_move(1) }
-		.enter, .space { render_menu_activate() }
-		.escape, .backspace { render_menu_back() }
-		else {}
+		if !e.key_repeat {
+			// Map gg.KeyCode to Doom key code (simplified)
+			d_key := int(e.key_code)
+			d_post_keydown(d_key)
+			
+			// Handle menu navigation
+			match e.key_code {
+				.up { render_menu_move(-1) }
+				.down { render_menu_move(1) }
+				.enter, .space { render_menu_activate() }
+				.escape, .backspace { render_menu_back() }
+				else {}
+			}
+		}
+	} else if e.typ == sapp.EventType.key_up {
+		// Doom doesn't seem to use key_up events heavily, but we can post them
+		// d_post_keyup(int(e.key_code))
 	}
 }
 
@@ -189,6 +200,7 @@ fn on_char(c u32, data voidptr) {
 }
 
 pub fn show_window_if_enabled() {
+	println('show_window_if_enabled: called, enabled=${i_window_enabled()}')
 	if !i_window_enabled() {
 		return
 	}
@@ -217,5 +229,6 @@ pub fn show_window_if_enabled() {
 		char_fn: on_char
 		user_data: app
 	)
+	game_ctx = app.ctx
 	app.ctx.run()
 }

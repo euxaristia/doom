@@ -290,6 +290,43 @@ pub fn g_build_ticcmd(cmd &TicCmd, maketic int) {
 		cmd.lookfly = 0
 		cmd.arti = 0
 	}
+
+	// If game_ctx is nil, we are in headless mode or window not yet created
+	if game_ctx == unsafe { nil } {
+		return
+	}
+
+	// Map keys to movement
+	// Doom default keys: Arrow keys for movement, Ctrl for shoot, etc.
+	// We'll use arrow keys for movement.
+	
+	// Check for forward/backward (Up/Down)
+	if game_ctx.is_key_down(.up) {
+		cmd.forwardmove = 127
+	} else if game_ctx.is_key_down(.down) {
+		cmd.forwardmove = -127
+	}
+
+	// Check for strafe (Left/Right)
+	if game_ctx.is_key_down(.left) {
+		cmd.sidemove = -127
+	} else if game_ctx.is_key_down(.right) {
+		cmd.sidemove = 127
+	}
+
+	// Check for turn (Alt + Left/Right)
+	if game_ctx.is_key_down(.alt) {
+		if game_ctx.is_key_down(.left) {
+			cmd.angleturn = 127
+		} else if game_ctx.is_key_down(.right) {
+			cmd.angleturn = -127
+		}
+	}
+
+	// Check for shoot (Ctrl)
+	if game_ctx.is_key_down(.ctrl) {
+		cmd.buttons = 1 // BT_ATTACK
+	}
 }
 
 pub fn g_ticker() {

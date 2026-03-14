@@ -1,0 +1,36 @@
+===========================================================================
+                            vdoom (V port)
+===========================================================================
+ DOOM.v is free software, covered by the GNU General Public
+ License. There is NO warranty; not even for MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE. You are welcome to change and distribute
+ copies under certain conditions. See the source for more information.
+===========================================================================
+zone memory: 7fe6ab063000 1000000 allocated for zone
+zone size: 16777216 bytes
+vdoom: WAD diagnostics
+path: ./wads/doom1.wad
+size: 4196020 bytes
+kind: IWAD
+lumps: 1264
+dir offset: 4175796
+stream: true
+hash: true
+mission: doom
+mode: shareware
+desc: Doom Shareware
+wad checksum: d2065c11dda88167
+iwad: doom1.wad
+iwad path: ./wads/doom1.wad
+listing 10 lump(s)
+0 PLAYPAL pos=12 size=10752
+1 COLORMAP pos=10764 size=8704
+2 ENDOOM pos=19468 size=4000
+3 DEMO1 pos=23468 size=20118
+4 DEMO2 pos=43588 size=15358
+5 DEMO3 pos=58948 size=8550
+6 E1M1 pos=67500 size=0
+7 THINGS pos=67500 size=1380
+8 LINEDEFS pos=68880 size=6650
+9 SIDEDEFS pos=75532 size=19440
+window: ctx=960x720 logical=960x720 real=1220x915 scale=3
