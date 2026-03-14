@@ -7,12 +7,13 @@ A phased approach to translating crispy-doom from C to V.
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
 - ~95% complete for core game structures
-- ~80% complete for actual game logic
+- ~90% complete for actual game logic
 - Phase 2: Core Game Logic - COMPLETED
 - Phase 3: Rendering Engine - COMPLETED
 - Phase 4: Audio System - COMPLETED
 - Phase 5: User Interface - COMPLETED
-- Phase 6: Game Features (in progress)
+- Phase 6: Game Features - IN PROGRESS
+- Phase 7: Polish & Integration (remaining: demos, save/load)
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -146,7 +147,7 @@ Implement menus, HUD, and input.
 
 ---
 
-## Phase 6: Game Features
+## Phase 6: Game Features (IN PROGRESS)
 
 ### Goals
 Complete all gameplay systems.
@@ -154,17 +155,17 @@ Complete all gameplay systems.
 ### Tasks
 
 #### 6.1 Levels
-- [ ] p_setup.v - Complete level loading
-- [ ] p_spec.v - Special sector handling
-- [ ] p_plats.v - Moving platforms
-- [ ] p_ceilng.v - Ceiling dynamics
-- [ ] p_doors.v - Door mechanics
-- [ ] p_floor.v - Floor dynamics
-- [ ] p_lights.v - Light effects
+- [x] p_setup.v - Complete level loading
+- [x] p_spec.v - Special sector handling
+- [x] p_plats.v - Moving platforms
+- [x] p_ceilng.v - Ceiling dynamics
+- [x] p_doors.v - Door mechanics
+- [x] p_floor.v - Floor dynamics
+- [x] p_lights.v - Light effects
 
 #### 6.2 Networking
-- [ ] d_net.v - Network code
-- [ ] Net client/server
+- [x] d_net.v - Network code
+- [x] Net client/server
 
 #### 6.3 Demos
 - [ ] Demo playback
