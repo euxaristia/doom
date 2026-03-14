@@ -63,7 +63,7 @@ pub fn p_setup_psprites(player &Player) {
 pub fn p_calc_swing(player &Player) {
 	swing := player.bob
 	
-	angle := (fine_angles / 70 * leveltime) & fine_mask
+	mut angle := (fine_angles / 70 * leveltime) & fine_mask
 	swingx = fixed_mul(swing, finesine[angle])
 	
 	angle = (fine_angles / 70 * leveltime + fine_angles / 2) & fine_mask
@@ -72,7 +72,7 @@ pub fn p_calc_swing(player &Player) {
 
 pub fn p_move_psprites(player &Player) {
 	for i in 0 .. player.psprites.len {
-		psp := &player.psprites[i]
+		mut psp := &player.psprites[i]
 		if psp.state == voidptr(0) {
 			continue
 		}
@@ -112,7 +112,7 @@ pub fn p_drop_weapon(player &Player) {
 }
 
 pub fn p_set_psprite(player &Player, position PsprNum, st StateNum) {
-	psp := &player.psprites[int(position)]
+	mut psp := &player.psprites[int(position)]
 	
 	mut statenum := st
 	for int(statenum) != 0 {
@@ -127,18 +127,18 @@ pub fn p_set_psprite(player &Player, position PsprNum, st StateNum) {
 		if state.misc1 != 0 {
 			psp.sx = Fixed(state.misc1 << frac_bits)
 			psp.sy = Fixed(state.misc2 << frac_bits)
-			psp.sx2 = psp.sx
-			psp.sy2 = psp.sy
+		psp.sx2 = psp.sx
+		psp.sy2 = psp.sy
+	}
+	
+	if state.action.acp2 != voidptr(0) {
+		state.action.acp2(voidptr(player.mo), voidptr(psp))
+		if psp.state == voidptr(0) {
+			break
 		}
-		
-		if state.action.acp3 != voidptr(0) {
-			state.action.acp3(voidptr(player.mo), voidptr(player), voidptr(psp))
-			if psp.state == voidptr(0) {
-				break
-			}
-		}
-		
-		statenum = state.nextstate
+	}
+	
+	statenum = state.nextstate
 		if psp.tics > 0 {
 			break
 		}

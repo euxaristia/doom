@@ -51,7 +51,5 @@ __global rw_distance = Fixed(0)
 __global rw_normalangle = 0
 __global rw_angle1 = 0
 __global sscount = 0
-__global floorplane = unsafe { nil }
-__global ceilingplane = unsafe { nil }
 
 pub fn r_init_state() {}

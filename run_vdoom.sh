@@ -6,4 +6,4 @@ cd "$ROOT"
 
 WAD="${1:-$ROOT/wads/doom1.wad}"
 
-exec "$ROOT/vdoom/vdoom_test" "$WAD" --window --loop
+exec "$ROOT/vdoom/vdoom" "$WAD" --window --loop

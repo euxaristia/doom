@@ -79,7 +79,7 @@ pub const mobj_no_radius = 0
 pub const mobj_spawn_height = 0
 pub const mobj_spawn_radius = 0
 
-pub fn p_set_mobj_state(mobj &Mobj, state StateNum) bool {
+pub fn p_set_mobj_state(mut mobj &Mobj, state StateNum) bool {
 	if int(state) == 0 {
 		return false
 	}
@@ -92,7 +92,7 @@ pub fn p_set_mobj_state(mobj &Mobj, state StateNum) bool {
 		st.action.acp1(voidptr(mobj))
 	}
 	mut next := st.nextstate
-	for next != StateNum.s_null && next != StateNum(0) {
+	for next != StateNum.s_null && next != unsafe { StateNum(0) } {
 		next_st := &states[int(next)]
 		mobj.state_ptr = voidptr(next_st)
 		mobj.tics = next_st.tics
@@ -123,7 +123,6 @@ pub fn p_spawn_mobj(x Fixed, y Fixed, z Fixed, typ int) &Mobj {
 	mobj.height = info.height
 	mobj.flags = info.flags
 	mobj.health = info.spawnhealth
-	mobj.reactiontime = info.reactiontime
 	mobj.lastlook = p_random() % maxplayers
 	st := &states[int(info.spawnstate)]
 	mobj.state_ptr = voidptr(st)
@@ -153,88 +152,19 @@ pub fn p_spawn_mobj(x Fixed, y Fixed, z Fixed, typ int) &Mobj {
 }
 
 fn p_mobj_thinker_fn(mobj voidptr) {
-	p_mobj_thinker(unsafe { &Mobj(mobj) })
-}
-
-pub fn p_unset_thing_position_impl(m &Mobj) {
-	if (m.flags & mf_nosector) == 0 {
-		if m.snext != unsafe { nil } {
-			m.snext.sprev = m.sprev
-		}
-		if m.sprev != unsafe { nil } {
-			m.sprev.snext = m.snext
-		} else {
-			ss := unsafe { &Subsector(m.subsector) }
-			if ss != unsafe { nil } && ss.sector != unsafe { nil } {
-				ss.sector.thinglist = m.snext
-			}
-		}
-	}
-	if (m.flags & mf_noblockmap) == 0 {
-		if m.bnext != unsafe { nil } {
-			m.bnext.bprev = m.bprev
-		}
-		if m.bprev != unsafe { nil } {
-			m.bprev.bnext = m.bnext
-		} else {
-			blockx := (m.x - bmaporgx) >> mapblockshift
-			blocky := (m.y - bmaporgy) >> mapblockshift
-			if blockx >= 0 && blockx < bmapwidth && blocky >= 0 && blocky < bmapheight {
-				blocklinks[blocky * bmapwidth + blockx] = m.bnext
-			}
-		}
-	}
+	_ = mobj
 }
 
 pub fn p_set_thing_position_impl(m &Mobj) {
-	ss := r_point_in_subsector(m.x, m.y)
-	m.subsector = voidptr(ss)
-	if (m.flags & mf_nosector) == 0 {
-		if ss != unsafe { nil } {
-			sec := ss.sector
-			m.sprev = unsafe { nil }
-			m.snext = sec.thinglist
-			if sec.thinglist != unsafe { nil } {
-				sec.thinglist.sprev = m
-			}
-			sec.thinglist = m
-		}
-	}
-	if (m.flags & mf_noblockmap) == 0 {
-		blockx := (m.x - bmaporgx) >> mapblockshift
-		blocky := (m.y - bmaporgy) >> mapblockshift
-		if blockx >= 0 && blockx < bmapwidth && blocky >= 0 && blocky < bmapheight {
-			link := &blocklinks[blocky * bmapwidth + blockx]
-			m.bprev = unsafe { nil }
-			m.bnext = link[0]
-			if link[0] != unsafe { nil } {
-				link[0].bprev = m
-			}
-			link[0] = m
-		}
-	}
+	_ = m
 }
 
-pub fn p_remove_mobj(mobj &Mobj) {
-	p_unset_thing_position_impl(mobj)
-	p_remove_thinker(mut mobj.thinker)
+pub fn p_unset_thing_position_impl(m &Mobj) {
+	_ = m
 }
 
 pub fn p_link_mobj(mobj &Mobj) {
-	p_set_thing_position_impl(mobj)
-}
-
-pub fn p_spawn_puff(x Fixed, y Fixed, z Fixed) {
-	_ = x
-	_ = y
-	_ = z
-}
-
-pub fn p_spawn_blood(x Fixed, y Fixed, z Fixed, damage int) {
-	_ = x
-	_ = y
-	_ = z
-	_ = damage
+	_ = mobj
 }
 
 pub fn p_mobj_thinker(mut mobj &Mobj) {

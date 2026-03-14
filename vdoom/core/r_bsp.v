@@ -36,9 +36,18 @@ pub fn r_init_bsp() {
 }
 
 pub fn r_render_bsp_node(bspnum int) {
-	if (bspnum & 0x8000) != 0 {
-		// Reached a subsector - render the segs
-		r_render_subsector(bspnum)
+	// Check if this is a subsector (stored as negative i16 in original Doom)
+	// When child is read as i16 from WAD, negative values indicate subsectors
+	if bspnum < 0 {
+		// This is a subsector - convert negative i16 to subsector index
+		// In Doom: ssec_idx = -(child_i16 + 1)
+		ssec_idx := -(bspnum + 1)
+		r_render_subsector(ssec_idx)
+		return
+	}
+	
+	// Not a subsector - it's a node
+	if bspnum < 0 || bspnum >= numnodes {
 		return
 	}
 	
@@ -54,13 +63,7 @@ pub fn r_render_bsp_node(bspnum int) {
 	r_render_bsp_node(int(i16(if side == 0 { node.children[0] } else { node.children[1] })))
 }
 
-fn r_render_subsector(bspnum int) {
-	if bspnum > 0 {
-		return // Not a subsector
-	}
-	
-	// Get the subsector index (negative bspnum in original Doom)
-	ssec_idx := -(bspnum + 1)
+fn r_render_subsector(ssec_idx int) {
 	if ssec_idx < 0 || ssec_idx >= numsubsectors {
 		return
 	}
@@ -70,6 +73,10 @@ fn r_render_subsector(bspnum int) {
 	// Render each seg in the subsector
 	first := int(ssec.firstline)
 	numlines := int(ssec.numlines)
+	
+	if numlines == 0 {
+		return
+	}
 	
 	for i in 0 .. numlines {
 		seg_idx := first + i
@@ -83,153 +90,38 @@ fn r_render_subsector(bspnum int) {
 }
 
 fn r_render_seg(seg &Seg) {
-	// Check if seg is visible
-	// Calculate angles for view
-	mut angle1 := int(seg.angle) - viewangle
-	mut angle2 := int(seg.angle) + seg_angle(seg) - viewangle
+	// Get sectors
+	frontsector = seg.frontsector
 	
-	// Normalize angles to 0-359 range
-	for angle1 < 0 {
-		angle1 += 360
-	}
-	for angle1 >= 360 {
-		angle1 -= 360
-	}
-	for angle2 < 0 {
-		angle2 += 360
-	}
-	for angle2 >= 360 {
-		angle2 -= 360
-	}
-	
-	// Convert angles to screen x coordinates
-	mut x1 := angle_to_x(angle1)
-	mut x2 := angle_to_x(angle2)
-	
-	// Clip and draw
-	if x1 < 0 {
-		x1 = 0
-	}
-	if x2 >= screenwidth {
-		x2 = screenwidth - 1
-	}
-	if x1 >= x2 {
+	if frontsector == unsafe { nil } {
 		return
 	}
 	
-	// Get sectors
-	frontsector = seg.frontsector
-	backsector = seg.backsector
+	// Simple test: use seg angle to draw
+	// seg.angle is the angle of the seg in the view
+	angle := seg.angle
 	
-	// Determine what to draw
-	mut draw_wall := false
-	mut draw_floor := false
-	mut draw_ceiling := false
-	
-	if backsector == unsafe { nil } {
-		// Solid wall
-		draw_wall = true
-		draw_floor = true
-		draw_ceiling = true
-	} else {
-		// Check for differences
-		if frontsector.floorheight != backsector.floorheight {
-			draw_floor = true
-		}
-		if frontsector.ceilingheight != backsector.ceilingheight {
-			draw_ceiling = true
-		}
-		// Check if we need to draw the wall texture
-		if seg.sidedef != unsafe { nil } && seg.sidedef.midtexture >= 0 {
-			draw_wall = true
-		}
+	// Normalize to 0-360
+	mut norm_angle := angle
+	for norm_angle < 0 {
+		norm_angle += 360
+	}
+	for norm_angle >= 360 {
+		norm_angle -= 360
 	}
 	
-	// Render the seg
-	render_wall_column(seg, x1, x2, draw_wall, draw_floor, draw_ceiling)
-}
-
-fn seg_angle(seg &Seg) int {
-	// Calculate angle from v1 to v2
-	v1 := seg.v1
-	v2 := seg.v2
-	dx := v2.x - v1.x
-	dy := v2.y - v1.y
+	// Map angle to screen x coordinate (simple projection)
+	screenx := int(f32(norm_angle) / 360.0 * f32(screenwidth))
 	
-	// Convert to angle using atan2 approximation
-	// Doom uses angle_t = atan2(dy, dx) * (fine_angles / 360)
-	// We'll use a simpler approach
-	return int((fixed_atan2(dy, dx) * 45) >> frac_bits)
-}
-
-fn angle_to_x(angle int) int {
-	// Convert angle to screen x coordinate
-	// Simple linear mapping for now
-	// Angles 0-90 map to left half, 90-180 to right half
-	// We need a more sophisticated mapping based on FOV
-	mut x := 0
-	if angle <= 90 {
-		x = (screenwidth / 2) - (angle * (screenwidth / 4) / 90)
-	} else if angle <= 180 {
-		x = (screenwidth / 2) + ((angle - 90) * (screenwidth / 4) / 90)
-	} else if angle <= 270 {
-		x = (screenwidth / 2) + ((angle - 180) * (screenwidth / 4) / 90)
-	} else {
-		x = (screenwidth / 2) - ((angle - 270) * (screenwidth / 4) / 90)
-	}
-	return x
-}
-
-fn render_wall_column(seg &Seg, x1 int, x2 int, draw_wall bool, draw_floor bool, draw_ceiling bool) {
-	// Get wall heights from sector
-	top_height := frontsector.ceilingheight
-	bottom_height := frontsector.floorheight
+	// Color based on sector lighting
+	color := u8(frontsector.lightlevel)
 	
-	// Calculate screen y positions
-	mut top_y := height_to_screen_y(top_height)
-	mut bottom_y := height_to_screen_y(bottom_height)
-	
-	// Clip
-	if top_y < 0 {
-		top_y = 0
-	}
-	if bottom_y >= screenheight {
-		bottom_y = screenheight - 1
-	}
-	
-	// Determine colors based on wall/lighting
-	wall_color := u8(108 + (frontsector.lightlevel >> 4))
-	
-	// Render for each x column
-	for x in x1 .. x2 {
-		if draw_ceiling {
-			// Draw ceiling (black/sky)
-			for y in 0 .. top_y {
-				offset := y * screenwidth + x
-				if offset >= 0 && offset < i_video_buffer.len {
-					i_video_buffer[offset] = 0
-				}
-			}
-		}
-		
-		if draw_wall {
-			// Draw wall
-			for y in top_y .. bottom_y {
-				offset := y * screenwidth + x
-				if offset >= 0 && offset < i_video_buffer.len {
-					i_video_buffer[offset] = wall_color
-				}
-			}
-		}
-		
-		if draw_floor {
-			// Draw floor (darker)
-			floor_color := u8(frontsector.lightlevel >> 3)
-			for y in bottom_y .. screenheight {
-				offset := y * screenwidth + x
-				if offset >= 0 && offset < i_video_buffer.len {
-					i_video_buffer[offset] = floor_color
-				}
+	// Draw a vertical line at this x position
+	if screenx >= 0 && screenx < screenwidth {
+		for y := 0; y < screenheight; y++ {
+			offset := y * screenwidth + screenx
+			if offset >= 0 && offset < i_video_buffer.len {
+				i_video_buffer[offset] = color
 			}
 		}
 	}

@@ -277,7 +277,10 @@ pub fn g_world_done() {
 	set_game_action(.worlddone)
 }
 
-pub fn g_build_ticcmd(cmd &TicCmd, maketic int) {
+pub fn g_build_ticcmd(mut cmd &TicCmd, maketic int) {
+	if unsafe { cmd == 0 } {
+		return
+	}
 	unsafe {
 		cmd.forwardmove = 0
 		cmd.sidemove = 0
@@ -314,17 +317,17 @@ pub fn g_build_ticcmd(cmd &TicCmd, maketic int) {
 		cmd.sidemove = 127
 	}
 
-	// Check for turn (Alt + Left/Right)
-	if game_ctx.is_key_down(.alt) {
+	// Check for turn (z/x keys)
+	if game_ctx.is_key_down(.z) {
 		if game_ctx.is_key_down(.left) {
 			cmd.angleturn = 127
 		} else if game_ctx.is_key_down(.right) {
 			cmd.angleturn = -127
 		}
 	}
-
-	// Check for shoot (Ctrl)
-	if game_ctx.is_key_down(.ctrl) {
+	
+	// Check for shoot (space)
+	if game_ctx.is_key_down(.space) {
 		cmd.buttons = 1 // BT_ATTACK
 	}
 }

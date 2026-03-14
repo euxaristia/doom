@@ -89,7 +89,7 @@ pub fn r_find_plane(height Fixed, picnum int, lightlevel int) &Visplane {
 	return pl
 }
 
-pub fn r_check_plane(pl &Visplane, start int, stop int) &Visplane {
+pub fn r_check_plane(mut pl &Visplane, start int, stop int) &Visplane {
 	if start < pl.minx {
 		pl.minx = start
 	}

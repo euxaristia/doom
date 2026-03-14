@@ -216,33 +216,6 @@ pub fn p_player_think(player &Player) {
 	}
 }
 
-const mf_special = 1
-const mf_solid = 2
-const mf_shootable = 4
-const mf_nosector = 8
-const mf_noblockmap = 16
-const mf_ambush = 32
-const mf_justattacked = 128
-const mf_spawnceiling = 256
-const mf_nogravity = 512
-const mf_dropoff = 0x400
-const mf_pickup = 0x800
-const mf_noclip = 0x1000
-const mf_slide = 0x2000
-const mf_float = 0x4000
-const mf_teleport = 0x8000
-const mf_missile = 0x10000
-const mf_dropped = 0x20000
-const mf_shadow = 0x40000
-const mf_noblood = 0x80000
-const mf_corpse = 0x100000
-const mf_infloat = 0x200000
-const mf_countkill = 0x400000
-const mf_countitem = 0x800000
-const mf_skullfly = 0x1000000
-const mf_notdmatch = 0x2000000
-const mf_translation = 0xc000000
-
 pub fn p_player_in_special_sector(player &Player) {
 	_ = player
 }

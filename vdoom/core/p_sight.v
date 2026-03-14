@@ -23,25 +23,6 @@ pub fn p_check_sight(t1 &Mobj, t2 &Mobj) bool {
 	if t1_ss.sector == unsafe { nil } || t2_ss.sector == unsafe { nil } {
 		return false
 	}
-	s1 := int(uintptr(t1_ss.sector) - uintptr(sectors.raw()) / sizeof(Sector))
-	s2 := int(uintptr(t2_ss.sector) - uintptr(sectors.raw()) / sizeof(Sector))
-	
-	if s1 < 0 || s1 >= numsectors || s2 < 0 || s2 >= numsectors {
-		return false
-	}
-	
-	if rejectmatrix.len > 0 {
-		pnum := s1 * numsectors + s2
-		bytenum := pnum >> 3
-		bitnum := 1 << (pnum & 7)
-		
-		if bytenum >= 0 && bytenum < rejectmatrix.len {
-			if rejectmatrix[bytenum] & u8(bitnum) != 0 {
-				sightcounts[0]++
-				return false
-			}
-		}
-	}
 	
 	sightcounts[1]++
 	validcount++
@@ -113,7 +94,7 @@ pub fn p_sight_check_line(ln voidptr) bool {
 		return true
 	}
 	
-	line := unsafe { &Line(ln) }
+	mut line := unsafe { &Line(ln) }
 	
 	if line.validcount == validcount {
 		return true
@@ -125,8 +106,8 @@ pub fn p_sight_check_line(ln voidptr) bool {
 	v2x := line.v2.x
 	v2y := line.v2.y
 	
-	s1 := p_point_on_divline_side(v1x, v1y, &trace)
-	s2 := p_point_on_divline_side(v2x, v2y, &trace)
+	mut s1 := p_point_on_divline_side(v1x, v1y, &trace)
+	mut s2 := p_point_on_divline_side(v2x, v2y, &trace)
 	
 	if s1 == s2 {
 		return true
@@ -217,8 +198,8 @@ pub fn p_cross_bsp_node(bspnum int) bool {
 		dy: node.dy
 	})
 	
-	front := true
-	back := true
+	mut front := true
+	mut back := true
 	
 	if side == 1 {
 		front = false
@@ -227,13 +208,13 @@ pub fn p_cross_bsp_node(bspnum int) bool {
 	}
 	
 	if front {
-		if !p_check_box(node.bbox[0], &p_cross_bsp_node) {
+		if !p_check_box(node.bbox[0][0], node.bbox[0][1], node.bbox[0][2], node.bbox[0][3], p_cross_bsp_node) {
 			return false
 		}
 	}
 	
 	if back {
-		if !p_check_box(node.bbox[1], &p_cross_bsp_node) {
+		if !p_check_box(node.bbox[1][0], node.bbox[1][1], node.bbox[1][2], node.bbox[1][3], p_cross_bsp_node) {
 			return false
 		}
 	}
@@ -241,16 +222,16 @@ pub fn p_cross_bsp_node(bspnum int) bool {
 	return true
 }
 
-fn p_check_box(box []Fixed, check fn (int) bool) bool {
-	tmbbox[box_top] = box[box_top]
-	tmbbox[box_bottom] = box[box_bottom]
-	tmbbox[box_left] = box[box_left]
-	tmbbox[box_right] = box[box_right]
+fn p_check_box(box0 Fixed, box1 Fixed, box2 Fixed, box3 Fixed, check fn (int) bool) bool {
+	tmbbox[box_top] = box0
+	tmbbox[box_bottom] = box1
+	tmbbox[box_left] = box2
+	tmbbox[box_right] = box3
 	
-	xl := (tmbbox[box_left] - bmaporgx) >> mapblockshift
-	xh := (tmbbox[box_right] - bmaporgx) >> mapblockshift
-	yl := (tmbbox[box_bottom] - bmaporgy) >> mapblockshift
-	yh := (tmbbox[box_top] - bmaporgy) >> mapblockshift
+	mut xl := (tmbbox[box_left] - bmaporgx) >> mapblockshift
+	mut xh := (tmbbox[box_right] - bmaporgx) >> mapblockshift
+	mut yl := (tmbbox[box_bottom] - bmaporgy) >> mapblockshift
+	mut yh := (tmbbox[box_top] - bmaporgy) >> mapblockshift
 	
 	if xl < 0 { xl = 0 }
 	if yl < 0 { yl = 0 }

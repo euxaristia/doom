@@ -20,6 +20,7 @@ pub fn p_setup_level(episode int, mapnum int, playermask int, skill int) {
 	_ = playermask
 	leveltime = 0
 	set_game_state(.level)
+	render_was_patch = false
 	p_init_thinkers()
 	r_init_data()
 	p_pspr_init()
@@ -358,7 +359,7 @@ pub fn p_load_nodes(lump int) {
 		numnodes = 0
 	}
 	
-	if numnodes > 0 {
+		if numnodes > 0 {
 		nodes = []Node{len: numnodes}
 		
 		for i in 0 .. numnodes {
@@ -379,9 +380,9 @@ pub fn p_load_nodes(lump int) {
 				dy: Fixed(dy)
 			}
 			
-			// Read children indices (2 bytes each)
+			// Read children indices (2 bytes each) - at bytes 24-27 in node
 			for j in 0 .. 2 {
-				child_offset := offset + 8 + j * 2
+				child_offset := offset + 24 + j * 2
 				if child_offset + 1 < data.len {
 					child := u16(data[child_offset]) | (u16(data[child_offset + 1]) << 8)
 					nodes[i].children[j] = child
@@ -418,11 +419,7 @@ pub fn p_load_blockmap(lump int) {
 	blockmaplump = []i16{len: count}
 	for i in 0 .. count {
 		mut t := i16(data[i * 2]) | (i16(data[i * 2 + 1]) << 8)
-		if t == -1 {
-			blockmaplump[i] = -1
-		} else {
-			blockmaplump[i] = u16(t)
-		}
+		blockmaplump[i] = t
 	}
 	
 	blockmap = blockmaplump[4..]
@@ -440,14 +437,14 @@ pub fn p_load_reject(lump int) {
 	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data :=wad.read_lump_num(lump) or { return }
 	
-	rejectmatrix = data
+	rejectmatrix = data.clone()
 	println('p_load_reject: ${data.len} bytes')
 }
 
 pub fn p_group_lines() {
 	// Look up sector number for each subsector
 	for i in 0 .. numsubsectors {
-		ss := &subsectors[i]
+		mut ss := &subsectors[i]
 		if int(ss.firstline) < numsegs {
 			seg := &segs[ss.firstline]
 			if seg.linedef != unsafe { nil } && seg.linedef.sidenum[0] >= 0
@@ -465,7 +462,7 @@ pub fn p_group_lines() {
 	// Count lines in each sector
 	mut totallines := 0
 	for i in 0 .. numlines {
-		li := &lines[i]
+		mut li := &lines[i]
 		if li.frontsector != unsafe { nil } {
 			li.frontsector.linecount++
 			totallines++
@@ -489,13 +486,13 @@ pub fn p_group_lines() {
 		li := &lines[i]
 		
 		if li.frontsector != unsafe { nil } {
-			sector := li.frontsector
+			mut sector := li.frontsector
 			sector.lines[sector.linecount] = li
 			sector.linecount++
 		}
 		
 		if li.backsector != unsafe { nil } && li.frontsector != li.backsector {
-			sector := li.backsector
+			mut sector := li.backsector
 			sector.lines[sector.linecount] = li
 			sector.linecount++
 		}
@@ -503,7 +500,7 @@ pub fn p_group_lines() {
 	
 	// Generate bounding boxes for sectors
 	for i in 0 .. numsectors {
-		sec := &sectors[i]
+		mut sec := &sectors[i]
 		if sec.lines.len > 0 {
 			mut minx := Fixed(0x7fffffff)
 			mut maxx := Fixed(-0x80000000)
@@ -530,10 +527,10 @@ pub fn p_group_lines() {
 	
 	// Generate blockmap bounding boxes for sectors
 	for i in 0 .. numsectors {
-		sec := &sectors[i]
+		mut sec := &sectors[i]
 		if sec.linecount > 0 {
-			blockx := (sec.blockbox[1] - bmaporgx) >> mapblockshift
-			blocky := (sec.blockbox[3] - bmaporgy) >> mapblockshift
+			mut blockx := (sec.blockbox[1] - bmaporgx) >> mapblockshift
+			mut blocky := (sec.blockbox[3] - bmaporgy) >> mapblockshift
 			blockx = if blockx < 0 { 0 } else { blockx }
 			blocky = if blocky < 0 { 0 } else { blocky }
 			blockx = if blockx >= bmapwidth { bmapwidth - 1 } else { blockx }

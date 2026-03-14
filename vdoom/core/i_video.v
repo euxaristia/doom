@@ -106,7 +106,10 @@ pub fn i_update_no_blit() {
 }
 
 pub fn i_finish_update() {
-	if i_video_buffer.len == 0 || palette_rgb.len < 256 * 3 {
+	if i_video_buffer.len == 0 {
+		return
+	}
+	if palette_rgb.len < 256 * 3 {
 		return
 	}
 	mut rgb := []u8{len: screenwidth * screenheight * 3}

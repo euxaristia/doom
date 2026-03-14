@@ -89,7 +89,7 @@ __global bodyqueslot = 0
 __global skyflatnum = 0
 __global rndindex = 0
 __global prndindex = 0
-__global netcmds = []TicCmd{}
+__global netcmds []TicCmd
 __global wad_dir_checksum = u64(0)
 
 pub fn set_game_identity(mission GameMission, mode GameMode, description string) {
@@ -160,30 +160,14 @@ pub fn set_start_params(skill int, episode int, mapnum int) {
 }
 
 fn doomstat_init() {
-	if players.len == 0 {
-		players = []Player{len: maxplayers}
+	players = []Player{len: maxplayers}
+	playeringame = []bool{len: maxplayers}
+	netcmds = []TicCmd{len: maxplayers}
+	deathmatchstarts = []MapThing{len: max_dm_starts}
+	playerstarts = []MapThing{len: maxplayers}
+	playerstartsingame = []bool{len: maxplayers}
+	unsafe {
+		wminfo.plyr = []WbPlayerStruct{len: maxplayers}
 	}
-	if playeringame.len == 0 {
-		playeringame = []bool{len: maxplayers}
-	}
-	if netcmds.len == 0 {
-		netcmds = []TicCmd{len: maxplayers}
-	}
-	if deathmatchstarts.len == 0 {
-		deathmatchstarts = []MapThing{len: max_dm_starts}
-	}
-	if playerstarts.len == 0 {
-		playerstarts = []MapThing{len: maxplayers}
-	}
-	if playerstartsingame.len == 0 {
-		playerstartsingame = []bool{len: maxplayers}
-	}
-	if wminfo.plyr.len == 0 {
-		unsafe {
-			wminfo.plyr = []WbPlayerStruct{len: maxplayers}
-		}
-	}
-	if gamedescription.len == 0 {
-		gamedescription = d_game_mission_string(gamemission)
-	}
+	gamedescription = d_game_mission_string(gamemission)
 }
