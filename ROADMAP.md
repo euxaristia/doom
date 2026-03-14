@@ -6,10 +6,11 @@ A phased approach to translating crispy-doom from C to V.
 
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
-- ~90% complete for core game structures
-- ~50% complete for actual game logic
-- Phase 2 Core Game Logic: COMPLETED
-- Phase 3: Rendering Engine (in progress)
+- ~95% complete for core game structures
+- ~60% complete for actual game logic
+- Phase 2: Core Game Logic - COMPLETED
+- Phase 3: Rendering Engine - COMPLETED
+- Phase 4: Audio System (in progress)
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -69,7 +70,7 @@ Implement the main game loop and player mechanics.
 
 ---
 
-## Phase 3: Rendering Engine
+## Phase 3: Rendering Engine (COMPLETED)
 
 ### Goals
 Implement the software renderer.
@@ -83,14 +84,14 @@ Implement the software renderer.
 
 #### 3.2 3D Engine
 - [x] r_bsp.v - BSP traversal
-- [ ] r_segs.v - Segment rendering
-- [ ] r_plane.v - Floor/ceiling planes
+- [x] r_segs.v - Segment rendering
+- [x] r_plane.v - Floor/ceiling planes
 - [x] r_sky.v - Sky rendering
 
 #### 3.3 Visuals
 - [x] r_things.v - Sprite rendering
 - [x] r_draw.v - Column/span drawing
-- [ ] r_data.v - Texture/flat management
+- [x] r_data.v - Texture/flat management
 
 **Estimated: 4-5 weeks**
 
