@@ -6,8 +6,9 @@ A phased approach to translating crispy-doom from C to V.
 
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
-- ~65% complete for core game structures
-- ~15% complete for actual game logic
+- ~70% complete for core game structures
+- ~20% complete for actual game logic
+- Phase 2.2 Map Objects: p_mobj.v spawning/state machine/thinker complete
 - Phase 2.3 Map & Collision: p_map.v movement/collision implemented
 
 ## Phase 1: Foundation (COMPLETED)
@@ -42,9 +43,9 @@ Implement the main game loop and player mechanics.
 - [ ] p_tick.v - Game ticker integration
 
 #### 2.2 Map Objects
-- [ ] p_mobj.v - Complete mobj spawning/despawning
-- [ ] p_mobj.v - Mobj state machine
-- [ ] p_mobj.v - Mobj thinker
+- [x] p_mobj.v - Complete mobj spawning/despawning
+- [x] p_mobj.v - Mobj state machine
+- [x] p_mobj.v - Mobj thinker
 
 #### 2.3 Map & Collision
 - [x] p_map.v - Movement collision detection

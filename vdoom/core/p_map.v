@@ -123,14 +123,14 @@ pub fn p_try_move(thing &Mobj, x Fixed, y Fixed) bool {
 			return false
 		}
 	}
-	p_unset_thing_position(voidptr(thing))
+	p_unset_thing_position_impl(thing)
 	unsafe {
 		thing.floorz = tmfloorz
 		thing.ceilingz = tmceilingz
 		thing.x = x
 		thing.y = y
 	}
-	p_set_thing_position(voidptr(thing))
+	p_set_thing_position_impl(thing)
 	if (thing.flags & (u32(mf_teleport) | u32(mf_noclip))) != 0 {
 		return true
 	}
@@ -178,7 +178,7 @@ pub fn p_teleport_move(thing &Mobj, x Fixed, y Fixed) bool {
 			}
 		}
 	}
-	p_unset_thing_position(voidptr(thing))
+	p_unset_thing_position_impl(thing)
 	unsafe {
 		thing.floorz = tmfloorz
 		thing.ceilingz = tmceilingz

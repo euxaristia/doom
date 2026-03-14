@@ -186,8 +186,14 @@ pub fn p_path_traverse(x1 Fixed, y1 Fixed, x2 Fixed, y2 Fixed, flags int, trav T
 	_ = x1; _ = y1; _ = x2; _ = y2; _ = flags; _ = trav
 	return false
 }
-pub fn p_unset_thing_position(thing voidptr) { _ = thing }
-pub fn p_set_thing_position(thing voidptr) { _ = thing }
+pub fn p_unset_thing_position(thing voidptr) { 
+	if thing == unsafe { nil } { return }
+	p_unset_thing_position_impl(unsafe { &Mobj(thing) })
+}
+pub fn p_set_thing_position(thing voidptr) { 
+	if thing == unsafe { nil } { return }
+	p_set_thing_position_impl(unsafe { &Mobj(thing) })
+}
 
 // P_MAP - implementations in p_map.v
 pub fn p_check_position(thing voidptr, x Fixed, y Fixed) bool {
