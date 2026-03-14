@@ -40,9 +40,9 @@ Implement the main game loop and player mechanics.
 ### Tasks
 
 #### 2.1 Player System
-- [ ] p_user.v - Complete player movement physics
-- [ ] p_pspr.v - Weapon sprite system
-- [ ] p_tick.v - Game ticker integration
+- [x] p_user.v - Complete player movement physics
+- [x] p_pspr.v - Weapon sprite system
+- [x] p_tick.v - Game ticker integration
 
 #### 2.2 Map Objects
 - [x] p_mobj.v - Complete mobj spawning/despawning
