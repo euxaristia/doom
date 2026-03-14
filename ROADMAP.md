@@ -7,11 +7,12 @@ A phased approach to translating crispy-doom from C to V.
 - **110+ V files** in `vdoom/core/`
 - **72 C files** in `crispy-doom/src/doom/`
 - ~95% complete for core game structures
-- ~70% complete for actual game logic
+- ~80% complete for actual game logic
 - Phase 2: Core Game Logic - COMPLETED
 - Phase 3: Rendering Engine - COMPLETED
 - Phase 4: Audio System - COMPLETED
-- Phase 5: User Interface (in progress)
+- Phase 5: User Interface - COMPLETED
+- Phase 6: Game Features (in progress)
 
 ## Phase 1: Foundation (COMPLETED)
 
@@ -118,7 +119,7 @@ Implement sound and music playback.
 
 ---
 
-## Phase 5: User Interface
+## Phase 5: User Interface (COMPLETED)
 
 ### Goals
 Implement menus, HUD, and input.
@@ -126,20 +127,20 @@ Implement menus, HUD, and input.
 ### Tasks
 
 #### 5.1 Menus
-- [ ] m_menu.v - Main menu
-- [ ] m_menu.v - Options menu
-- [ ] m_menu.v - Save/load menus
+- [x] m_menu.v - Main menu
+- [x] m_menu.v - Options menu
+- [x] m_menu.v - Save/load menus
 
 #### 5.2 HUD
-- [ ] st_stuff.v - Status bar
-- [ ] hu_stuff.v - Heads-up display
+- [x] st_stuff.v - Status bar
+- [x] hu_stuff.v - Heads-up display
 
 #### 5.3 Input
-- [ ] Input event handling
-- [ ] Keyboard/mouse/joystick
+- [x] Input event handling
+- [x] Keyboard/mouse/joystick
 
 #### 5.4 Automap
-- [ ] am_map.v - Auto-map
+- [x] am_map.v - Auto-map
 
 **Estimated: 3-4 weeks**
 
