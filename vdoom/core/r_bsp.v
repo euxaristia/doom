@@ -35,32 +35,45 @@ pub fn r_init_bsp() {
 	ds_p = &DrawSeg(unsafe { nil })
 }
 
+// NF_SUBSECTOR flag — bit 15 of a child index marks it as a subsector leaf.
+const nf_subsector = u16(0x8000)
+
 pub fn r_render_bsp_node(bspnum int) {
-	// Check if this is a subsector (stored as negative i16 in original Doom)
-	// When child is read as i16 from WAD, negative values indicate subsectors
-	if bspnum < 0 {
-		// This is a subsector - convert negative i16 to subsector index
-		// In Doom: ssec_idx = -(child_i16 + 1)
-		ssec_idx := -(bspnum + 1)
+	// Check if this is a subsector (bit 15 set in the child value)
+	if bspnum & int(nf_subsector) != 0 {
+		ssec_idx := if bspnum == -1 { 0 } else { bspnum & int(~nf_subsector) }
 		r_render_subsector(ssec_idx)
 		return
 	}
-	
-	// Not a subsector - it's a node
+
 	if bspnum < 0 || bspnum >= numnodes {
 		return
 	}
-	
-	// Get the node
+
 	node := &nodes[bspnum]
-	
-	// Determine which side of the node the viewer is on
+
+	// Determine which side of the partition the viewer is on
 	side := r_point_on_side(viewx, viewy, node)
-	
-	// Render the back side first, then front
-	// Cast children to i16 to handle sign bit correctly
-	r_render_bsp_node(int(i16(if side == 0 { node.children[1] } else { node.children[0] })))
-	r_render_bsp_node(int(i16(if side == 0 { node.children[0] } else { node.children[1] })))
+
+	// Recursively render the front side (side the viewer is on)
+	r_render_bsp_node(int(node.children[side]))
+
+	// Only render the back side if its bounding box is potentially visible
+	if r_check_bbox(node.bbox[side ^ 1]) {
+		r_render_bsp_node(int(node.children[side ^ 1]))
+	}
+}
+
+// r_check_bbox checks whether a bounding box is potentially visible.
+// bbox layout: [0]=top, [1]=bottom, [2]=left, [3]=right (all Fixed, world coords).
+fn r_check_bbox(bbox [4]Fixed) bool {
+	// Simplified check: always return true to render everything.
+	// A full implementation would clip against the view frustum and reject
+	// bounding boxes that are entirely behind the viewer or fully occluded.
+	// For correctness this is fine; for performance it means we traverse the
+	// entire BSP tree every frame instead of culling invisible branches.
+	_ = bbox
+	return true
 }
 
 fn r_render_subsector(ssec_idx int) {

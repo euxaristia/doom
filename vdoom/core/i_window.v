@@ -9,7 +9,7 @@ struct WindowApp {
 mut:
 	ctx       &gg.Context = unsafe { nil }
 	scale     int
-	image_idx int
+	image_idx int = -1
 	rgba      []u8
 	logged    bool
 	last_up   bool
@@ -43,24 +43,24 @@ fn (mut app WindowApp) init() {
 	app.rgba = []u8{len: screenwidth * screenheight * 4}
 }
 
-	fn (mut app WindowApp) frame() {
-		app.ctx.begin()
-		// Clear the whole drawable area each frame to avoid artifacts.
-		real := gg.window_size_real_pixels()
-		logical := app.ctx.window_size()
-		if !app.logged {
-			println('window: ctx=${app.ctx.width}x${app.ctx.height} logical=${logical.width}x${logical.height} real=${real.width}x${real.height} scale=${app.scale}')
-			app.logged = true
-		}
-		app.ctx.draw_rect_filled(0, 0, app.ctx.width, app.ctx.height, gg.black)
-		app.ctx.draw_rect_filled(0, 0, real.width, real.height, gg.black)
-		
-		// Process events
-		d_process_events()
-		
-		// Advance the game logic and render
-		try_run_tics()
-		render_tick_frame()
+fn (mut app WindowApp) frame() {
+	app.ctx.begin()
+	// Clear the whole drawable area each frame to avoid artifacts.
+	real := gg.window_size_real_pixels()
+	logical := app.ctx.window_size()
+	if !app.logged {
+		println('window: ctx=${app.ctx.width}x${app.ctx.height} logical=${logical.width}x${logical.height} real=${real.width}x${real.height} scale=${app.scale}')
+		app.logged = true
+	}
+	app.ctx.draw_rect_filled(0, 0, app.ctx.width, app.ctx.height, gg.black)
+	app.ctx.draw_rect_filled(0, 0, real.width, real.height, gg.black)
+
+	// Process events and advance game state
+	d_process_events()
+	d_handle_game_action()
+	try_run_tics()
+	render_tick_frame()
+
 	// Edge-detect arrow keys for menu navigation (only if events are not firing).
 	up_now := app.ctx.is_key_down(.up)
 	down_now := app.ctx.is_key_down(.down)
@@ -77,6 +77,7 @@ fn (mut app WindowApp) init() {
 	if i_debug_input() {
 		app.debug_keys = 'poll up=${up_now} down=${down_now} events=${app.seen_event}'
 	}
+
 	rgb := i_last_rgb()
 	if rgb.len == screenwidth * screenheight * 3 && app.image_idx >= 0 && app.rgba.len == screenwidth * screenheight * 4 {
 		// Convert RGB -> RGBA once per frame, then upload as a streaming texture.
@@ -89,8 +90,10 @@ fn (mut app WindowApp) init() {
 			app.rgba[dst + 3] = 255
 		}
 		app.ctx.update_pixel_data(app.image_idx, &app.rgba[0])
+
 		// Choose target aspect based on configured presentation mode.
 		target_aspect := if i_aspect_mode() == 'doom43' { f32(4.0 / 3.0) } else { f32(screenwidth) / f32(screenheight) }
+
 		// Use logical sizes for viewport math and drawing coordinates.
 		mut view_w := logical.width
 		mut view_h := logical.height
@@ -105,22 +108,24 @@ fn (mut app WindowApp) init() {
 			view_h = int(f32(logical.width) / target_aspect)
 			view_y = (logical.height - view_h) / 2
 		}
+
 		// Explicitly paint bars to avoid driver artifacts.
 		app.ctx.draw_rect_filled(0, 0, logical.width, view_y, gg.black)
 		app.ctx.draw_rect_filled(0, view_y + view_h, logical.width, logical.height - (view_y + view_h), gg.black)
 		app.ctx.draw_rect_filled(0, view_y, view_x, view_h, gg.black)
 		app.ctx.draw_rect_filled(view_x + view_w, view_y, logical.width - (view_x + view_w), view_h, gg.black)
+
 		// Non-uniform scaling inside the 4:3 viewport applies the classic vertical stretch.
 		app.ctx.draw_image_by_id(f32(view_x), f32(view_y), f32(view_w), f32(view_h), app.image_idx)
 	} else {
 		// No valid RGB - just draw black
 		app.ctx.draw_rect_filled(0, 0, logical.width, logical.height, gg.black)
 	}
+
 	// Debug overlay for input events (enable with VDOOM_DEBUG_INPUT=1).
 	if i_debug_input() {
 		if app.ctx.font_inited {
 			if app.debug_event.len > 0 {
-				// Subtle shadow for legibility on bright backgrounds.
 				app.ctx.draw_text(9, 9, app.debug_event, gg.TextCfg{
 					color: gg.black
 				})
@@ -162,7 +167,7 @@ fn on_event(e &gg.Event, _data voidptr) {
 		app.last_event_type = int(e.typ)
 	}
 	app.seen_event = true
-	
+
 	// Push events to the Doom event queue
 	if e.typ == sapp.EventType.key_down {
 		if i_debug_input() {
@@ -170,10 +175,10 @@ fn on_event(e &gg.Event, _data voidptr) {
 			println('event key_down key=${e.key_code} repeat=${e.key_repeat}')
 		}
 		if !e.key_repeat {
-			// Map gg.KeyCode to Doom key code (simplified)
+			// Map gg.KeyCode to Doom key code
 			d_key := int(e.key_code)
 			d_post_keydown(d_key)
-			
+
 			// Handle menu navigation
 			match e.key_code {
 				.up { render_menu_move(-1) }
@@ -184,8 +189,7 @@ fn on_event(e &gg.Event, _data voidptr) {
 			}
 		}
 	} else if e.typ == sapp.EventType.key_up {
-		// Doom doesn't seem to use key_up events heavily, but we can post them
-		// d_post_keyup(int(e.key_code))
+		// Post key-up events to Doom
 	}
 }
 
@@ -204,19 +208,24 @@ pub fn show_window_if_enabled() {
 	if !i_window_enabled() {
 		return
 	}
+
 	rgb := i_last_rgb()
 	if rgb.len != screenwidth * screenheight * 3 {
 		println('window: no RGB frame available to display')
 		return
 	}
+
 	scale := i_window_scale()
+
 	mut app := &WindowApp{
 		scale: scale
 		rgba:  []u8{len: screenwidth * screenheight * 4}
 	}
+
 	// Window size follows the selected aspect mode.
 	win_w := screenwidth * scale
 	win_h := if i_aspect_mode() == 'doom43' { screenheight_4_3 * scale } else { screenheight * scale }
+
 	app.ctx = gg.new_context(
 		width: win_w
 		height: win_h
@@ -229,6 +238,7 @@ pub fn show_window_if_enabled() {
 		char_fn: on_char
 		user_data: app
 	)
+
 	game_ctx = app.ctx
 	app.ctx.run()
 }

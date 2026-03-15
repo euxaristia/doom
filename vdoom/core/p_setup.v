@@ -343,57 +343,49 @@ pub fn p_load_subsectors(lump int) {
 pub fn p_load_nodes(lump int) {
 	wad := load_wad_with_options(iwad_path, true, false) or { return }
 	data := wad.read_lump_num(lump) or { return }
-	
-	// Nodes are 28 bytes each
-	if data.len >= 28 {
-		numnodes = (data.len - 8) / 28 + 1
-		if numnodes * 28 + 8 > data.len {
-			numnodes = data.len / 28
-		}
-	} else {
-		numnodes = 0
+
+	// Doom mapnode_t is 28 bytes: x(2) y(2) dx(2) dy(2) bbox[2][4](16) children[2](4)
+	numnodes = data.len / 28
+	if numnodes <= 0 {
+		return
 	}
-	
-		if numnodes > 0 {
-		nodes = []Node{len: numnodes}
-		
-		for i in 0 .. numnodes {
-			offset := 8 + i * 28
-			if offset + 28 > data.len {
-				break
+
+	nodes = []Node{len: numnodes}
+
+	for i in 0 .. numnodes {
+		offset := i * 28
+		if offset + 28 > data.len {
+			break
+		}
+
+		// Partition line origin and direction (i16 -> Fixed via << 16)
+		x := i16(data[offset]) | (i16(data[offset + 1]) << 8)
+		y := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
+		dx := i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
+		dy := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
+
+		nodes[i] = Node{
+			x: Fixed(int(x) << frac_bits)
+			y: Fixed(int(y) << frac_bits)
+			dx: Fixed(int(dx) << frac_bits)
+			dy: Fixed(int(dy) << frac_bits)
+		}
+
+		// Bounding boxes: bbox[2][4] — 4 i16 values per child (top, bottom, left, right)
+		// Stored at bytes 8..23 in the node record
+		for j in 0 .. 2 {
+			for k in 0 .. 4 {
+				box_offset := offset + 8 + j * 8 + k * 2
+				val := i16(data[box_offset]) | (i16(data[box_offset + 1]) << 8)
+				nodes[i].bbox[j][k] = Fixed(int(val) << frac_bits)
 			}
-			
-			x := i16(data[offset]) | (i16(data[offset + 1]) << 8)
-			y := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
-			dx := i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
-			dy := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
-			
-			nodes[i] = Node{
-				x: Fixed(x)
-				y: Fixed(y)
-				dx: Fixed(dx)
-				dy: Fixed(dy)
-			}
-			
-			// Read children indices (2 bytes each) - at bytes 24-27 in node
-			for j in 0 .. 2 {
-				child_offset := offset + 24 + j * 2
-				if child_offset + 1 < data.len {
-					child := u16(data[child_offset]) | (u16(data[child_offset + 1]) << 8)
-					nodes[i].children[j] = child
-				}
-			}
-			
-			// Read bounding boxes (4 bytes each, 2 ints)
-			for j in 0 .. 2 {
-				box_offset := offset + 12 + j * 4
-				if box_offset + 3 < data.len {
-					min := i16(data[box_offset]) | (i16(data[box_offset + 1]) << 8)
-					max := i16(data[box_offset + 2]) | (i16(data[box_offset + 3]) << 8)
-					nodes[i].bbox[j][0] = Fixed(min)
-					nodes[i].bbox[j][1] = Fixed(max)
-				}
-			}
+		}
+
+		// Children indices (2 u16 values) at bytes 24-27
+		for j in 0 .. 2 {
+			child_offset := offset + 24 + j * 2
+			child := u16(data[child_offset]) | (u16(data[child_offset + 1]) << 8)
+			nodes[i].children[j] = child
 		}
 	}
 }

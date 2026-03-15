@@ -134,13 +134,13 @@ pub fn r_render_player_view(player voidptr) {
 
 fn r_setup_frame(player &Player) {
 	unsafe {
-		viewx := player.mo.x
-		viewy := player.mo.y
-		viewz := player.viewz
-		viewangle := player.mo.angle
-		
-		viewcos = fixed_cos(viewangle)
-		viewsin = fixed_sin(viewangle)
+		viewx = player.mo.x
+		viewy = player.mo.y
+		viewz = player.viewz
+		viewangle = int(player.mo.angle)
+
+		viewcos = fixed_cos(u32(viewangle))
+		viewsin = fixed_sin(u32(viewangle))
 	}
 }
 
