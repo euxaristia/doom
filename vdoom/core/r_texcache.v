@@ -215,10 +215,7 @@ pub fn get_flat(name string) []u8 {
 	if key in flat_cache {
 		return flat_cache[key]
 	}
-	if iwad_path.len == 0 {
-		return []u8{}
-	}
-	wad := load_wad_with_options(iwad_path, true, true) or { return []u8{} }
+	wad := get_iwad() or { return []u8{} }
 	data := wad.read_lump(key) or { return []u8{} }
 	if data.len >= flat_bytes {
 		flat_cache[key] = data[..flat_bytes]
@@ -230,10 +227,7 @@ pub fn get_flat(name string) []u8 {
 // get_flat_by_num loads a flat by its numeric index.
 // We need to find the flat name from the WAD flat list.
 pub fn get_flat_by_num(num int) []u8 {
-	if iwad_path.len == 0 {
-		return []u8{}
-	}
-	wad := load_wad_with_options(iwad_path, true, true) or { return []u8{} }
+	wad := get_iwad() or { return []u8{} }
 	// Find F_START marker
 	mut f_start := -1
 	mut f_end := -1
