@@ -156,7 +156,10 @@ fn p_mobj_thinker_fn(mobj voidptr) {
 }
 
 pub fn p_set_thing_position_impl(m &Mobj) {
-	_ = m
+	ss := r_point_in_subsector(m.x, m.y)
+	unsafe {
+		m.subsector = voidptr(ss)
+	}
 }
 
 pub fn p_unset_thing_position_impl(m &Mobj) {

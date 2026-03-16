@@ -97,6 +97,34 @@ __global seg_null_reject = 0
 __global seg_behind_reject = 0
 __global seg_offscreen_reject = 0
 
+// shade_color applies distance-based darkening using the COLORMAP.
+fn shade_color(base_idx u8, light int, depth Fixed) u8 {
+	if colormap_data.len < 256 {
+		return base_idx
+	}
+	maps := colormap_data.len / 256
+	if maps <= 0 {
+		return base_idx
+	}
+	// Compute light level from sector light and depth
+	// depth is in fixed-point; convert to map units
+	dist := int(depth) >> frac_bits
+	// Doom-style light diminishing: further = darker
+	mut level := (255 - light) / 8
+	level += dist / 48
+	if level < 0 {
+		level = 0
+	} else if level >= maps {
+		level = maps - 1
+	}
+	off := level * 256
+	idx := int(base_idx)
+	if idx < 0 || idx >= 256 || off + idx >= colormap_data.len {
+		return base_idx
+	}
+	return colormap_data[off + idx]
+}
+
 // r_render_seg projects a wall segment to screen space and draws it.
 fn r_render_seg(seg &Seg) {
 	seg_total_calls++
@@ -204,20 +232,11 @@ fn r_render_seg(seg &Seg) {
 		back = seg.backsector
 	}
 
-	// Colors
-	light := int(front.lightlevel)
-	mut wall_color := u8(96)
-	if light < 64 {
-		wall_color = 0
-	} else if light < 128 {
-		wall_color = 96
-	} else if light < 192 {
-		wall_color = 100
-	} else {
-		wall_color = 104
-	}
-	floor_color := u8(int(front.floorpic) & 0x3f + 64)
-	ceil_color := u8(int(front.ceilingpic) & 0x3f + 128)
+	// Base palette indices — chosen to look distinctive in Doom's PLAYPAL
+	base_light := int(front.lightlevel)
+	wall_base := u8(103)  // brown wall tone
+	floor_base := u8(121) // gray-green floor
+	ceil_base := u8(199)  // blue-gray ceiling
 
 	// Draw columns
 	span := rx - lx
@@ -233,6 +252,11 @@ fn r_render_seg(seg &Seg) {
 		if depth <= 0 {
 			continue
 		}
+
+		// Shade colors based on depth and sector light
+		wall_color := shade_color(wall_base, base_light, depth)
+		floor_color := shade_color(floor_base, base_light, depth)
+		ceil_color := shade_color(ceil_base, base_light, depth)
 
 		// Project heights to screen y
 		// screen_y = center - (height - viewz) * center_x / depth

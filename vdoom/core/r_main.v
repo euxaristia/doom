@@ -84,9 +84,20 @@ pub fn r_scale_from_global_angle(visangle int) Fixed {
 }
 
 pub fn r_point_in_subsector(x Fixed, y Fixed) &Subsector {
-	_ = x
-	_ = y
-	return unsafe { nil }
+	if numnodes == 0 {
+		return unsafe { &subsectors[0] }
+	}
+	mut nodenum := numnodes - 1
+	for nodenum & int(nf_subsector) == 0 {
+		node := &nodes[nodenum]
+		side := r_point_on_side(x, y, node)
+		nodenum = int(node.children[side])
+	}
+	ssidx := nodenum & int(~nf_subsector)
+	if ssidx < 0 || ssidx >= numsubsectors {
+		return unsafe { &subsectors[0] }
+	}
+	return unsafe { &subsectors[ssidx] }
 }
 
 pub fn r_add_point_to_box(x int, y int, mut box []Fixed) {
