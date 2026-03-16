@@ -275,6 +275,12 @@ fn on_event(e &gg.Event, _data voidptr) {
 	}
 	app.seen_event = true
 
+	// Handle window close button
+	if e.typ == sapp.EventType.quit_requested {
+		d_post_quit_event()
+		return
+	}
+
 	if e.typ == sapp.EventType.key_down {
 		if i_debug_input() {
 			app.debug_flash = 10
