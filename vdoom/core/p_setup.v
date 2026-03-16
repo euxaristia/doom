@@ -135,8 +135,8 @@ pub fn p_load_vertexes(lump int) {
 		x := i16(data[offset]) | (i16(data[offset + 1]) << 8)
 		y := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
 		vertexes[i] = Vertex{
-			x: Fixed(x)
-			y: Fixed(y)
+			x: Fixed(int(x) << frac_bits)
+			y: Fixed(int(y) << frac_bits)
 		}
 	}
 }
@@ -159,8 +159,8 @@ pub fn p_load_sectors(lump int) {
 		tag := i16(data[offset + 12]) | (i16(data[offset + 13]) << 8)
 		
 		sectors[i] = Sector{
-			floorheight: Fixed(floorheight)
-			ceilingheight: Fixed(ceilingheight)
+			floorheight: Fixed(int(floorheight) << frac_bits)
+			ceilingheight: Fixed(int(ceilingheight) << frac_bits)
 			floorpic: floorpic
 			ceilingpic: ceilingpic
 			lightlevel: lightlevel
@@ -187,8 +187,8 @@ pub fn p_load_sidedefs(lump int) {
 		sector_idx := i16(data[offset + 28]) | (i16(data[offset + 29]) << 8)
 		
 		sides[i] = Side{
-			textureoffset: Fixed(textureoffset)
-			rowoffset: Fixed(rowoffset)
+			textureoffset: Fixed(int(textureoffset) << frac_bits)
+			rowoffset: Fixed(int(rowoffset) << frac_bits)
 			toptexture: toptexture
 			bottomtexture: bottomtexture
 			midtexture: midtexture
@@ -299,14 +299,16 @@ pub fn p_load_segs(lump int) {
 			seg.v2 = &vertexes[v2]
 		}
 		seg.angle = angle
-		seg.offset = offset_
+		seg.offset = Fixed(int(offset_) << frac_bits)
 		
 		if linedef >= 0 && linedef < numlines {
 			seg.linedef = &lines[linedef]
 			if side == 0 {
 				seg.frontsector = seg.linedef.frontsector
+				seg.backsector = seg.linedef.backsector
 			} else {
 				seg.frontsector = seg.linedef.backsector
+				seg.backsector = seg.linedef.frontsector
 			}
 		}
 	}

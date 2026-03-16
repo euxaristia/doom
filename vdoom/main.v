@@ -256,6 +256,10 @@ fn main() {
 	} else {
 		core.render_demo_frame(mut wad)
 	}
+	// Process deferred game action (e.g. new game) so level loads
+	core.d_handle_game_action()
+	// Render a game frame to verify 3D rendering works
+	core.render_more_frames(3)
 	// Only pre-render extra frames when not using a live window, or when animating.
 	if loop_forever {
 		if show_window {

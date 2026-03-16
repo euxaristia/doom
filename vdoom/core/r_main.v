@@ -108,27 +108,31 @@ pub fn r_render_player_view(player voidptr) {
 	
 	// Setup the view frame
 	r_setup_frame(p)
-	
+
+	// Clear the screen to a dark color before rendering
+	v_clear_screen(0)
+
 	// Clear buffers
 	r_clear_clip_segs()
 	r_clear_draw_segs()
 	r_clear_planes()
 	r_clear_sprites()
-	
+
 	// Render the world
 	if numnodes == 0 {
+		i_finish_update()
 		return
 	}
-	
-	// Render the BSP tree
+
+	// Render the BSP tree (walls, floors, ceilings)
 	r_render_bsp_node(numnodes - 1)
-	
-	// Draw floors and ceilings
+
+	// Draw floors and ceilings (handled inline during BSP traversal)
 	r_draw_planes()
-	
+
 	// Draw masked elements (sprites, etc)
 	r_draw_masked()
-	
+
 	i_finish_update()
 }
 
@@ -142,6 +146,12 @@ fn r_setup_frame(player &Player) {
 		viewcos = fixed_cos(u32(viewangle))
 		viewsin = fixed_sin(u32(viewangle))
 	}
+
+	// Initialize projection constants
+	centerx = screenwidth / 2
+	centerxfrac = Fixed(centerx << frac_bits)
+	centeryfrac = Fixed((screenheight / 2) << frac_bits)
+	projection = centerxfrac
 }
 
 pub fn r_init() {}
