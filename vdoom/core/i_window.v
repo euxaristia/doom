@@ -79,7 +79,9 @@ fn (mut app WindowApp) frame() {
 	}
 
 	rgb := i_last_rgb()
-	if rgb.len == screenwidth * screenheight * 3 && app.image_idx >= 0 && app.rgba.len == screenwidth * screenheight * 4 {
+	has_valid_frame := rgb.len == screenwidth * screenheight * 3
+	
+	if has_valid_frame && app.image_idx >= 0 && app.rgba.len == screenwidth * screenheight * 4 {
 		// Convert RGB -> RGBA once per frame, then upload as a streaming texture.
 		for i := 0; i < screenwidth * screenheight; i++ {
 			src := i * 3
