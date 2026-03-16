@@ -299,36 +299,52 @@ pub fn g_build_ticcmd(mut cmd &TicCmd, maketic int) {
 		return
 	}
 
-	// Map keys to movement
-	// Doom default keys: Arrow keys for movement, Ctrl for shoot, etc.
-	// We'll use arrow keys for movement.
-	
-	// Check for forward/backward (Up/Down)
-	if game_ctx.is_key_down(.up) {
-		cmd.forwardmove = 127
-	} else if game_ctx.is_key_down(.down) {
-		cmd.forwardmove = -127
+	// Standard Doom key layout:
+	// Left/Right = turn, Up/Down = forward/back
+	// Alt+Left/Right = strafe, Space = use, Ctrl = shoot
+	mut turn_speed := i16(1280)
+	mut forward_speed := i8(50)
+	if game_ctx.is_key_down(.left_shift) || game_ctx.is_key_down(.right_shift) {
+		turn_speed = 2560
+		forward_speed = 127
 	}
 
-	// Check for strafe (Left/Right)
+	// Forward/backward
+	if game_ctx.is_key_down(.up) || game_ctx.is_key_down(.w) {
+		cmd.forwardmove = forward_speed
+	} else if game_ctx.is_key_down(.down) || game_ctx.is_key_down(.s) {
+		cmd.forwardmove = -forward_speed
+	}
+
+	// Turn or strafe
+	strafe := game_ctx.is_key_down(.left_alt) || game_ctx.is_key_down(.right_alt)
 	if game_ctx.is_key_down(.left) {
-		cmd.sidemove = -127
+		if strafe {
+			cmd.sidemove = -forward_speed
+		} else {
+			cmd.angleturn = turn_speed
+		}
 	} else if game_ctx.is_key_down(.right) {
-		cmd.sidemove = 127
-	}
-
-	// Check for turn (z/x keys)
-	if game_ctx.is_key_down(.z) {
-		if game_ctx.is_key_down(.left) {
-			cmd.angleturn = 127
-		} else if game_ctx.is_key_down(.right) {
-			cmd.angleturn = -127
+		if strafe {
+			cmd.sidemove = forward_speed
+		} else {
+			cmd.angleturn = -turn_speed
 		}
 	}
-	
-	// Check for shoot (space)
+
+	// WASD strafe
+	if game_ctx.is_key_down(.a) {
+		cmd.sidemove = -forward_speed
+	} else if game_ctx.is_key_down(.d) {
+		cmd.sidemove = forward_speed
+	}
+
+	// Use (space) and attack (ctrl)
 	if game_ctx.is_key_down(.space) {
-		cmd.buttons = 1 // BT_ATTACK
+		cmd.buttons = 2 // BT_USE
+	}
+	if game_ctx.is_key_down(.left_control) || game_ctx.is_key_down(.right_control) {
+		cmd.buttons |= 1 // BT_ATTACK
 	}
 }
 

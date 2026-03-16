@@ -146,6 +146,13 @@ pub fn p_player_think(player &Player) {
 	unsafe {
 		player.mo.x += player.mo.momx
 		player.mo.y += player.mo.momy
+		// Update subsector and floor/ceiling after horizontal movement
+		p_set_thing_position_impl(player.mo)
+		ss := &Subsector(player.mo.subsector)
+		if ss != nil && ss.sector != nil {
+			player.mo.floorz = ss.sector.floorheight
+			player.mo.ceilingz = ss.sector.ceilingheight
+		}
 		player.mo.z += player.mo.momz
 		if player.mo.z > player.mo.floorz && player.mo.momz != 0 {
 			player.mo.momz -= gravity >> 4
