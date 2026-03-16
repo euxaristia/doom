@@ -161,6 +161,8 @@ pub fn p_player_think(player &Player) {
 				}
 			}
 		}
+		// Check for special things (item pickup)
+		p_check_player_pickup(player)
 		// Update subsector and floor/ceiling after horizontal movement
 		ss := &Subsector(player.mo.subsector)
 		if ss != nil && ss.sector != nil {

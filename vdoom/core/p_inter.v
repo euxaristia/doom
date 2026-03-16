@@ -1,8 +1,85 @@
 module core
 
 // Max ammo amounts per ammo type
-const max_ammo_values = [200, 50, 300, 50]!  // clip, shell, cell, misl
-const clip_ammo_values = [10, 4, 20, 1]!     // per pickup
+const max_ammo_values = [200, 50, 300, 50]! // clip, shell, cell, misl
+const clip_ammo_values = [10, 4, 20, 1]! // per pickup
+
+// DOOM Thing Types for pickupable items
+const thing_clip = 2001
+const thing_clipbox = 2002
+const thing_shell = 2003
+const thing_shellbox = 2004
+const thing_rocket = 2005
+const thing_rocketbox = 2006
+const thing_cell = 2007
+const thing_cellpack = 2008
+const thing_stimpack = 2011
+const thing_medikit = 2012
+const thing_soulsphere = 2013
+const thing_megasphere = 2014
+const thing_backpack = 2015
+const thing_bfg9000 = 2046
+const thing_chaingun = 2047
+const thing_chainsaw = 2045
+const thing_rocketlauncher = 2048
+const thing_plasmarifle = 2049
+const thing_shotgun = 2045
+const thing_supershotgun = 2046
+
+// Keys
+const thing_bluecard = 5
+const thing_yellowcard = 6
+const thing_redcard = 13
+const thing_blueskull = 40
+const thing_yellowskull = 39
+const thing_redskull = 38
+
+// Armor
+const thing_greenarmor = 2018
+const thing_bluearmor = 2019
+
+// Powerups
+const thing_invulnerability = 2022
+const thing_berserk = 2023
+const thing_invisibility = 2024
+const thing_radsuit = 2025
+const thing_map = 2026
+const thing_lightamp = 2027
+
+// Check for special things in player's sector and handle pickup
+pub fn p_check_player_pickup(player &Player) {
+	if player == unsafe { nil } || player.mo == unsafe { nil } {
+		return
+	}
+	mo := player.mo
+	if mo.subsector == unsafe { nil } {
+		return
+	}
+	ss := unsafe { &Subsector(mo.subsector) }
+	if ss == unsafe { nil } || ss.sector == unsafe { nil } {
+		return
+	}
+	sec := ss.sector
+	if sec.thinglist == unsafe { nil } {
+		return
+	}
+	// Iterate through things in the sector
+	mut thing := sec.thinglist
+	for thing != unsafe { nil } {
+		if (thing.flags & mf_special) != 0 && (thing.flags & mf_pickup) != 0 {
+			// Check if player is close enough to pick up
+			dx := thing.x - mo.x
+			dy := thing.y - mo.y
+			dist_sq := (dx >> frac_bits) * (dx >> frac_bits) + (dy >> frac_bits) * (dy >> frac_bits)
+			// Use radius for pickup check (combine radii, convert back to fixed)
+			radius_sum := (mo.radius + thing.radius) >> frac_bits
+			if dist_sq <= radius_sum * radius_sum {
+				p_touch_thing(thing, mo)
+			}
+		}
+		thing = thing.snext
+	}
+}
 
 pub fn p_give_ammo(player &Player, ammo int, count int) bool {
 	if ammo < 0 || ammo >= numammo {
@@ -313,6 +390,159 @@ pub fn a_minotaur_sonar(actor &Mobj) {
 	_ = actor
 }
 
-pub fn p_touch_thing(thing &Mobj) {
-	_ = thing
+pub fn p_touch_thing(thing &Mobj, toucher &Mobj) {
+	if thing == unsafe { nil } || toucher == unsafe { nil } {
+		return
+	}
+	// Not pickupable?
+	if (thing.flags & mf_special) == 0 {
+		return
+	}
+	// Get player from toucher
+	mut player := unsafe { &Player(toucher.player) }
+	if player == unsafe { nil } {
+		return
+	}
+	// Dead thing touching
+	if toucher.health <= 0 {
+		return
+	}
+	// Check reachability
+	delta := thing.z - toucher.z
+	if delta > toucher.height || delta < -8 * frac_unit {
+		return
+	}
+	// Get the thing type to identify the item
+	mobj_type := thing.mobj_type
+	// Handle pickup based on thing type
+	match mobj_type {
+		// Health
+		thing_stimpack {
+			p_give_health(player, 10, 100)
+		}
+		thing_medikit {
+			p_give_health(player, 25, 100)
+		}
+		thing_soulsphere {
+			p_give_health(player, 100, 200)
+		}
+		thing_megasphere {
+			p_give_health(player, 200, 200)
+			p_give_armor(player, 200)
+		}
+		// Armor
+		thing_greenarmor {
+			p_give_armor(player, 100)
+		}
+		thing_bluearmor {
+			p_give_armor(player, 200)
+		}
+		// Ammo - Clip
+		thing_clip {
+			dropped := (thing.flags & mf_dropped) != 0
+			count := if dropped { 5 } else { 10 }
+			p_give_ammo(player, int(AmmoType.clip), count)
+		}
+		thing_clipbox {
+			p_give_ammo(player, int(AmmoType.clip), 50)
+		}
+		// Ammo - Shell
+		thing_shell {
+			dropped := (thing.flags & mf_dropped) != 0
+			count := if dropped { 2 } else { 4 }
+			p_give_ammo(player, int(AmmoType.shell), count)
+		}
+		thing_shellbox {
+			p_give_ammo(player, int(AmmoType.shell), 20)
+		}
+		// Ammo - Rocket
+		thing_rocket {
+			p_give_ammo(player, int(AmmoType.misl), 1)
+		}
+		thing_rocketbox {
+			p_give_ammo(player, int(AmmoType.misl), 5)
+		}
+		// Ammo - Cell
+		thing_cell {
+			p_give_ammo(player, int(AmmoType.cell), 20)
+		}
+		thing_cellpack {
+			p_give_ammo(player, int(AmmoType.cell), 100)
+		}
+		// Weapons
+		thing_shotgun {
+			if player.weaponowned[int(WeaponType.shotgun)] == 0 {
+				player.weaponowned[int(WeaponType.shotgun)] = 1
+				player.pendingweapon = WeaponType.shotgun
+			}
+		}
+		thing_supershotgun {
+			if player.weaponowned[int(WeaponType.supershotgun)] == 0 {
+				player.weaponowned[int(WeaponType.supershotgun)] = 1
+				player.pendingweapon = WeaponType.supershotgun
+			}
+		}
+		thing_chaingun {
+			if player.weaponowned[int(WeaponType.chaingun)] == 0 {
+				player.weaponowned[int(WeaponType.chaingun)] = 1
+				player.pendingweapon = WeaponType.chaingun
+			}
+		}
+		thing_rocketlauncher {
+			if player.weaponowned[int(WeaponType.missile)] == 0 {
+				player.weaponowned[int(WeaponType.missile)] = 1
+				player.pendingweapon = WeaponType.missile
+			}
+		}
+		thing_plasmarifle {
+			if player.weaponowned[int(WeaponType.plasma)] == 0 {
+				player.weaponowned[int(WeaponType.plasma)] = 1
+				player.pendingweapon = WeaponType.plasma
+			}
+		}
+		thing_bfg9000 {
+			if player.weaponowned[int(WeaponType.bfg)] == 0 {
+				player.weaponowned[int(WeaponType.bfg)] = 1
+				player.pendingweapon = WeaponType.bfg
+			}
+		}
+		thing_chainsaw {
+			if player.weaponowned[int(WeaponType.chainsaw)] == 0 {
+				player.weaponowned[int(WeaponType.chainsaw)] = 1
+				player.pendingweapon = WeaponType.chainsaw
+			}
+		}
+		thing_backpack {
+			p_give_backpack(player)
+			for i in 0 .. numammo {
+				p_give_ammo(player, i, 1)
+			}
+		}
+		// Powerups
+		thing_invulnerability {
+			p_give_power(player, int(PowerType.invulnerability))
+		}
+		thing_berserk {
+			p_give_power(player, int(PowerType.strength))
+		}
+		thing_invisibility {
+			p_give_power(player, int(PowerType.invisibility))
+		}
+		thing_radsuit {
+			p_give_power(player, int(PowerType.ironfeet))
+		}
+		thing_map {
+			p_give_power(player, int(PowerType.allmap))
+		}
+		thing_lightamp {
+			p_give_power(player, int(PowerType.infrared))
+		}
+		else {
+			// Unknown item type - just ignore
+		}
+	}
+	// Remove the thing if it's a pickup
+	if (thing.flags & mf_pickup) != 0 {
+		p_remove_mobj(thing)
+	}
 }

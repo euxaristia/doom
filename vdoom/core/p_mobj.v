@@ -248,6 +248,20 @@ pub fn p_remove_player_mobj(mobj &Mobj) {
 	_ = mobj
 }
 
+pub fn p_remove_mobj(mobj &Mobj) {
+	if mobj == unsafe { nil } {
+		return
+	}
+	// Unlink from sector
+	// Unlink from blockmap
+	// Remove from thing lists
+	// Mark as invalid
+	unsafe {
+		// Clear thinker's function to stop processing
+		mobj.thinker.function = ThinkT{}
+	}
+}
+
 pub fn p_spawn_missile(source &Mobj, dest &Mobj, missiletype int) &Mobj {
 	_ = source
 	_ = dest
