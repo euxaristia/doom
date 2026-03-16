@@ -16,8 +16,33 @@ __global save_char_index = 0
 __global menu_ticks = 0
 
 pub fn m_responder(ev &Event) bool {
-	_ = ev
-	return false
+	if !menuactive {
+		return false
+	}
+	if ev.typ != .keydown {
+		return false
+	}
+	match ev.data1 {
+		key_escape, key_backspace {
+			m_close_control_panel()
+			return true
+		}
+		key_uparrow {
+			render_menu_move(-1)
+			return true
+		}
+		key_downarrow {
+			render_menu_move(1)
+			return true
+		}
+		key_enter {
+			render_menu_activate()
+			return true
+		}
+		else {
+			return false
+		}
+	}
 }
 
 pub fn m_ticker() {

@@ -383,7 +383,43 @@ pub fn g_ticker() {
 }
 
 pub fn g_responder(ev &Event) bool {
-	_ = ev
+	if gamestate != .level {
+		return false
+	}
+	if ev.typ == .keydown {
+		// Weapon switching via number keys
+		weapon := match ev.data1 {
+			int(`1`) { int(WeaponType.fist) }
+			int(`2`) { int(WeaponType.pistol) }
+			int(`3`) { int(WeaponType.shotgun) }
+			int(`4`) { int(WeaponType.chaingun) }
+			int(`5`) { int(WeaponType.missile) }
+			int(`6`) { int(WeaponType.plasma) }
+			int(`7`) { int(WeaponType.bfg) }
+			int(`8`) { int(WeaponType.chainsaw) }
+			else { -1 }
+		}
+		if weapon >= 0 && consoleplayer >= 0 && consoleplayer < players.len {
+			if weapon < numweapons && players[consoleplayer].weaponowned[weapon] != 0 {
+				players[consoleplayer].pendingweapon = unsafe { WeaponType(weapon) }
+				return true
+			}
+		}
+		// Pause
+		if ev.data1 == key_pause {
+			paused = !paused
+			return true
+		}
+		// Escape opens menu
+		if ev.data1 == key_escape {
+			if menuactive {
+				m_close_control_panel()
+			} else {
+				m_start_control_panel()
+			}
+			return true
+		}
+	}
 	return false
 }
 

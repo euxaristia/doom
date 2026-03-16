@@ -232,11 +232,42 @@ fn r_render_seg(seg &Seg) {
 		back = seg.backsector
 	}
 
-	// Base palette indices — chosen to look distinctive in Doom's PLAYPAL
 	base_light := int(front.lightlevel)
-	wall_base := u8(103)  // brown wall tone
-	floor_base := u8(121) // gray-green floor
-	ceil_base := u8(199)  // blue-gray ceiling
+
+	// Get wall textures from the sidedef
+	mut mid_tex := i16(0)
+	mut upper_tex := i16(0)
+	mut lower_tex := i16(0)
+	mut tex_xoffset := Fixed(0)
+	mut tex_yoffset := Fixed(0)
+	if seg.sidedef != unsafe { nil } {
+		mid_tex = seg.sidedef.midtexture
+		upper_tex = seg.sidedef.toptexture
+		lower_tex = seg.sidedef.bottomtexture
+		tex_xoffset = seg.sidedef.textureoffset
+		tex_yoffset = seg.sidedef.rowoffset
+	}
+
+	// Load floor and ceiling flat textures
+	floor_flat := get_flat_by_num(int(front.floorpic))
+	ceil_flat := if front.ceilingpic != skyflatnum {
+		get_flat_by_num(int(front.ceilingpic))
+	} else {
+		[]u8{}
+	}
+
+	// Compute segment length for texture U coordinate
+	seg_dx := seg.v2.x - seg.v1.x
+	seg_dy := seg.v2.y - seg.v1.y
+	seg_len := p_approx_distance(seg_dx, seg_dy)
+
+	// Get wall textures once per segment
+	mut mid_wt := WallTexture{}
+	mut upper_wt := WallTexture{}
+	mut lower_wt := WallTexture{}
+	if mid_tex >= 0 { mid_wt = get_wall_texture(int(mid_tex)) }
+	if upper_tex >= 0 { upper_wt = get_wall_texture(int(upper_tex)) }
+	if lower_tex >= 0 { lower_wt = get_wall_texture(int(lower_tex)) }
 
 	// Draw columns
 	span := rx - lx
@@ -253,13 +284,7 @@ fn r_render_seg(seg &Seg) {
 			continue
 		}
 
-		// Shade colors based on depth and sector light
-		wall_color := shade_color(wall_base, base_light, depth)
-		floor_color := shade_color(floor_base, base_light, depth)
-		ceil_color := shade_color(ceil_base, base_light, depth)
-
 		// Project heights to screen y
-		// screen_y = center - (height - viewz) * center_x / depth
 		ceil_sy := half_h - int(i64(ceil_h - viewz) * i64(half_w) / i64(depth))
 		floor_sy := half_h - int(i64(floor_h - viewz) * i64(half_w) / i64(depth))
 
@@ -279,25 +304,73 @@ fn r_render_seg(seg &Seg) {
 			continue
 		}
 
+		// Texture U coordinate: interpolate along the segment
+		tex_u := fixed_mul(frac, seg_len) + seg.offset + tex_xoffset
+
+		// Inverse scale: how much of texture per screen pixel vertically
+		wall_height_pixels := bot - top
+		wall_height_world := ceil_h - floor_h
+		iscale := if wall_height_pixels > 0 {
+			Fixed(int(i64(wall_height_world) / i64(wall_height_pixels)))
+		} else {
+			Fixed(frac_unit)
+		}
+
 		if !has_back {
-			// Solid wall — draw ceiling, wall, floor, then occlude
-			if top > clip_top {
+			// CEILING flat
+			if top > clip_top && ceil_flat.len >= flat_bytes {
+				draw_flat_columns(x, clip_top, top - 1, front, ceil_flat, depth, base_light)
+			} else if top > clip_top {
 				dc_x = x
-				dc_color = ceil_color
+				dc_color = shade_color(u8(199), base_light, depth)
+				dc_source = []u8{}
+				dc_texheight = 0
 				dc_yl = clip_top
 				dc_yh = top - 1
 				r_draw_column()
 			}
 
-			dc_x = x
-			dc_color = wall_color
-			dc_yl = top
-			dc_yh = bot
-			r_draw_column()
-
-			if bot < clip_bot {
+			// WALL texture
+			if mid_wt.width > 0 {
+				u := int(tex_u >> frac_bits)
+				c := ((u % mid_wt.width) + mid_wt.width) % mid_wt.width
+				col := mid_wt.columns[c]
+				if col.len > 0 {
+					dc_x = x
+					unsafe { dc_source = col }
+					dc_texheight = col.len
+					dc_texturemid = tex_yoffset
+					dc_iscale = iscale
+					dc_yl = top
+					dc_yh = bot
+					r_draw_column()
+				} else {
+					dc_x = x
+					dc_color = shade_color(u8(103), base_light, depth)
+					dc_source = []u8{}
+					dc_texheight = 0
+					dc_yl = top
+					dc_yh = bot
+					r_draw_column()
+				}
+			} else {
 				dc_x = x
-				dc_color = floor_color
+				dc_color = shade_color(u8(103), base_light, depth)
+				dc_source = []u8{}
+				dc_texheight = 0
+				dc_yl = top
+				dc_yh = bot
+				r_draw_column()
+			}
+
+			// FLOOR flat
+			if bot < clip_bot && floor_flat.len >= flat_bytes {
+				draw_flat_columns(x, bot + 1, clip_bot, front, floor_flat, depth, base_light)
+			} else if bot < clip_bot {
+				dc_x = x
+				dc_color = shade_color(u8(121), base_light, depth)
+				dc_source = []u8{}
+				dc_texheight = 0
 				dc_yl = bot + 1
 				dc_yh = clip_bot
 				r_draw_column()
@@ -324,51 +397,200 @@ fn r_render_seg(seg &Seg) {
 
 			// Upper wall (ceiling step)
 			if bt > top {
-				dc_x = x
-				dc_color = ceil_color
-				dc_yl = clip_top
-				dc_yh = top - 1
-				r_draw_column()
+				// Ceiling flat
+				if ceil_flat.len >= flat_bytes {
+					draw_flat_columns(x, clip_top, top - 1, front, ceil_flat, depth, base_light)
+				} else if top > clip_top {
+					dc_x = x
+					dc_color = shade_color(u8(199), base_light, depth)
+					dc_source = []u8{}
+					dc_texheight = 0
+					dc_yl = clip_top
+					dc_yh = top - 1
+					r_draw_column()
+				}
 
-				dc_x = x
-				dc_color = wall_color
-				dc_yl = top
-				dc_yh = bt - 1
-				r_draw_column()
+				// Upper wall texture
+				if upper_wt.width > 0 {
+					u := int(tex_u >> frac_bits)
+					c := ((u % upper_wt.width) + upper_wt.width) % upper_wt.width
+					col := upper_wt.columns[c]
+					if col.len > 0 {
+						upper_height := bt - 1 - top
+						upper_iscale := if upper_height > 0 {
+							Fixed(int(i64(ceil_h - back_ceil) / i64(upper_height)))
+						} else {
+							Fixed(frac_unit)
+						}
+						dc_x = x
+						unsafe { dc_source = col }
+						dc_texheight = col.len
+						dc_texturemid = tex_yoffset
+						dc_iscale = upper_iscale
+						dc_yl = top
+						dc_yh = bt - 1
+						r_draw_column()
+					} else {
+						dc_x = x
+						dc_color = shade_color(u8(103), base_light, depth)
+						dc_source = []u8{}
+						dc_texheight = 0
+						dc_yl = top
+						dc_yh = bt - 1
+						r_draw_column()
+					}
+				} else {
+					dc_x = x
+					dc_color = shade_color(u8(103), base_light, depth)
+					dc_source = []u8{}
+					dc_texheight = 0
+					dc_yl = top
+					dc_yh = bt - 1
+					r_draw_column()
+				}
 
 				ceilingclip[x] = i16(bt - 1)
 			} else if top > clip_top {
-				dc_x = x
-				dc_color = ceil_color
-				dc_yl = clip_top
-				dc_yh = top - 1
-				r_draw_column()
+				if ceil_flat.len >= flat_bytes {
+					draw_flat_columns(x, clip_top, top - 1, front, ceil_flat, depth, base_light)
+				} else {
+					dc_x = x
+					dc_color = shade_color(u8(199), base_light, depth)
+					dc_source = []u8{}
+					dc_texheight = 0
+					dc_yl = clip_top
+					dc_yh = top - 1
+					r_draw_column()
+				}
 				ceilingclip[x] = i16(top - 1)
 			}
 
 			// Lower wall (floor step)
 			if bb < bot {
-				dc_x = x
-				dc_color = wall_color
-				dc_yl = bb + 1
-				dc_yh = bot
-				r_draw_column()
+				// Lower wall texture
+				if lower_wt.width > 0 {
+					u := int(tex_u >> frac_bits)
+					c := ((u % lower_wt.width) + lower_wt.width) % lower_wt.width
+					col := lower_wt.columns[c]
+					if col.len > 0 {
+						lower_height := bot - (bb + 1)
+						lower_iscale := if lower_height > 0 {
+							Fixed(int(i64(back_floor - floor_h) / i64(lower_height)))
+						} else {
+							Fixed(frac_unit)
+						}
+						dc_x = x
+						unsafe { dc_source = col }
+						dc_texheight = col.len
+						dc_texturemid = tex_yoffset
+						dc_iscale = lower_iscale
+						dc_yl = bb + 1
+						dc_yh = bot
+						r_draw_column()
+					} else {
+						dc_x = x
+						dc_color = shade_color(u8(103), base_light, depth)
+						dc_source = []u8{}
+						dc_texheight = 0
+						dc_yl = bb + 1
+						dc_yh = bot
+						r_draw_column()
+					}
+				} else {
+					dc_x = x
+					dc_color = shade_color(u8(103), base_light, depth)
+					dc_source = []u8{}
+					dc_texheight = 0
+					dc_yl = bb + 1
+					dc_yh = bot
+					r_draw_column()
+				}
 
-				dc_x = x
-				dc_color = floor_color
-				dc_yl = bot + 1
-				dc_yh = clip_bot
-				r_draw_column()
+				// Floor flat
+				if floor_flat.len >= flat_bytes {
+					draw_flat_columns(x, bot + 1, clip_bot, front, floor_flat, depth, base_light)
+				} else if bot < clip_bot {
+					dc_x = x
+					dc_color = shade_color(u8(121), base_light, depth)
+					dc_source = []u8{}
+					dc_texheight = 0
+					dc_yl = bot + 1
+					dc_yh = clip_bot
+					r_draw_column()
+				}
 
 				floorclip[x] = i16(bb + 1)
 			} else if bot < clip_bot {
-				dc_x = x
-				dc_color = floor_color
-				dc_yl = bot + 1
-				dc_yh = clip_bot
-				r_draw_column()
+				if floor_flat.len >= flat_bytes {
+					draw_flat_columns(x, bot + 1, clip_bot, front, floor_flat, depth, base_light)
+				} else {
+					dc_x = x
+					dc_color = shade_color(u8(121), base_light, depth)
+					dc_source = []u8{}
+					dc_texheight = 0
+					dc_yl = bot + 1
+					dc_yh = clip_bot
+					r_draw_column()
+				}
 				floorclip[x] = i16(bot + 1)
 			}
+		}
+	}
+}
+
+// draw_flat_columns draws a vertical strip of a flat texture for floor/ceiling.
+fn draw_flat_columns(x int, y1 int, y2 int, sector &Sector, flat []u8, depth Fixed, light int) {
+	if x < 0 || x >= screenwidth || flat.len < flat_bytes {
+		return
+	}
+	mut ya := y1
+	mut yb := y2
+	if ya < 0 {
+		ya = 0
+	}
+	if yb >= screenheight {
+		yb = screenheight - 1
+	}
+	if ya > yb {
+		return
+	}
+	mut buf := v_buffer()
+	half_h := screenheight / 2
+	half_w := screenwidth / 2
+	for y in ya .. yb + 1 {
+		// Compute the distance for this scanline
+		dy := y - half_h
+		if dy == 0 {
+			continue
+		}
+		// distance = height * projection / dy
+		// For floors/ceilings, use a simple approximation
+		dist := if dy > 0 {
+			// Floor
+			Fixed(int(i64(viewz - sector.floorheight) * i64(half_w) / i64(dy)))
+		} else {
+			// Ceiling
+			Fixed(int(i64(sector.ceilingheight - viewz) * i64(half_w) / i64(-dy)))
+		}
+		if dist <= 0 {
+			continue
+		}
+		// Compute world X/Y at this point
+		// Use viewangle to rotate
+		xstep := fixed_mul(viewsin, dist)
+		ystep := fixed_mul(viewcos, dist)
+		// X offset from center of screen
+		screen_dx := x - half_w
+		wx := viewx + fixed_mul(viewcos, dist) + Fixed(int(i64(screen_dx) * i64(xstep) / i64(half_w)))
+		wy := viewy + fixed_mul(viewsin, dist) - Fixed(int(i64(screen_dx) * i64(ystep) / i64(half_w)))
+
+		// Sample flat
+		tx := (int(wx >> frac_bits) & 63)
+		ty := (int(wy >> frac_bits) & 63)
+		fidx := ((ty & 63) * 64 + (tx & 63))
+		if fidx >= 0 && fidx < flat.len {
+			pix := shade_color(flat[fidx], light, dist)
+			buf[y * screenwidth + x] = pix
 		}
 	}
 }

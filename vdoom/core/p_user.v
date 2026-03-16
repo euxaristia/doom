@@ -144,10 +144,24 @@ pub fn p_player_think(player &Player) {
 	}
 
 	unsafe {
-		player.mo.x += player.mo.momx
-		player.mo.y += player.mo.momy
+		// Try to move with collision detection
+		newx := player.mo.x + player.mo.momx
+		newy := player.mo.y + player.mo.momy
+		if (player.mo.flags & mf_noclip) != 0 {
+			// Noclip: bypass collision
+			player.mo.x = newx
+			player.mo.y = newy
+			p_set_thing_position_impl(player.mo)
+		} else {
+			if !p_try_move_impl(player.mo, newx, newy) {
+				// Try sliding along X axis only
+				if !p_try_move_impl(player.mo, newx, player.mo.y) {
+					// Try sliding along Y axis only
+					p_try_move_impl(player.mo, player.mo.x, newy)
+				}
+			}
+		}
 		// Update subsector and floor/ceiling after horizontal movement
-		p_set_thing_position_impl(player.mo)
 		ss := &Subsector(player.mo.subsector)
 		if ss != nil && ss.sector != nil {
 			player.mo.floorz = ss.sector.floorheight

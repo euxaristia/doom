@@ -10,6 +10,7 @@ __global dc_iscale = Fixed(0)
 __global dc_texturemid = Fixed(0)
 __global dc_source = []u8{}
 __global dc_color = u8(0)
+__global dc_texheight = 0
 
 // Span drawing state.
 __global ds_y = 0
@@ -25,7 +26,9 @@ __global ds_source = []u8{}
 __global translationtables = []u8{}
 __global dc_translation = []u8{}
 
-// r_draw_column draws a solid-color vertical column to i_video_buffer.
+// r_draw_column draws a vertical column.
+// If dc_source is set and non-empty, samples from it (texture mapped).
+// Otherwise, draws a solid dc_color column.
 pub fn r_draw_column() {
 	if dc_x < 0 || dc_x >= screenwidth {
 		return
@@ -42,8 +45,22 @@ pub fn r_draw_column() {
 		return
 	}
 	mut buf := v_buffer()
-	for y in y1 .. y2 + 1 {
-		buf[y * screenwidth + dc_x] = dc_color
+	if dc_source.len > 0 && dc_texheight > 0 {
+		// Texture-mapped column drawing
+		mut frac := dc_texturemid + Fixed(y1 - screenheight / 2) * dc_iscale
+		for y in y1 .. y2 + 1 {
+			// Extract integer texture coordinate and wrap
+			mut ty := int(frac >> frac_bits)
+			ty = ((ty % dc_texheight) + dc_texheight) % dc_texheight
+			if ty < dc_source.len {
+				buf[y * screenwidth + dc_x] = dc_source[ty]
+			}
+			frac += dc_iscale
+		}
+	} else {
+		for y in y1 .. y2 + 1 {
+			buf[y * screenwidth + dc_x] = dc_color
+		}
 	}
 }
 
@@ -72,7 +89,7 @@ pub fn r_video_erase(ofs u32, count int) {
 	_ = count
 }
 
-// r_draw_span draws a horizontal span (floor/ceiling) to i_video_buffer.
+// r_draw_span draws a horizontal span (floor/ceiling) with texture mapping.
 pub fn r_draw_span() {
 	if ds_y < 0 || ds_y >= screenheight {
 		return
@@ -89,10 +106,27 @@ pub fn r_draw_span() {
 		return
 	}
 	mut buf := v_buffer()
-	color := dc_color
 	off := ds_y * screenwidth
-	for x in x1 .. x2 + 1 {
-		buf[off + x] = color
+	if ds_source.len >= flat_bytes {
+		// Texture-mapped span drawing (flat = 64x64)
+		mut xfrac := ds_xfrac
+		mut yfrac := ds_yfrac
+		for x in x1 .. x2 + 1 {
+			// Extract integer coordinates and wrap to 64x64
+			tx := (int(xfrac >> frac_bits)) & 63
+			ty := (int(yfrac >> frac_bits)) & 63
+			idx := ty * 64 + tx
+			if idx >= 0 && idx < ds_source.len {
+				buf[off + x] = ds_source[idx]
+			}
+			xfrac += ds_xstep
+			yfrac += ds_ystep
+		}
+	} else {
+		color := dc_color
+		for x in x1 .. x2 + 1 {
+			buf[off + x] = color
+		}
 	}
 }
 

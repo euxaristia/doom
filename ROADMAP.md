@@ -2,13 +2,16 @@
 
 A phased approach to translating crispy-doom from C to V.
 
-## Current Status (2026-03-13)
+## Current Status (2026-03-16)
 
 - **Core game logic**: ✅ FULLY FUNCTIONAL
 - **Rendering pipeline**: ✅ FULLY FUNCTIONAL (generates correct PPM frames)
-- **Windowing system**: ⚠️ NEEDS DEBUGGING (Sokol/GG context creation segfaults)
+- **Windowing system**: ✅ FUNCTIONAL (Sokol/GG window with live rendering)
 - **Audio system**: ✅ FUNCTIONAL
-- **Input handling**: ✅ FUNCTIONAL  
+- **Input handling**: ✅ FUNCTIONAL (proper Sokol-to-Doom key mapping, key-up events)
+- **Collision detection**: ✅ FUNCTIONAL (blockmap-based wall collision, step-up)
+- **Damage system**: ✅ FUNCTIONAL (armor reduction, player/monster damage, kill)
+- **Item pickup system**: ✅ FUNCTIONAL (ammo, health, armor, weapons, keys, powerups)
 - **Gameplay mechanics**: ✅ FUNCTIONAL
 
 ## Recent Achievement: Playable DOOM.v (Headless Confirmed)
@@ -21,7 +24,7 @@ As of commit d1a1a90 ("Fix DOOM.v compilation and rendering bugs"):
 - ✅ Game ticker runs (verified by r_render_player_view calls in output)
 - ✅ Rendering pipeline works (generates PPM frames in out/ directory)
 - ✅ Sound system initialized
-- ❌ Windowed mode crashes during Sokol context creation (investigation needed)
+- ✅ Windowed mode functional (Sokol/GG, 960x720, interactive controls)
 
 ## Evidence of Functionality
 
@@ -140,22 +143,18 @@ r_render_player_view: numnodes=236, starting BSP render
 [PPM frames generated in out/ directory]
 ```
 
-## Next Steps for Windowing System
+## Recent Fix: Windowing System (2026-03-16)
 
-The segmentation fault occurs during `gg.new_context()` or `app.ctx.run()` in the Sokol graphics backend. This requires:
-1. Debugging Sokol/V graphics bindings
-2. Validating window creation parameters
-3. Testing minimal GG/Sokol examples
-4. Potentially updating V or Sokol versions
+The Sokol/GG segfault was caused by a V compiler bug (`sparc64` not recognized as a compile-time identifier in the closure module). Rebuilding V from latest source (dc183fb, which includes the sparc64 fix) resolved it.
 
 ## Milestones Status:
 - ✅ Milestone 1: WAD Loading - COMPLETE
 - ✅ Milestone 2: Playable Demo - COMPLETE (headless PPM output)
-- ⚠️ Milestone 3: Alpha (full rendering, sound, basic gameplay) - RENDERING WORKS, WINDOWING NEEDED
-- ⏳ Milestone 4: Beta (complete UI, all features, save/load) - PENDING
+- ✅ Milestone 3: Alpha (full rendering, windowing, basic gameplay) - COMPLETE
+- ⚠️ Milestone 4: Beta (complete UI, all features, save/load) - IN PROGRESS
 - ⏳ Milestone 5: 1.0 Release - PENDING
 
-**Current Progress: Core game engine is 100% complete and functional. Windowing system is the final blocking piece for interactive play.**
+**Current Progress: Game is playable in a window with WASD/arrow controls, wall collision, and 3D rendering at 960x720.**
 
 ## Phase Status:
 - Phase 2: Core Game Logic - ✅ COMPLETED

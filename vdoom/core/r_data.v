@@ -3,11 +3,7 @@ module core
 
 import math
 
-__global flat_nums = map[string]int{}
-__global texture_nums = map[string]int{}
 __global patch_nums = map[string]int{}
-__global next_flat_num = 0
-__global next_texture_num = 0
 __global next_patch_num = 0
 
 // Retrieve column data for span blitting.
@@ -38,33 +34,15 @@ pub fn r_precache_level() {}
 
 // Retrieval helpers.
 pub fn r_flat_num_for_name(name string) int {
-	key := name.to_upper()
-	if key in flat_nums {
-		return flat_nums[key]
-	}
-	idx := next_flat_num
-	flat_nums[key] = idx
-	next_flat_num++
-	return idx
+	return get_flat_num_for_name(name)
 }
 
 pub fn r_texture_num_for_name(name string) int {
-	key := name.to_upper()
-	if key in texture_nums {
-		return texture_nums[key]
-	}
-	idx := next_texture_num
-	texture_nums[key] = idx
-	next_texture_num++
-	return idx
+	return get_wall_texture_num_for_name(name)
 }
 
 pub fn r_check_texture_num_for_name(name string) int {
-	key := name.to_upper()
-	if key in texture_nums {
-		return texture_nums[key]
-	}
-	return -1
+	return get_wall_texture_num_for_name(name)
 }
 
 pub fn r_patch_num_for_name(name string) int {

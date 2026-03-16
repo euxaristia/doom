@@ -152,11 +152,16 @@ pub fn p_load_sectors(lump int) {
 		offset := i * 26
 		floorheight := i16(data[offset]) | (i16(data[offset + 1]) << 8)
 		ceilingheight := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
-		floorpic := i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
-		ceilingpic := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
-		lightlevel := i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
-		special := i16(data[offset + 10]) | (i16(data[offset + 11]) << 8)
-		tag := i16(data[offset + 12]) | (i16(data[offset + 13]) << 8)
+		
+		floorpic_name := bytes_to_name(data[offset + 4 .. offset + 12])
+		ceilingpic_name := bytes_to_name(data[offset + 12 .. offset + 20])
+		
+		floorpic := i16(get_flat_num_for_name(floorpic_name))
+		ceilingpic := i16(get_flat_num_for_name(ceilingpic_name))
+		
+		lightlevel := i16(data[offset + 20]) | (i16(data[offset + 21]) << 8)
+		special := i16(data[offset + 22]) | (i16(data[offset + 23]) << 8)
+		tag := i16(data[offset + 24]) | (i16(data[offset + 25]) << 8)
 		
 		sectors[i] = Sector{
 			floorheight: Fixed(int(floorheight) << frac_bits)
@@ -181,9 +186,15 @@ pub fn p_load_sidedefs(lump int) {
 		offset := i * 30
 		textureoffset := i16(data[offset]) | (i16(data[offset + 1]) << 8)
 		rowoffset := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
-		toptexture := i16(data[offset + 4]) | (i16(data[offset + 5]) << 8)
-		bottomtexture := i16(data[offset + 6]) | (i16(data[offset + 7]) << 8)
-		midtexture := i16(data[offset + 8]) | (i16(data[offset + 9]) << 8)
+		
+		toptexture_name := bytes_to_name(data[offset + 4 .. offset + 12])
+		bottomtexture_name := bytes_to_name(data[offset + 12 .. offset + 20])
+		midtexture_name := bytes_to_name(data[offset + 20 .. offset + 28])
+		
+		toptexture := i16(get_wall_texture_num_for_name(toptexture_name))
+		bottomtexture := i16(get_wall_texture_num_for_name(bottomtexture_name))
+		midtexture := i16(get_wall_texture_num_for_name(midtexture_name))
+		
 		sector_idx := i16(data[offset + 28]) | (i16(data[offset + 29]) << 8)
 		
 		sides[i] = Side{

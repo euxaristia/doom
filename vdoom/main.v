@@ -357,9 +357,6 @@ fn main() {
 		l := wad.lumps[i]
 		println('$i ${l.name} pos=${l.file_pos} size=${l.size}')
 	}
-
-	// Open a simple window displaying the last rendered RGB frame.
-	core.show_window_if_enabled()
 }
 
 fn pick_default_wad() string {

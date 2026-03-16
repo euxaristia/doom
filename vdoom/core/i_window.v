@@ -156,6 +156,113 @@ fn (mut app WindowApp) frame() {
 	app.ctx.end()
 }
 
+fn gg_key_to_doom(kc gg.KeyCode) int {
+	return match kc {
+		.space { int(` `) }
+		.apostrophe { int(`'`) }
+		.comma { int(`,`) }
+		.minus { key_minus }
+		.period { int(`.`) }
+		.slash { int(`/`) }
+		._0 { int(`0`) }
+		._1 { int(`1`) }
+		._2 { int(`2`) }
+		._3 { int(`3`) }
+		._4 { int(`4`) }
+		._5 { int(`5`) }
+		._6 { int(`6`) }
+		._7 { int(`7`) }
+		._8 { int(`8`) }
+		._9 { int(`9`) }
+		.semicolon { int(`;`) }
+		.equal { key_equals }
+		.a { int(`a`) }
+		.b { int(`b`) }
+		.c { int(`c`) }
+		.d { int(`d`) }
+		.e { int(`e`) }
+		.f { int(`f`) }
+		.g { int(`g`) }
+		.h { int(`h`) }
+		.i { int(`i`) }
+		.j { int(`j`) }
+		.k { int(`k`) }
+		.l { int(`l`) }
+		.m { int(`m`) }
+		.n { int(`n`) }
+		.o { int(`o`) }
+		.p { int(`p`) }
+		.q { int(`q`) }
+		.r { int(`r`) }
+		.s { int(`s`) }
+		.t { int(`t`) }
+		.u { int(`u`) }
+		.v { int(`v`) }
+		.w { int(`w`) }
+		.x { int(`x`) }
+		.y { int(`y`) }
+		.z { int(`z`) }
+		.left_bracket { int(`[`) }
+		.backslash { int(`\\`) }
+		.right_bracket { int(`]`) }
+		.grave_accent { 96 }
+		.escape { key_escape }
+		.enter { key_enter }
+		.tab { key_tab }
+		.backspace { key_backspace }
+		.insert { key_ins }
+		.delete { key_del }
+		.right { key_rightarrow }
+		.left { key_leftarrow }
+		.down { key_downarrow }
+		.up { key_uparrow }
+		.page_up { key_pgup }
+		.page_down { key_pgdn }
+		.home { key_home }
+		.end { key_end }
+		.caps_lock { key_capslock }
+		.scroll_lock { key_scrlck }
+		.num_lock { key_numlock }
+		.print_screen { key_prtscr }
+		.pause { key_pause }
+		.f1 { key_f1 }
+		.f2 { key_f2 }
+		.f3 { key_f3 }
+		.f4 { key_f4 }
+		.f5 { key_f5 }
+		.f6 { key_f6 }
+		.f7 { key_f7 }
+		.f8 { key_f8 }
+		.f9 { key_f9 }
+		.f10 { key_f10 }
+		.f11 { key_f11 }
+		.f12 { key_f12 }
+		.kp_0 { key_ins }
+		.kp_1 { key_end }
+		.kp_2 { key_downarrow }
+		.kp_3 { key_pgdn }
+		.kp_4 { key_leftarrow }
+		.kp_5 { keyp_5 }
+		.kp_6 { key_rightarrow }
+		.kp_7 { key_home }
+		.kp_8 { key_uparrow }
+		.kp_9 { key_pgup }
+		.kp_divide { keyp_divide }
+		.kp_multiply { keyp_multiply }
+		.kp_subtract { keyp_minus }
+		.kp_add { keyp_plus }
+		.kp_enter { key_enter }
+		.kp_equal { key_equals }
+		.left_shift { key_rshift }
+		.right_shift { key_rshift }
+		.left_control { key_rctrl }
+		.right_control { key_rctrl }
+		.left_alt { key_ralt }
+		.right_alt { key_ralt }
+		else { 0 }
+	}
+}
+
 fn on_event(e &gg.Event, _data voidptr) {
 	if _data == unsafe { nil } {
 		return
@@ -168,16 +275,20 @@ fn on_event(e &gg.Event, _data voidptr) {
 	}
 	app.seen_event = true
 
-	// Push events to the Doom event queue
 	if e.typ == sapp.EventType.key_down {
 		if i_debug_input() {
 			app.debug_flash = 10
 			println('event key_down key=${e.key_code} repeat=${e.key_repeat}')
 		}
 		if !e.key_repeat {
-			// Map gg.KeyCode to Doom key code
-			d_key := int(e.key_code)
-			d_post_keydown(d_key)
+			d_key := gg_key_to_doom(e.key_code)
+			if d_key != 0 {
+				ev := Event{
+					typ: .keydown
+					data1: d_key
+				}
+				d_post_event(&ev)
+			}
 
 			// Handle menu navigation
 			match e.key_code {
@@ -189,7 +300,14 @@ fn on_event(e &gg.Event, _data voidptr) {
 			}
 		}
 	} else if e.typ == sapp.EventType.key_up {
-		// Post key-up events to Doom
+		d_key := gg_key_to_doom(e.key_code)
+		if d_key != 0 {
+			ev := Event{
+				typ: .keyup
+				data1: d_key
+			}
+			d_post_event(&ev)
+		}
 	}
 }
 
@@ -230,7 +348,7 @@ pub fn show_window_if_enabled() {
 		width: win_w
 		height: win_h
 		create_window: true
-		window_title: 'vdoom (pure V)'
+		window_title: i_window_title()
 		bg_color: gg.black
 		init_fn: app.init
 		frame_fn: app.frame

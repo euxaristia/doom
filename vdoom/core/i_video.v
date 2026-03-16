@@ -263,8 +263,14 @@ pub fn i_read_screen(mut scr []u8) {
 pub fn i_begin_read() {
 }
 
+__global window_title = 'vdoom'
+
 pub fn i_set_window_title(title string) {
-	_ = title
+	window_title = title
+}
+
+pub fn i_window_title() string {
+	return window_title
 }
 
 pub fn i_check_is_screensaver() {
