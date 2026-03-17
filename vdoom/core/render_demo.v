@@ -55,7 +55,7 @@ pub fn render_patch_frame(mut wad Wad, patch_name string) {
 	render_show_menu = false
 	name := patch_name.to_upper()
 	if wad.has_lump(name) {
-		if screen := try_decode_patch_fullscreen(mut wad, name) {
+		if screen := try_decode_patch_fullscreen(mut wad, name, true) {
 			v_draw_raw_screen(screen)
 			render_was_patch = true
 			println('render: patch ${name} decoded to screen')
@@ -81,7 +81,7 @@ pub fn render_demo_frame(mut wad Wad) {
 	// Try to draw a real Doom patch if available.
 	mut drew_titlepic := false
 	if wad.has_lump('TITLEPIC') {
-		if screen := try_decode_patch_fullscreen(mut wad, 'TITLEPIC') {
+		if screen := try_decode_patch_fullscreen(mut wad, 'TITLEPIC', true) {
 			v_draw_raw_screen(screen)
 			drew_titlepic = true
 			println('render: TITLEPIC decoded to screen')
@@ -132,7 +132,7 @@ fn render_menu_set(mut wad Wad, screen MenuScreen) {
 	render_menu_item = 0
 	// Base layer: TITLEPIC if available, else clear.
     if wad.has_lump('TITLEPIC') {
-        if title_screen := try_decode_patch_fullscreen(mut wad, 'TITLEPIC') {
+        if title_screen := try_decode_patch_fullscreen(mut wad, 'TITLEPIC', true) {
             v_draw_raw_screen(title_screen)
         } else {
             v_clear_screen(0)

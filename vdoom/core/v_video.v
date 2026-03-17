@@ -14,10 +14,16 @@ pub fn v_set_patch_clip_callback(func VPatchClipFunc) {
 	v_patch_clip_callback = func
 }
 
+__global v_initialized = false
+
 pub fn v_init() {
+	if v_initialized {
+		return
+	}
 	unsafe {
 		v_active_buffer = i_video_buffer
 	}
+	v_initialized = true
 }
 
 pub fn v_copy_rect(srcx int, srcy int, source []u8, width int, height int, destx int, desty int) {
@@ -176,21 +182,27 @@ pub fn v_draw_raw_screen(raw []u8) {
 		i_video_buffer[i] = raw[i]
 	}
 	unsafe {
-		v_active_buffer = i_video_buffer
+		if v_active_buffer.data != i_video_buffer.data {
+			v_active_buffer = i_video_buffer
+		}
 	}
 }
 
 pub fn v_use_buffer(buffer []u8) {
 	if buffer.len == screenwidth * screenheight {
 		unsafe {
-			v_active_buffer = buffer
+			if v_active_buffer.data != buffer.data {
+				v_active_buffer = buffer
+			}
 		}
 	}
 }
 
 pub fn v_restore_buffer() {
 	unsafe {
-		v_active_buffer = i_video_buffer
+		if v_active_buffer.data != i_video_buffer.data {
+			v_active_buffer = i_video_buffer
+		}
 	}
 }
 
@@ -220,7 +232,9 @@ fn v_buffer() []u8 {
 		i_init_graphics()
 	}
 	unsafe {
-		v_active_buffer = i_video_buffer
+		if v_active_buffer.data != i_video_buffer.data {
+			v_active_buffer = i_video_buffer
+		}
 	}
 	return v_active_buffer
 }
