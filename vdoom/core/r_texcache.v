@@ -206,6 +206,7 @@ fn load_texture_lump(wad Wad, lump_name string) {
 			height: height
 			patches: patches
 		}
+		textureheight << Fixed(height << frac_bits)
 	}
 }
 
@@ -296,28 +297,27 @@ fn build_wall_texture(td &TexDef) WallTexture {
 				continue
 			}
 			for p < img.data.len {
-				topdelta := img.data[p]
+				topdelta := int(img.data[p])
 				if topdelta == 0xff {
 					break
 				}
-				p++
-				if p >= img.data.len {
+				if p + 4 >= img.data.len {
 					break
 				}
-				length := int(img.data[p])
-				p++
-				if p >= img.data.len {
-					break
-				}
-				p++ // skip padding byte
+				length := int(img.data[p + 1])
+				// skip topdelta, length, unused byte
+				p += 3
 				for j in 0 .. length {
-					ty := int(tp.originy) + int(topdelta) + j
+					ty := int(tp.originy) + topdelta + j
 					if ty >= 0 && ty < td.height && p < img.data.len {
-						columns[tx][ty] = img.data[p]
+						if tx < columns.len && ty < columns[tx].len {
+							columns[tx][ty] = img.data[p]
+						}
 					}
 					p++
 				}
-				p++ // skip padding byte
+				// skip trailing unused byte
+				p++
 			}
 		}
 	}

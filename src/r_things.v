@@ -1694,6 +1694,7 @@ fn r_draw_vis_sprite(vis &Vissprite_t, x1 int, x2 int) {
 	patch := &Patch_t(0)
 	patch = w_cache_lump_num(vis.patch + firstspritelump, 8)
 	dc_colormap = vis.colormap
+	dc_texheight = 0
 	if !dc_colormap {
 		// NULL colormap = shadow draw
 		colfunc = fuzzcolfunc

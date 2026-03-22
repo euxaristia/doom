@@ -127,7 +127,7 @@ fn draw_patch_column(mut dest []u8, x int, y int, img PatchImage, col int, src_c
 		return
 	}
 	for p < img.data.len {
-		topdelta := img.data[p]
+		topdelta := int(img.data[p])
 		if topdelta == 0xff {
 			break
 		}
@@ -138,17 +138,16 @@ fn draw_patch_column(mut dest []u8, x int, y int, img PatchImage, col int, src_c
 		// skip topdelta, length, unused byte
 		p += 3
 		for row in 0 .. length {
-			if p + row >= img.data.len {
-				break
+			if p < img.data.len {
+				dy := if ignore_offsets { y + topdelta + row } else { y + topdelta + row - img.topoffset }
+				if dy >= 0 && dy < screenheight {
+					dest[dy * screenwidth + dx] = img.data[p]
+				}
+				p++
 			}
-			dy := if ignore_offsets { y + int(topdelta) + row } else { y + int(topdelta) + row - img.topoffset }
-			if dy < 0 || dy >= screenheight {
-				continue
-			}
-			dest[dy * screenwidth + dx] = img.data[p + row]
 		}
-		// skip pixel data and trailing unused byte
-		p += length + 1
+		// skip trailing unused byte
+		p++
 	}
 }
 

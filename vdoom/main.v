@@ -207,6 +207,7 @@ fn main() {
 	}
 	core.i_print_startup_banner('vdoom (V port)')
 	core.boot()
+	core.r_init()
 	core.d_iwad_init(wad_path)
 	core.i_set_window_title(core.d_iwad_title())
 	core.i_set_window_enabled(show_window)

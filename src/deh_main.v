@@ -7,8 +7,8 @@ const deh_vanilla_numstates = 966
 const deh_vanilla_numsfx = 107
 
 __global (
-	mut deh_initialized bool
-	mut deh_file_loaded bool
+	deh_initialized bool
+	deh_file_loaded bool
 )
 
 fn C.strlen(&i8) usize

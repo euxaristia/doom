@@ -7,6 +7,7 @@ pub const fine_angles_half = fine_angles / 2
 
 __global finesine = []Fixed{}
 __global finecosine = []Fixed{}
+__global finetangent = []Fixed{}
 
 // Angle constants
 pub const angle_t_u32_max = u32(0xffffffff)

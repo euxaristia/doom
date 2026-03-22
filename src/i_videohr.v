@@ -11,11 +11,11 @@ const (
 
 @[weak]
 __global (
-	mut hr_video_inited       bool
-	mut hr_window_title       &i8 = c''
-	mut hr_screen_buffer      &u8
-	mut hr_current_palette    [16 * 3]u8
-	mut hr_requested_palette  [16 * 3]u8
+	hr_video_inited       bool
+	hr_window_title       = c''
+	hr_screen_buffer      &u8
+	hr_current_palette    [16 * 3]u8
+	hr_requested_palette  [16 * 3]u8
 )
 
 fn hr_buffer_len() int {

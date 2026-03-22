@@ -44,22 +44,41 @@ pub fn r_draw_column() {
 	if y1 > y2 {
 		return
 	}
+
 	mut buf := v_buffer()
+	mut dc_cm := &u8(unsafe { nil })
+	if dc_colormap != unsafe { nil } {
+		dc_cm = &u8(dc_colormap)
+	}
+
 	if dc_source.len > 0 && dc_texheight > 0 {
 		// Texture-mapped column drawing
-		mut frac := dc_texturemid + Fixed(y1 - screenheight / 2) * dc_iscale
+		mut frac := i64(dc_texturemid) + i64(y1 - v_centery) * i64(dc_iscale)
 		for y in y1 .. y2 + 1 {
-			// Extract integer texture coordinate and wrap
 			mut ty := int(frac >> frac_bits)
 			ty = ((ty % dc_texheight) + dc_texheight) % dc_texheight
-			if ty < dc_source.len {
-				buf[y * screenwidth + dc_x] = dc_source[ty]
+			if ty >= 0 && ty < dc_source.len {
+				color := dc_source[ty]
+				if dc_cm != unsafe { nil } {
+					buf[y * screenwidth + dc_x] = unsafe { dc_cm[color] }
+				} else {
+					buf[y * screenwidth + dc_x] = color
+				}
 			}
-			frac += dc_iscale
+			frac += i64(dc_iscale)
 		}
 	} else {
-		for y in y1 .. y2 + 1 {
-			buf[y * screenwidth + dc_x] = dc_color
+		// Solid color column - use a recognizable color if dc_color is 0
+		color := if dc_color == 0 { u8(150) } else { dc_color }
+		if dc_cm != unsafe { nil } {
+			final_color := unsafe { dc_cm[color] }
+			for y in y1 .. y2 + 1 {
+				buf[y * screenwidth + dc_x] = final_color
+			}
+		} else {
+			for y in y1 .. y2 + 1 {
+				buf[y * screenwidth + dc_x] = color
+			}
 		}
 	}
 }

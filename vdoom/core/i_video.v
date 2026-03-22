@@ -106,23 +106,22 @@ pub fn i_update_no_blit() {
 }
 
 pub fn i_finish_update() {
-	if i_video_buffer.len == 0 {
+	if i_video_buffer.len != screenwidth * screenheight {
 		return
 	}
 	if palette_rgb.len < 256 * 3 {
 		return
 	}
 	mut rgb := []u8{len: screenwidth * screenheight * 3}
-	for i in 0 .. i_video_buffer.len {
-		pal_idx := apply_colormap(int(i_video_buffer[i]))
-		idx := pal_idx * 3
-		if idx < 0 || idx + 2 >= palette_rgb.len {
-			continue
+	for i in 0 .. screenwidth * screenheight {
+		pixel := int(i_video_buffer[i])
+		pal_idx := apply_colormap(pixel)
+		pidx := pal_idx * 3
+		if pidx + 2 < palette_rgb.len {
+			rgb[i * 3] = palette_rgb[pidx]
+			rgb[i * 3 + 1] = palette_rgb[pidx + 1]
+			rgb[i * 3 + 2] = palette_rgb[pidx + 2]
 		}
-		base := i * 3
-		rgb[base] = palette_rgb[idx]
-		rgb[base + 1] = palette_rgb[idx + 1]
-		rgb[base + 2] = palette_rgb[idx + 2]
 	}
 	// Always keep the most recent RGB frame for window display.
 	last_rgb = rgb.clone()
@@ -228,11 +227,11 @@ pub fn i_set_colormap_level(level int) {
 
 fn apply_colormap(idx int) int {
 	if colormap_data.len < 256 {
-		return idx
+		return idx & 0xff
 	}
 	maps := colormap_data.len / 256
 	if maps <= 0 {
-		return idx
+		return idx & 0xff
 	}
 	mut level := colormap_level
 	if level < 0 {
@@ -241,10 +240,11 @@ fn apply_colormap(idx int) int {
 		level = maps - 1
 	}
 	base := level * 256
-	if idx < 0 || idx >= 256 || base + idx >= colormap_data.len {
-		return idx
+	ii := idx & 0xff
+	if base + ii >= colormap_data.len {
+		return ii
 	}
-	return int(colormap_data[base + idx])
+	return int(colormap_data[base + ii])
 }
 
 pub fn i_read_screen(mut scr []u8) {

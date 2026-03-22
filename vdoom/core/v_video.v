@@ -1,10 +1,9 @@
 @[has_globals]
 module core
 
-pub const centery = screenheight / 2
-
 pub type VPatchClipFunc = fn (patch &Patch, x int, y int) bool
 
+// v_centerx and v_centery are defined in r_main.v as globals
 __global dirtybox = [0, 0, 0, 0]
 __global tinttable = []u8{}
 __global v_patch_clip_callback = VPatchClipFunc(unsafe { nil })
@@ -171,7 +170,11 @@ pub fn v_draw_raw_screen(raw []u8) {
 	if raw.len == 0 {
 		return
 	}
-	mut max := screenwidth * screenheight
+	expected := screenwidth * screenheight
+	if raw.len != expected {
+		println('v_draw_raw_screen: warning - buffer size mismatch! expected ${expected}, got ${raw.len}')
+	}
+	mut max := expected
 	if raw.len < max {
 		max = raw.len
 	}
@@ -181,6 +184,7 @@ pub fn v_draw_raw_screen(raw []u8) {
 	for i in 0 .. max {
 		i_video_buffer[i] = raw[i]
 	}
+	v_mark_rect(0, 0, screenwidth, screenheight)
 	unsafe {
 		if v_active_buffer.data != i_video_buffer.data {
 			v_active_buffer = i_video_buffer
@@ -225,18 +229,10 @@ pub fn v_clear_screen(c int) {
 }
 
 fn v_buffer() []u8 {
-	if v_active_buffer.len == screenwidth * screenheight {
-		return v_active_buffer
-	}
 	if i_video_buffer.len != screenwidth * screenheight {
 		i_init_graphics()
 	}
-	unsafe {
-		if v_active_buffer.data != i_video_buffer.data {
-			v_active_buffer = i_video_buffer
-		}
-	}
-	return v_active_buffer
+	return i_video_buffer
 }
 
 fn v_try_load_patch(name string) ?PatchImage {

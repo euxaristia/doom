@@ -30,7 +30,7 @@ fn glob_match(pattern string, name string, nocase bool) bool {
 	mut pi := 0
 	mut ni := 0
 	mut star := -1
-	mut match := 0
+	mut match_pos := 0
 	for ni < name.len {
 		if pi < pattern.len && (pattern[pi] == `?` || glob_char_eq(pattern[pi], name[ni], nocase)) {
 			pi++
@@ -39,16 +39,17 @@ fn glob_match(pattern string, name string, nocase bool) bool {
 		}
 		if pi < pattern.len && pattern[pi] == `*` {
 			star = pi
-			match = ni
 			pi++
+			match_pos = ni
 			continue
 		}
 		if star != -1 {
 			pi = star + 1
-			match++
-			ni = match
+			match_pos++
+			ni = match_pos
 			continue
 		}
+
 		return false
 	}
 	for pi < pattern.len && pattern[pi] == `*` {

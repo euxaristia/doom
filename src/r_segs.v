@@ -1333,6 +1333,7 @@ fn r_render_masked_seg_range(ds &Drawseg_t, x1 int, x2 int) {
 			dc_iscale = 4294967295 / u32(spryscale)
 			// draw the texture
 			col = &Column_t((&u8(r_get_column(texnum, maskedtexturecol[dc_x])) - 3))
+			dc_texheight = textureheight[texnum] >> 16
 			r_draw_masked_column(col)
 			maskedtexturecol[dc_x] = 32767
 		}
@@ -1416,6 +1417,7 @@ fn r_render_seg_loop() {
 			dc_yh = yh
 			dc_texturemid = rw_midtexturemid
 			dc_source = r_get_column(midtexture, texturecolumn)
+			dc_texheight = textureheight[midtexture] >> 16
 			colfunc()
 			ceilingclip[rw_x] = viewheight
 			floorclip[rw_x] = -1
@@ -1433,6 +1435,7 @@ fn r_render_seg_loop() {
 					dc_yh = mid
 					dc_texturemid = rw_toptexturemid
 					dc_source = r_get_column(toptexture, texturecolumn)
+					dc_texheight = textureheight[toptexture] >> 16
 					colfunc()
 					ceilingclip[rw_x] = mid
 				} else { // 3
@@ -1457,6 +1460,7 @@ fn r_render_seg_loop() {
 					dc_yh = yh
 					dc_texturemid = rw_bottomtexturemid
 					dc_source = r_get_column(bottomtexture, texturecolumn)
+					dc_texheight = textureheight[bottomtexture] >> 16
 					colfunc()
 					floorclip[rw_x] = mid
 				} else { // 3

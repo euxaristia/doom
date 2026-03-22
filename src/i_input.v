@@ -5,15 +5,15 @@ module main
 
 @[weak]
 __global (
-	mut text_input_enabled       = true
-	mut novert                  = int(1)
-	mut vanilla_keyboard_mapping = int(1)
-	mut mouse_acceleration      = f32(2.0)
-	mut mouse_threshold         = int(10)
-	mut mouse_acceleration_y    = f32(1.0)
-	mut mouse_threshold_y       = int(0)
-	mut mouse_y_invert          = int(0)
-	mut runcentering            = int(1)
+	text_input_enabled       = true
+	novert                  = int(1)
+	vanilla_keyboard_mapping = int(1)
+	mouse_acceleration      = f32(2.0)
+	mouse_threshold         = int(10)
+	mouse_acceleration_y    = f32(1.0)
+	mouse_threshold_y       = int(0)
+	mouse_y_invert          = int(0)
+	runcentering            = int(1)
 )
 
 @[c: 'M_BindFloatVariable']

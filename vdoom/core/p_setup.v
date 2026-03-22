@@ -1,7 +1,6 @@
 @[has_globals]
 module core
 
-import os
 
 __global maplumpinfo = &LumpInfo(unsafe { nil })
 __global level_setup_count = 0
@@ -112,7 +111,8 @@ pub fn p_spawn_map_thing(mthing voidptr) {
 		y := Fixed(int(mt.y) * 65536)
 		z := Fixed(0) // ONFLOORZ
 		
-		mobj := p_spawn_player(x, y, z, player)
+		mut mobj := p_spawn_player(x, y, z, player)
+		mobj.angle = u32(u64(u16(mt.angle)) * 0x20000000 / 45)
 		player.mo = mobj
 		player.playerstate = .live
 		player.viewz = Fixed(41 * 65536)
@@ -314,6 +314,10 @@ pub fn p_load_segs(lump int) {
 		
 		if linedef >= 0 && linedef < numlines {
 			seg.linedef = &lines[linedef]
+			sn := seg.linedef.sidenum[side]
+			if sn >= 0 && sn < numsides {
+				seg.sidedef = &sides[sn]
+			}
 			if side == 0 {
 				seg.frontsector = seg.linedef.frontsector
 				seg.backsector = seg.linedef.backsector
@@ -334,9 +338,10 @@ pub fn p_load_subsectors(lump int) {
 	
 	for i in 0 .. numsubsectors {
 		offset := i * 4
-		firstseg := i16(data[offset]) | (i16(data[offset + 1]) << 8)
-		numlines := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
-		
+		// WAD format: numsegs (2 bytes), firstseg (2 bytes)
+		numlines := i16(data[offset]) | (i16(data[offset + 1]) << 8)
+		firstseg := i16(data[offset + 2]) | (i16(data[offset + 3]) << 8)
+
 		subsectors[i] = Subsector{
 			firstline: firstseg
 			numlines: numlines

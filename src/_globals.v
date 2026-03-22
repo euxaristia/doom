@@ -25276,6 +25276,11 @@ quitsounds2   = [Sfxenum_t.sfx_vilact, Sfxenum_t.sfx_getpow, Sfxenum_t.sfx_boscu
 )
 
 
+@[weak] __global ( dc_texheight int 
+
+)
+
+
 @[weak] __global ( maskedtexture bool 
 
 )

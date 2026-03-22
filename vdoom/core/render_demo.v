@@ -485,9 +485,12 @@ pub fn render_tick_frame() {
 		return
 	}
 	// Game running - render the player view
+	println('render_tick_frame: gamestate=${gamestate}, consoleplayer=${consoleplayer}, players.len=${players.len}, render_show_menu=${render_show_menu}')
 	if gamestate == .level && consoleplayer >= 0 && consoleplayer < players.len {
+		println('render_tick_frame: calling r_render_player_view')
 		r_render_player_view(voidptr(&players[consoleplayer]))
 	} else {
+		println('render_tick_frame: clearing screen (not in level state)')
 		v_clear_screen(0)
 		i_finish_update()
 	}

@@ -11,17 +11,17 @@ __global (
 	music_volume     int
 	opl_dev_messages bool
 	channel_playing  [max_sound_channels]bool
-	mut snd_sfxdevice        = int(Snddevice_t.snddevice_sb)
-	mut snd_samplerate       = int(44100)
-	mut snd_cachesize        = int(64 * 1024 * 1024)
-	mut snd_maxslicetime_ms  = int(28)
-	mut snd_musiccmd         = &u8(c'')
-	mut snd_dmxoption        = &u8(c'')
-	mut snd_sbport           int
-	mut snd_sbirq            int
-	mut snd_sbdma            int
-	mut snd_mport            int
-	mut opl_io_port          int
+	snd_sfxdevice        = int(Snddevice_t.snddevice_sb)
+	snd_samplerate       = int(44100)
+	snd_cachesize        = int(64 * 1024 * 1024)
+	snd_maxslicetime_ms  = int(28)
+	snd_musiccmd         = &u8(c'')
+	snd_dmxoption        = &u8(c'')
+	snd_sbport           int
+	snd_sbirq            int
+	snd_sbdma            int
+	snd_mport            int
+	opl_io_port          int
 )
 
 @[export: 'I_BindSoundVariables']

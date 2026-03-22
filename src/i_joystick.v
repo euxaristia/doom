@@ -7,29 +7,29 @@ const num_virtual_buttons = 17
 
 @[weak]
 __global (
-	mut joystick_initialized        bool
-	mut usejoystick                = int(0)
-	mut use_gamepad                = int(0)
-	mut gamepad_type               = int(0)
-	mut joystick_guid              = &u8(c'')
-	mut joystick_index             = int(-1)
-	mut joystick_x_axis            = int(0)
-	mut joystick_x_invert          = int(0)
-	mut joystick_y_axis            = int(1)
-	mut joystick_y_invert          = int(0)
-	mut joystick_strafe_axis       = int(-1)
-	mut joystick_strafe_invert     = int(0)
-	mut joystick_look_axis         = int(-1)
-	mut joystick_look_invert       = int(0)
-	mut joystick_x_dead_zone       = int(33)
-	mut joystick_y_dead_zone       = int(33)
-	mut joystick_strafe_dead_zone  = int(33)
-	mut joystick_look_dead_zone    = int(33)
-	mut use_analog                 = int(1)
-	mut joystick_turn_sensitivity  = int(10)
-	mut joystick_move_sensitivity  = int(10)
-	mut joystick_look_sensitivity  = int(10)
-	mut joystick_physical_buttons  = [num_virtual_buttons]int{init: index}
+	joystick_initialized        bool
+	usejoystick                = int(0)
+	use_gamepad                = int(0)
+	gamepad_type               = int(0)
+	joystick_guid              = &u8(c'')
+	joystick_index             = int(-1)
+	joystick_x_axis            = int(0)
+	joystick_x_invert          = int(0)
+	joystick_y_axis            = int(1)
+	joystick_y_invert          = int(0)
+	joystick_strafe_axis       = int(-1)
+	joystick_strafe_invert     = int(0)
+	joystick_look_axis         = int(-1)
+	joystick_look_invert       = int(0)
+	joystick_x_dead_zone       = int(33)
+	joystick_y_dead_zone       = int(33)
+	joystick_strafe_dead_zone  = int(33)
+	joystick_look_dead_zone    = int(33)
+	use_analog                 = int(1)
+	joystick_turn_sensitivity  = int(10)
+	joystick_move_sensitivity  = int(10)
+	joystick_look_sensitivity  = int(10)
+	joystick_physical_buttons  = [num_virtual_buttons]int{init: index}
 )
 
 @[export: 'I_BindJoystickVariables']

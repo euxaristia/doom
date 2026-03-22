@@ -1609,15 +1609,46 @@ fn r_draw_column() {
 	// Inner loop that does the actual texture mapping,
 	//  e.g. a DDA-lile scaling.
 	// This is as fast as it gets.
-	for {
-		// Re-map color indices from wall texture column
-		//  using a lighting/special effects LUT.
-		*dest = dc_colormap[dc_source[(frac >> 16) & 127]]
-		dest += 320
-		frac += fracstep
-		// while()
-		if !(count--) {
-			break
+	mut heightmask := dc_texheight - 1
+	if (dc_texheight & heightmask) != 0 {
+		heightmask++
+		heightmask <<= 16
+		if frac < 0 {
+			for frac < 0 {
+				frac += heightmask
+			}
+		} else {
+			for frac >= heightmask {
+				frac -= heightmask
+			}
+		}
+		for {
+			// Re-map color indices from wall texture column
+			//  using a lighting/special effects LUT.
+			*dest = dc_colormap[dc_source[frac >> 16]]
+			dest += 320
+			frac += fracstep
+			if frac >= heightmask {
+				frac -= heightmask
+			}
+			// while()
+			if count == 0 {
+				break
+			}
+			count--
+		}
+	} else {
+		for {
+			// Re-map color indices from wall texture column
+			//  using a lighting/special effects LUT.
+			*dest = dc_colormap[dc_source[(frac >> 16) & heightmask]]
+			dest += 320
+			frac += fracstep
+			// while()
+			if count == 0 {
+				break
+			}
+			count--
 		}
 	}
 }
@@ -1647,16 +1678,47 @@ fn r_draw_column_low() {
 	dest2 = ylookup[dc_yl] + columnofs[x + 1]
 	fracstep = dc_iscale
 	frac = dc_texturemid + (dc_yl - centery) * fracstep
-	for {
-		// Hack. Does not work corretly.
-		*dest2 = dc_colormap[dc_source[(frac >> 16) & 127]]
-		*dest = *dest2
-		dest += 320
-		dest2 += 320
-		frac += fracstep
-		// while()
-		if !(count--) {
-			break
+
+	mut heightmask := dc_texheight - 1
+	if (dc_texheight & heightmask) != 0 {
+		heightmask++
+		heightmask <<= 16
+		if frac < 0 {
+			for frac < 0 {
+				frac += heightmask
+			}
+		} else {
+			for frac >= heightmask {
+				frac -= heightmask
+			}
+		}
+		for {
+			*dest2 = dc_colormap[dc_source[frac >> 16]]
+			*dest = *dest2
+			dest += 320
+			dest2 += 320
+			frac += fracstep
+			if frac >= heightmask {
+				frac -= heightmask
+			}
+			if count == 0 {
+				break
+			}
+			count--
+		}
+	} else {
+		for {
+			// Hack. Does not work corretly.
+			*dest2 = dc_colormap[dc_source[(frac >> 16) & heightmask]]
+			*dest = *dest2
+			dest += 320
+			dest2 += 320
+			frac += fracstep
+			// while()
+			if count == 0 {
+				break
+			}
+			count--
 		}
 	}
 }
@@ -1714,9 +1776,10 @@ fn r_draw_fuzz_column() {
 		dest += 320
 		frac += fracstep
 		// while()
-		if !(count--) {
+		if count == 0 {
 			break
 		}
+		count--
 	}
 }
 
@@ -1770,9 +1833,10 @@ fn r_draw_fuzz_column_low() {
 		dest2 += 320
 		frac += fracstep
 		// while()
-		if !(count--) {
+		if count == 0 {
 			break
 		}
+		count--
 	}
 }
 
@@ -1802,19 +1866,54 @@ fn r_draw_translated_column() {
 	// Looks familiar.
 	fracstep = dc_iscale
 	frac = dc_texturemid + (dc_yl - centery) * fracstep
-	// Here we do an additional index re-mapping.
-	for {
-		// Translation tables are used
-		//  to map certain colorramps to other ones,
-		//  used with PLAY sprites.
-		// Thus the "green" ramp of the player 0 sprite
-		//  is mapped to gray, red, black/indigo.
-		*dest = dc_colormap[dc_translation[dc_source[frac >> 16]]]
-		dest += 320
-		frac += fracstep
-		// while()
-		if !(count--) {
-			break
+
+	mut heightmask := dc_texheight - 1
+	if (dc_texheight & heightmask) != 0 {
+		heightmask++
+		heightmask <<= 16
+		if frac < 0 {
+			for frac < 0 {
+				frac += heightmask
+			}
+		} else {
+			for frac >= heightmask {
+				frac -= heightmask
+			}
+		}
+		for {
+			// Translation tables are used
+			//  to map certain colorramps to other ones,
+			//  used with PLAY sprites.
+			// Thus the "green" ramp of the player 0 sprite
+			//  is mapped to gray, red, black/indigo.
+			*dest = dc_colormap[dc_translation[dc_source[frac >> 16]]]
+			dest += 320
+			frac += fracstep
+			if frac >= heightmask {
+				frac -= heightmask
+			}
+			// while()
+			if count == 0 {
+				break
+			}
+			count--
+		}
+	} else {
+		// Here we do an additional index re-mapping.
+		for {
+			// Translation tables are used
+			//  to map certain colorramps to other ones,
+			//  used with PLAY sprites.
+			// Thus the "green" ramp of the player 0 sprite
+			//  is mapped to gray, red, black/indigo.
+			*dest = dc_colormap[dc_translation[dc_source[(frac >> 16) & heightmask]]]
+			dest += 320
+			frac += fracstep
+			// while()
+			if count == 0 {
+				break
+			}
+			count--
 		}
 	}
 }
@@ -1841,21 +1940,52 @@ fn r_draw_translated_column_low() {
 	// Looks familiar.
 	fracstep = dc_iscale
 	frac = dc_texturemid + (dc_yl - centery) * fracstep
-	// Here we do an additional index re-mapping.
-	for {
-		// Translation tables are used
-		//  to map certain colorramps to other ones,
-		//  used with PLAY sprites.
-		// Thus the "green" ramp of the player 0 sprite
-		//  is mapped to gray, red, black/indigo.
-		*dest = dc_colormap[dc_translation[dc_source[frac >> 16]]]
-		*dest2 = dc_colormap[dc_translation[dc_source[frac >> 16]]]
-		dest += 320
-		dest2 += 320
-		frac += fracstep
-		// while()
-		if !(count--) {
-			break
+
+	mut heightmask := dc_texheight - 1
+	if (dc_texheight & heightmask) != 0 {
+		heightmask++
+		heightmask <<= 16
+		if frac < 0 {
+			for frac < 0 {
+				frac += heightmask
+			}
+		} else {
+			for frac >= heightmask {
+				frac -= heightmask
+			}
+		}
+		for {
+			*dest = dc_colormap[dc_translation[dc_source[frac >> 16]]]
+			*dest2 = dc_colormap[dc_translation[dc_source[frac >> 16]]]
+			dest += 320
+			dest2 += 320
+			frac += fracstep
+			if frac >= heightmask {
+				frac -= heightmask
+			}
+			if count == 0 {
+				break
+			}
+			count--
+		}
+	} else {
+		// Here we do an additional index re-mapping.
+		for {
+			// Translation tables are used
+			//  to map certain colorramps to other ones,
+			//  used with PLAY sprites.
+			// Thus the "green" ramp of the player 0 sprite
+			//  is mapped to gray, red, black/indigo.
+			*dest = dc_colormap[dc_translation[dc_source[(frac >> 16) & heightmask]]]
+			*dest2 = dc_colormap[dc_translation[dc_source[(frac >> 16) & heightmask]]]
+			dest += 320
+			dest2 += 320
+			frac += fracstep
+			// while()
+			if count == 0 {
+				break
+			}
+			count--
 		}
 	}
 }
@@ -1938,9 +2068,10 @@ fn r_draw_span() {
 		dest++
 		position += step
 		// while()
-		if !(count--) {
+		if count == 0 {
 			break
 		}
+		count--
 	}
 }
 
@@ -1985,9 +2116,10 @@ fn r_draw_span_low() {
 		dest++
 		position += step
 		// while()
-		if !(count--) {
+		if count == 0 {
 			break
 		}
+		count--
 	}
 }
 

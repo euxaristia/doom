@@ -8,9 +8,7 @@ __global next_patch_num = 0
 
 // Retrieve column data for span blitting.
 pub fn r_get_column(tex int, col int) []u8 {
-	_ = tex
-	_ = col
-	return []u8{}
+	return get_wall_column(tex, col)
 }
 
 // I/O, setting up the stuff.

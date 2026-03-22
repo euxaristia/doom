@@ -6,8 +6,8 @@ import os
 // GUS emulation config: minimal manual implementation.
 
 __global (
-	mut gus_patch_path &i8 = c''
-	mut gus_ram_kb int = 1024
+	gus_patch_path = c''
+	gus_ram_kb = 1024
 )
 
 @[export: 'GUS_WriteConfig']

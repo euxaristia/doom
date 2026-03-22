@@ -2,10 +2,10 @@
 module core
 
 __global maxvisplanes = 128
-__global visplanes = []&Visplane{len: maxvisplanes}
-__global lastvisplane &Visplane
-__global floorplane &Visplane
-__global ceilingplane &Visplane
+__global visplanes = [128]&Visplane{init: unsafe { nil }}
+__global lastvisplane = &Visplane(unsafe { nil })
+__global floorplane = &Visplane(unsafe { nil })
+__global ceilingplane = &Visplane(unsafe { nil })
 __global numvisplanes = 0
 
 __global lastopening = []i16{}
@@ -64,7 +64,46 @@ pub fn r_make_spans(x int, t1 int, b1 int, t2 int, b2 int) {
 	_ = b2
 }
 
-pub fn r_draw_planes() {}
+pub fn r_draw_planes() {
+	for i in 0 .. numvisplanes {
+		pl := visplanes[i]
+		if pl == unsafe { nil } { continue }
+		
+		// Map the flat texture
+		ds_source = get_flat_by_num(pl.picnum)
+		if ds_source.len < 4096 { continue }
+		
+		// Simplified span drawing for now: solid color
+		dc_color = u8(100 + (pl.lightlevel / 2))
+		
+		for y in 0 .. screenheight {
+			mut x1 := pl.minx
+			mut x2 := pl.maxx
+			// in a real engine we'd use the spans here
+			// but for now we'll just fill the range
+			// ...
+		}
+		
+		// To match 1:1 we need R_MakeSpans and standard R_DrawSpan
+		// For now, let's just make sure it's not black by filling with a recognizable color
+		// based on the picnum.
+		color := u8(32 + (pl.picnum % 128))
+		mut buf := v_buffer()
+		
+		for x in pl.minx .. pl.maxx + 1 {
+			if x < 0 || x >= screenwidth { continue }
+			t := int(pl.top[x])
+			b := int(pl.bottom[x])
+			if t > b { continue }
+			
+			for y in t .. b + 1 {
+				if y >= 0 && y < screenheight {
+					buf[y * screenwidth + x] = color
+				}
+			}
+		}
+	}
+}
 
 pub fn r_find_plane(height Fixed, picnum int, lightlevel int) &Visplane {
 	for i in 0 .. numvisplanes {
@@ -82,6 +121,8 @@ pub fn r_find_plane(height Fixed, picnum int, lightlevel int) &Visplane {
 		lightlevel: lightlevel
 		minx: screenwidth - 1
 		maxx: 0
+		top: []u8{len: screenwidth, init: 0xff}
+		bottom: []u8{len: screenwidth, init: 0x00}
 	}
 	visplanes[numvisplanes] = pl
 	numvisplanes++
@@ -89,17 +130,18 @@ pub fn r_find_plane(height Fixed, picnum int, lightlevel int) &Visplane {
 	return pl
 }
 
-pub fn r_check_plane(mut pl &Visplane, start int, stop int) &Visplane {
-	if start < pl.minx {
-		pl.minx = start
+pub fn r_check_plane(pl &Visplane, start int, stop int) &Visplane {
+	mut p := unsafe { &Visplane(pl) }
+	if start < p.minx {
+		p.minx = start
 	}
-	if stop > pl.maxx {
-		pl.maxx = stop
+	if stop > p.maxx {
+		p.maxx = stop
 	}
-	if pl.minx >= pl.maxx {
+	if p.minx >= p.maxx {
 		return unsafe { nil }
 	}
-	return pl
+	return p
 }
 
 pub fn r_add_plane(sec &Sector, isfloor bool) {

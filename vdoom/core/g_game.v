@@ -51,7 +51,9 @@ pub fn g_handle_game_action() {
 			.newgame {
 				println('g_handle_game_action: calling g_init_new')
 				g_init_new(startskill, startepisode, startmap)
-				set_game_action(.loadlevel)
+				// g_init_new already calls p_setup_level, so go to nothing
+				// (not .loadlevel which would double-load the level)
+				set_game_action(.nothing)
 			}
 			.completed {
 				g_do_completed()

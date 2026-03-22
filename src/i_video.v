@@ -14,25 +14,25 @@ __global (
 	video_inited       bool
 	video_window_title &i8
 	display_fps_dots   bool
-	mut usemouse                  = int(1)
-	mut video_driver              = &u8(c'')
-	mut window_position           = &u8(c'center')
-	mut video_display             int
-	mut window_width              = int(800)
-	mut window_height             = int(600)
-	mut fullscreen_width          int
-	mut fullscreen_height         int
-	mut max_scaling_buffer_pixels = int(16000000)
-	mut aspect_ratio_correct      = int(1)
-	mut integer_scaling           int
-	mut smooth_pixel_scaling      = int(1)
-	mut vga_porch_flash           int
-	mut startup_delay             = int(1000)
-	mut force_software_renderer   int
-	mut grabmouse                 = int(1)
-	mut png_screenshots           = int(1)
-	mut nomouse                   bool
-	mut nograbmouse_override      bool
+	usemouse                  = int(1)
+	video_driver              = &u8(c'')
+	window_position           = &u8(c'center')
+	video_display             int
+	window_width              = int(800)
+	window_height             = int(600)
+	fullscreen_width          int
+	fullscreen_height         int
+	max_scaling_buffer_pixels = int(16000000)
+	aspect_ratio_correct      = int(1)
+	integer_scaling           int
+	smooth_pixel_scaling      = int(1)
+	vga_porch_flash           int
+	startup_delay             = int(1000)
+	force_software_renderer   int
+	grabmouse                 = int(1)
+	png_screenshots           = int(1)
+	nomouse                   bool
+	nograbmouse_override      bool
 )
 
 fn ensure_video_buffer() {
